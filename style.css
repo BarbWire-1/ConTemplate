@@ -1,0 +1,87 @@
+/*
+ *   Copyright (c) 2023 BarbWire-1 aka Barbara Kälin
+ *   All rights reserved.
+     with MIT license
+ */
+ *{
+    margin: 0;
+    
+    padding: 0;
+}
+html {
+    min-height: 100%;
+   
+}
+body{
+    background-color: rgb(2, 44, 62);
+    color:aliceblue;
+    font-family: Arial, Helvetica, sans-serif;
+    background-image: linear-gradient(to right top, #b723be, #ff007d, #ff6131, #f5ae00, #a8eb12) ;
+    
+}
+.template1 {
+    margin: 20px;
+    padding: 20px;
+    background-color:#3131aa;
+    width: 280px;
+		max-height: 200px;
+    line-height: 1.6;
+    border-radius: 25px;
+    background: #3131aa;
+    box-shadow: 20px 26px 24px -2px rgba(0,0,0,0.76);
+    -webkit-box-shadow: 20px 26px 24px -2px rgba(0,0,0,0.76);
+    -moz-box-shadow: 20px 26px 24px -2px rgba(0,0,0,0.76); 
+    
+    margin-bottom: 0;
+}
+
+.now{
+   transform: translateY(20%);
+}
+
+
+div:has(.template1){
+    margin-top:50px;
+    display:flex;
+    justify-content:center;
+    /* background: pink */
+}
+
+
+.template2{
+    margin: 20px;
+    padding: 15px;
+    background-color:rgb(128, 201, 68);
+    width: 350px;
+    color: black;
+    box-shadow: 10px 16px 14px -2px rgba(0,0,0,0.76);
+    -webkit-box-shadow: 10px 16px 14px -2px rgba(0,0,0,0.76);
+    -moz-box-shadow: 10px 16px 14px -2px rgba(0,0,0,0.76);
+padding-bottom: 0px;
+    
+    
+}
+div:has(.template2){
+    margin-top: 50px;
+    display:flex;
+    flex-direction: column;
+    justify-content:center;
+    align-items: center;
+    /* background-color:#c4d0f810; */
+    text-align: center;
+    
+ }
+ 
+ div:has(.template3){
+    margin-top: 50px;
+    display:flex;
+    justify-content:space-evenly;
+	 	margin-bottom: 50px;
+    /* background: pink */
+}
+.template3 {
+    text-align: center;
+	line-height: 1.3em;
+    font-weight: bold;
+	
+}
