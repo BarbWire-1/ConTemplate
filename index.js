@@ -6,6 +6,7 @@
 
 // TODO now only adding cards for the first subscriber
 // TODO all observe logic in ArrayObserver, now conflicting and unnessesary?
+// TODO need a notif for changed length, otherwise only once applied from here
 // What happened?
 //  ❗️❗️❗️ WORK IN PROGRESS ❗️❗️❗️
 console.clear()
@@ -107,9 +108,9 @@ window.onload = () => {
 
     
         observeObject(obj) {
-            console.log(obj)
+            //console.log(obj)
             if (typeof obj !== 'object') {
-                console.log(obj)
+                //console.log(obj)
                 return obj;
             }
 
@@ -123,7 +124,7 @@ window.onload = () => {
                         get: () => temp,
                         set: (value) => {
                             temp = value;
-                            console.log(value)
+                            //console.log(value)
                             const index = this.dataSource.indexOf(obj);
                             this.notify(index, key, value);
                             
@@ -148,7 +149,7 @@ window.onload = () => {
         }
     }
 
-    
+    //TODO need to have new(old length here?)
     //TESTING TODO UPDATING FOR CARD LENGTH BUT MISSING REACTIVE
     class ConTemplate {
         constructor (model, template, parent) {
@@ -180,12 +181,14 @@ window.onload = () => {
             const currentLength = this.cards.length;
             const newLength = newDataSource.length;
             const diff = newLength - currentLength;
+            console.log(diff)// 2
 
             if (diff > 0) {
                 // Add new cards for the new items
                 for (let i = 0; i < diff; i++) {
                     const index = currentLength + i;
                     const item = newDataSource[ index ];
+                    console.log(item)
                     this.cards[ index ] = this.createCard(item, this.template);
                     this.container.appendChild(this.cards[ index ]);
                 }
@@ -202,9 +205,10 @@ window.onload = () => {
 
         render(index, key, value) {
             // TODO when card length changed looses track of changes on single keys? WHY SO???
-            console.log(index, key, value)
+            //console.log(index, key, value)
             const card = this.cards[ index ];
-            const property = card.querySelector(`[data-property=${key}]`);
+            console.log(index)
+            const property = card.querySelector(`[data=${key}]`);
 
             // Only update the card if the new value is different from the current value displayed in the card
             if (property && property.textContent !== value) {
@@ -220,12 +224,12 @@ window.onload = () => {
         const template = document.createElement('div');
         template.setAttribute('class', 'template1');
         template.innerHTML = `
-        <h2 style="text-align: center"><span data-property="name">${item.name}</span></h2>
-        <p>Address: <span data-property="street">${item.address.street}</span>,
-                        <span data-property="city">${item.address.city}</span>,
-                        <span data-property="state">${item.address.state}</span></p>
-        <p>Hobbies: <span data-property="hobbies">${item.hobbies.join(', ')}</span></p>
-        <p style="text-align: center; margin-top: 10px"><span data-property="now">${item.now}</span></p>
+        <h2 style="text-align: center"><span data="name">${item.name}</span></h2>
+        <p>Address: <span data="street">${item.address.street}</span>,
+                        <span data="city">${item.address.city}</span>,
+                        <span data="state">${item.address.state}</span></p>
+        <p>Hobbies: <span data="hobbies">${item.hobbies.join(', ')}</span></p>
+        <p style="text-align: center; margin-top: 10px"><span data="now">${item.now}</span></p>
      
         <div style="text-align: center; font-size: 30px">${item.emoji ?? ''}</div>
         <br>
@@ -238,12 +242,12 @@ window.onload = () => {
         const template = document.createElement('div');
         template.setAttribute('class', 'template2');
         template.innerHTML = `
-        <h3>Name: <span data-property="name">${item.name}</span></h3>
-        <p>Address: <span data-property="street">${item.address.street}</span></p>
-        <p>City: <span data-property="city">${item.address.city}</span></p>
-        <p>State: <span data-property="state">${item.address.state}</span></p>
-        <p>Hobbies: <span data-property="hobbies">${item.hobbies.join(', ')}</span></p>
-        <p>Now: <span data-property="now">${item.now}</span></p>
+        <h3>Name: <span data="name">${item.name}</span></h3>
+        <p>Address: <span data="street">${item.address.street}</span></p>
+        <p>City: <span data="city">${item.address.city}</span></p>
+        <p>State: <span data="state">${item.address.state}</span></p>
+        <p>Hobbies: <span data="hobbies">${item.hobbies.join(', ')}</span></p>
+        <p>Now: <span data="now">${item.now}</span></p>
         <br>
     `;
         return template;
@@ -255,9 +259,9 @@ window.onload = () => {
         template.setAttribute('class', 'template3');
         template.innerHTML = `
        <br>
-        <p>Address: <span data-property="street">${item.street}</span></p>
-        <p>City: <span data-property="city">${item.city}</span></p>
-        <p>State: <span data-property="state">${item.state}</span></p>
+        <p>Address: <span data="street">${item.street}</span></p>
+        <p>City: <span data="city">${item.city}</span></p>
+        <p>State: <span data="state">${item.state}</span></p>
        
     `;
         return template;
@@ -307,11 +311,11 @@ window.onload = () => {
     // model watching subkey of obj
     
     const dataObject2 = new DataHandler(testData.map(item => item.address));
-    console.log(dataObject2) // no reference to initoal object? but should be updated each time, not?
+    //console.log(dataObject2) // no reference to initoal object? but should be updated each time, not?
 
 
     const firstInstance = new ConTemplate(dataObject, template1, 'container1');
-    console.log(firstInstance)
+    //console.log(firstInstance)
     const secondInstance = new ConTemplate(dataObject, template2, 'container2');// this seems to be problematic (???) number of cards not updated
 
     const thirdInstance = new ConTemplate(dataObject2, template3, 'container3');
@@ -364,8 +368,8 @@ window.onload = () => {
     address = testData.map(dataSet => dataSet.address)
 
 
-    console.log(dataObject)
-    console.log(firstInstance)// new data are here!!!!!
+    //console.log(dataObject)
+    //console.log(firstInstance)// new data are here!!!!!
     
     
     
