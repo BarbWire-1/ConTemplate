@@ -34,34 +34,32 @@ window.onload = () => {
                                     Object.defineProperty(item, key, {
                                         get: () => value,
                                         set: (newValue) => {
-                                            
                                             value = newValue;
                                             const index = this.array.indexOf(item);
-                                            console.log(`newValue set in Observer: ${newValue} at index ${index}`)
-
                                             this.callback(this.array, index, key, newValue);
                                         },
                                     });
                                 }
                             }
+
+                            // Add getters/setters to the entire item
+                            Object.defineProperty(item, "_data", {
+                                value: {},
+                                writable: true,
+                            });
+
+                            
                         }
-                        console.log(item)
-                        /** //TODO the entire item doesn't have Getters/SETTERS but its keys keys get passed to the dataHandler instead
-                         * { name: [Getter/Setter],
-                            address: [Getter/Setter],
-                            hobbies: [Getter/Setter],
-                            now: [Getter/Setter] }
-                         */
                         return item;
                     });
 
                     const result = originalMethod(...args);
-                    //this.callback(this.array);
-                    //this.length = this.array.length;
-                    //return result;
+                    this.length = this.array.length;
+                    return result;
                 };
             });
         }
+
     }
 
     
@@ -314,7 +312,7 @@ window.onload = () => {
     
     // to check updating of only changed on load
     const updateNow = setInterval(tic, 1000);
-    const stop = setTimeout(stopIt, 10000)
+    const stop = setTimeout(stopIt, 100000)
     function tic() {
         testData[ 2 ].now = new Date().toLocaleTimeString();
     }
