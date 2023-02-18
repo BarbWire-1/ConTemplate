@@ -4,23 +4,12 @@
      with MIT license
  */
 
-     
-// TODO not reacting on structural changes in the dataSource JSON object
-// TODO possible to convert the FirstClass into a customComponent???
-// TODO handle undefined?
-// TODO add selctor for container per instance
-// then change style rules according to new circumstances
+//  ❗️❗️❗️ WORK IN PROGRESS ❗️❗️❗️
 console.clear()
 window.onload = () => {
-    //.  ❗️❗️❗️ WORK IN PROGRESS ❗️❗️❗️
+   
 
     // MODEL TO TAKE DATA-OBJECT AND RENDER SUBSCRIBERS PER CHANGED PROP
-    // TODO loging the instance the model DOES HAVE all items buT why can't get length here? why not passing to instance????
-    // TODO restructure and add array methods to be able to listen to pop and push at least? maybe sort???
-    // or a custom listener??? how??
-    // First observe array => pass to observeObject
-
-
     // For now ONLY observes the array's length to update source if length changed
     class ArrayLengthObserver {
         constructor (array, callback) {
@@ -65,7 +54,7 @@ window.onload = () => {
             });
         }
         
-       // TODO THIS DOES NOT WORK
+    
         observeObject(obj) {
             console.log(obj)
             if (typeof obj !== 'object') {
@@ -85,7 +74,7 @@ window.onload = () => {
                             console.log(value)
                             const index = this.dataSource.indexOf(obj);
                             this.notify(index, key, value);
-                            console.log(index, key, value)// this only shows the updated index instead of the new
+                            
                         },
                     });
                 }
