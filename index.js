@@ -35,7 +35,7 @@ window.onload = () => {
                         
                         
                         if (typeof item === "object") {
-                            // TODO change this to Object.entries(item)
+                            // TODO change this to Object.entries(item) - throws (???)
                             for (const key in item) {
                                 if (item.hasOwnProperty(key)) {
                                     let value = item[ key ];
@@ -303,15 +303,16 @@ window.onload = () => {
 
     // model watching all obj
     const dataObject = new DataHandler(testData);
-    //const dataObject1 = new DataHandler(testData);
+    //const dataObject1 = new DataHandler(testData);// bad idea as interferring
     // model watching subkey of obj
+    
     const dataObject2 = new DataHandler(testData.map(item => item.address));
-    console.log(dataObject2)
+    console.log(dataObject2) // no reference to initoal object? but should be updated each time, not?
 
 
     const firstInstance = new ConTemplate(dataObject, template1, 'container1');
     console.log(firstInstance)
-    const secondInstance = new ConTemplate(dataObject, template2, 'container2');// this seems to be problematic (???)
+    const secondInstance = new ConTemplate(dataObject, template2, 'container2');// this seems to be problematic (???) number of cards not updated
 
     const thirdInstance = new ConTemplate(dataObject2, template3, 'container3');
 
@@ -323,7 +324,7 @@ window.onload = () => {
     
     // to check updating of only changed on load
     const updateNow = setInterval(tic, 1000);
-    const stop = setTimeout(stopIt, 100000)
+    const stop = setTimeout(stopIt, 120000)
     function tic() {
         testData[ 2 ].now = new Date().toLocaleTimeString();
     }
@@ -371,4 +372,12 @@ window.onload = () => {
 }
 
 
+// evtl this way?
+// const dataHandler = new DataHandler(testData);
+// 
+// const filteredData = testData.filter(item => item.someProperty === someValue);
+// const firstInstance = new ConTemplate(dataHandler, template1, 'container1', filteredData);
+// 
+// const remainingData = testData.filter(item => item.someProperty !== someValue);
+// const secondInstance = new ConTemplate(dataHandler, template2, 'container2', remainingData);
 
