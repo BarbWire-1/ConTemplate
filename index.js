@@ -26,11 +26,16 @@ window.onload = () => {
             const methodsToObserve = [ "push", "pop", "shift", "unshift", "splice" ];
 
             methodsToObserve.forEach((methodName) => {
+                
+                // method applied to this.array
                 const originalMethod = this.array[ methodName ].bind(this.array);
                 this.array[ methodName ] = (...args) => {
-                    // Add getters/setters to new items before adding them to the array
+                    // Add getters/setters to new items involving above methods before adding them to the array
                     args = args.map((item) => {
+                        
+                        
                         if (typeof item === "object") {
+                            // TODO change this to Object.entries(item)
                             for (const key in item) {
                                 if (item.hasOwnProperty(key)) {
                                     let value = item[ key ];
