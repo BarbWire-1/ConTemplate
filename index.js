@@ -70,11 +70,13 @@ window.onload = () => {
             // TODO then run the observeOject on the NEW updated data here
             // as mutations on items are NOT observed this way
             // TODO all render logic needs to be here
+            // TODO NEED TO IGNORE FUNCTIONS IN NEW DATA ITEMS???
             console.log("Data updated", this.dataSource);// Data updated (4) [1, 2, 3, 4, push: ƒ, pop: ƒ, shift: ƒ, unshift: ƒ, splice: ƒ]
             console.log(`this.dataSource: ${this.dataSource}`)
             console.log(this.dataSource.length)// 4
             this.print()//  0 1, 1 2, 2 3, 3 4 🚀
             this.observeObject(this.dataSource)
+            console.log(this.dataSource)
       
 
         }
@@ -254,6 +256,7 @@ window.onload = () => {
 
 
     const firstInstance = new ConTemplate(dataObject, template1, 'container1');
+    console.log(firstInstance)
     const secondInstance = new ConTemplate(dataObject, template2, 'container2');// this seems to be problematic (???)
 
     const thirdInstance = new ConTemplate(dataObject2, template3, 'container3');
@@ -263,10 +266,20 @@ window.onload = () => {
 
     //TODO THIS IS NOT WORKING YET NEED TO ADD OR REMOVE CARDS
     testData[ 0 ].name = 'Judihui'
-    // const updateNow = setInterval(tic, 1000);
-    // function tic() {
-    //     testData[ 2 ].now = new Date().toLocaleTimeString();
-    // }
+    
+    // to check updating of only changed on load
+    const updateNow = setInterval(tic, 1000);
+    const stop = setTimeout(stopIt, 10000)
+    function tic() {
+        testData[ 2 ].now = new Date().toLocaleTimeString();
+    }
+    function stopIt() {
+        clearInterval(updateNow);
+    }
+    
+  
+
+    
 
 
 
@@ -287,4 +300,12 @@ window.onload = () => {
     address = testData.map(dataSet => dataSet.address)
 
 
+    
+    console.log(firstInstance)// new data are here!!!!!
+    
+    
+    
 }
+
+
+
