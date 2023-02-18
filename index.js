@@ -9,8 +9,14 @@
 // TODO need a notif for changed length, otherwise only once applied from here
 // What happened?
 //  ❗️❗️❗️ WORK IN PROGRESS ❗️❗️❗️
+
+
+
+
+
 console.clear()
 window.onload = () => {
+    const t0 = performance.now();
    
     // INIT??? OR NOTIFY???
     // MODEL TO TAKE DATA-OBJECT AND RENDER SUBSCRIBERS PER CHANGED PROP
@@ -371,7 +377,8 @@ window.onload = () => {
     //console.log(dataObject)
     //console.log(firstInstance)// new data are here!!!!!
     
-    
+    const t1 = performance.now();
+    console.log(`Call to init and update cards took ${t1 - t0} milliseconds.`);
     
 }
 
