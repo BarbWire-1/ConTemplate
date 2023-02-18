@@ -96,9 +96,7 @@ window.onload = () => {
             this.dataSource = dataSource;
             this.obj = this.observeObject(this.dataSource)
             this.observers = [];
-           
-           
-           
+          
         }
 
 
@@ -152,8 +150,10 @@ window.onload = () => {
             this.model = model;
             this.model.subscribe(this);
             this.cards = [];
+            // container ti create manually in html or JS to be able to place it where needed
             this.container = document.getElementById(parent);
             this.template = template;
+            // get new Data and length from the ArrayObserver Instance inside DataHandler call method to reflect new length;
             this.arrayObserver = new ArrayObserver(this.model.dataSource, (newDataSource) => {
                 this.updateCards(newDataSource);
             });
@@ -301,6 +301,7 @@ window.onload = () => {
     //const dataObject1 = new DataHandler(testData);
     // model watching subkey of obj
     const dataObject2 = new DataHandler(testData.map(item => item.address));
+    console.log(dataObject2)
 
 
     const firstInstance = new ConTemplate(dataObject, template1, 'container1');
@@ -350,10 +351,10 @@ window.onload = () => {
     
     // ok, changes on primitives do work, Not on objects or arrays per dot.notation
     testData[ 0 ].name = 'Jennifer Toe'
-    testData[ 1 ].hobbies = [ 'mountainbiking', 'motorcycling' ]
+    testData[ 1 ].hobbies = [ 'rollerblading', 'motor-cycling' ]
     //TODO: fascinating: the new added dataItems don't have getters/setters
     address = testData.map(dataSet => dataSet.address)
-    testData[ 4 ].hobbies = ['mountainbiking', 'motorcycling']// WHY IS THIS NOT APPLIED???
+    testData[ 4 ].hobbies = ['mountain-biking', 'motor-cycling']// WHY IS THIS NOT APPLIED???
     address = testData.map(dataSet => dataSet.address)
 
 
