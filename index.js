@@ -296,6 +296,7 @@ window.onload = () => {
 
     // model watching all obj
     const dataObject = new DataHandler(testData);
+    //const dataObject1 = new DataHandler(testData);
     // model watching subkey of obj
     const dataObject2 = new DataHandler(testData.map(item => item.address));
 
