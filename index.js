@@ -128,7 +128,8 @@ window.onload = () => {
     class ConTemplate {
         constructor (model, template, parent) {
             this.model = model;
-            console.log((this.model))
+            //console.log(`model: ${JSON.stringify(this.model)}`) // here still only // CIRCULAR STRUCTURE
+            console.log(this.model)
             this.model.subscribe(this);
             this.cards = [];
             //console.log(this.cards)
@@ -239,7 +240,7 @@ window.onload = () => {
                 city: 'Anothertown',
                 state: 'Spheres',
             },
-            hobbies: [ 'coding', 'playing cello', 'philosphy' ],
+            hobbies: [ 'coding', 'playing cello', `playing devil's advocat` ],
             now: new Date().toLocaleTimeString(),
             emoji: '👻'
         }
@@ -262,10 +263,10 @@ window.onload = () => {
 
     //TODO THIS IS NOT WORKING YET NEED TO ADD OR REMOVE CARDS
     testData[ 0 ].name = 'Judihui'
-    const updateNow = setInterval(tic, 1000);
-    function tic() {
-        testData[ 2 ].now = new Date().toLocaleTimeString();
-    }
+    // const updateNow = setInterval(tic, 1000);
+    // function tic() {
+    //     testData[ 2 ].now = new Date().toLocaleTimeString();
+    // }
 
 
 
