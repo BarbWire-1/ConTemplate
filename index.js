@@ -52,8 +52,8 @@ window.onload = () => {
             this.dataSource = dataSource;
             this.observers = [];
             console.log(this.dataSource, this.dataSource.length) //
-            this.observeDataSource();// 1,2,3,4
-            this.print()// 0 1, 1 2, 2 3 
+            //this.observeDataSource();// 1,2,3,4
+            //this.print()// 0 1, 1 2, 2 3 
         
         }
 
@@ -71,19 +71,19 @@ window.onload = () => {
             // as mutations on items are NOT observed this way
             // TODO all render logic needs to be here
             // TODO NEED TO IGNORE FUNCTIONS IN NEW DATA ITEMS???
-            console.log("Data updated", this.dataSource);// Data updated (4) [1, 2, 3, 4, push: ƒ, pop: ƒ, shift: ƒ, unshift: ƒ, splice: ƒ]
-            console.log(`this.dataSource: ${this.dataSource}`)
-            console.log(this.dataSource.length)// 4
+            //console.log("Data updated", this.dataSource);// Data updated (4) [1, 2, 3, 4, push: ƒ, pop: ƒ, shift: ƒ, unshift: ƒ, splice: ƒ]
+            // console.log(`this.dataSource: ${this.dataSource}`)
+            // console.log(this.dataSource.length)// 4
             this.print()//  0 1, 1 2, 2 3, 3 4 🚀
             this.observeObject(this.dataSource)
-            console.log(this.dataSource)
+            // console.log(this.dataSource)
       
 
         }
-        print() {
-            this.dataSource.forEach((item, i) => console.log(i, item))
-            //Logging ok, so data are passed
-        }
+        // print() {
+        //     this.dataSource.forEach((item, i) => console.log(i, item))
+        //     //Logging ok, so data are passed
+        // }
         
         // here add array-methods for (if 'object' && dataSource or add an int array?)
         observeObject(obj) {
@@ -126,41 +126,103 @@ window.onload = () => {
     }
 
 
-    // CLASS TO SUBSCRIBE TO A MODEL AND CALL FUNCTION TO CREATE CARDS
+//     // CLASS TO SUBSCRIBE TO A MODEL AND CALL FUNCTION TO CREATE CARDS
+//     class ConTemplate {
+//         constructor (model, template, parent) {
+//             this.model = model;
+//             //console.log(`model: ${JSON.stringify(this.model)}`) // here still only // CIRCULAR STRUCTURE
+//             // console.log(this.model)
+//             this.model.subscribe(this);
+//             this.cards = [];
+//             //console.log(this.cards)
+//             // TODO id and class for container or pass container's selector???
+//             this.container = document.getElementById(parent);
+//             this.template = template;
+//             this.model.dataSource.forEach((item, index) => {
+//                 //console.log(index)//TODO1.1.1.1.1.1.1.1.1// 0,1,2 but WHY??? the new added log at 4,5
+//                 this.cards[ index ] = this.createCard(item, this.template);
+//                 //TODO add class to items???
+//                 this.container.appendChild(this.cards[ index ]);
+//             });
+//         }
+// 
+//         render(index, key, value) {
+//             // const item = this.model.dataSource[ index ];
+//             //console.log(item)
+//             const card = this.cards[ index ];
+//             const property = card.querySelector(`[data-property=${key}]`) ?? '';
+//             if (property) {
+//                 property.textContent = value;
+//             }
+//         }
+// 
+//         createCard(item, chosenTemplate) {
+//             const template = chosenTemplate(item);
+//             return template;
+//         }
+//     }
+    
+    //TESTING TODO UPDATING FOR CARD LENGTH BUT MISSING REACTIVE
     class ConTemplate {
         constructor (model, template, parent) {
             this.model = model;
-            //console.log(`model: ${JSON.stringify(this.model)}`) // here still only // CIRCULAR STRUCTURE
-            console.log(this.model)
             this.model.subscribe(this);
             this.cards = [];
-            //console.log(this.cards)
-            // TODO id and class for container or pass container's selector???
             this.container = document.getElementById(parent);
             this.template = template;
+            this.arrayObserver = new ArrayLengthObserver(this.model.dataSource, (newDataSource) => {
+                this.updateCards(newDataSource);
+            });
+
             this.model.dataSource.forEach((item, index) => {
-                //console.log(index)//TODO1.1.1.1.1.1.1.1.1// 0,1,2 but WHY??? the new added log at 4,5
                 this.cards[ index ] = this.createCard(item, this.template);
-                //TODO add class to items???
                 this.container.appendChild(this.cards[ index ]);
             });
-        }
-
-        render(index, key, value) {
-            // const item = this.model.dataSource[ index ];
-            //console.log(item)
-            const card = this.cards[ index ];
-            const property = card.querySelector(`[data-property=${key}]`) ?? '';
-            if (property) {
-                property.textContent = value;
-            }
         }
 
         createCard(item, chosenTemplate) {
             const template = chosenTemplate(item);
             return template;
         }
+
+        updateCards(newDataSource) {
+            // Function to update the cards based on the new data source
+            const currentLength = this.cards.length;
+            const newLength = newDataSource.length;
+            const diff = newLength - currentLength;
+
+            if (diff > 0) {
+                // Add new cards for the new items
+                for (let i = 0; i < diff; i++) {
+                    const index = currentLength + i;
+                    const item = newDataSource[ index ];
+                    this.cards[ index ] = this.createCard(item, this.template);
+                    this.container.appendChild(this.cards[ index ]);
+                }
+            } else if (diff < 0) {
+                // Remove excess cards for the removed items
+                for (let i = 0; i < Math.abs(diff); i++) {
+                    const index = currentLength - i - 1;
+                    const card = this.cards[ index ];
+                    this.container.removeChild(card);
+                    this.cards.splice(index, 1);
+                }
+            }
+        }
+
+        render(index, key, value) {
+            // TODO when card length changed looses track of changes on single keys? WHY SO???
+            console.log(index, key, value)
+            const card = this.cards[ index ];
+            const property = card.querySelector(`[data-property=${key}]`);
+
+            // Only update the card if the new value is different from the current value displayed in the card
+            if (property && property.textContent !== value) {
+                property.textContent = value;
+            }
+        }
     }
+
 
     // DIFFERENT TEMPLATE_FUNCTION BEING PASSED TO ConTemplate
     // TODO ADD AN INDEX HERE TO DIFFERCIATE!!!
@@ -284,15 +346,25 @@ window.onload = () => {
 
 
     testData.push({
-        name: 'John Doe',
+        name: 'No. 4',
         address: {
-            street: '789 Sidewalk',
+            street: '123 Sidewalk',
             city: 'Anytown',
             state: 'CA',
         },
         hobbies: [ 'reading', 'traveling' ],
         now: new Date().toLocaleTimeString()
-    })
+    },
+        {
+            name: 'No. 5',
+            address: {
+                street: '456 Sidewalk',
+                city: 'Anytown',
+                state: 'CA',
+            },
+            hobbies: [ 'reading', 'traveling' ],
+            now: new Date().toLocaleTimeString()
+        })
 
     testData[ 0 ].name = 'Jennifer Toe'
     address = testData.map(dataSet => dataSet.address)
@@ -300,7 +372,7 @@ window.onload = () => {
     address = testData.map(dataSet => dataSet.address)
 
 
-    
+    console.log(dataObject)
     console.log(firstInstance)// new data are here!!!!!
     
     
