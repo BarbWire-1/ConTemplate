@@ -168,7 +168,7 @@ window.onload = () => {
             const template = chosenTemplate(item);
             return template;
         }
-
+        // TODO check the length for different observers!!!
         updateCards(newDataSource) {
             // Function to update the cards based on the new data source
             console.log(newDataSource)
