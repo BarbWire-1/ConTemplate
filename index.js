@@ -4,6 +4,8 @@
      with MIT license
  */
 
+// TODO now only adding cards for the first subscriber
+// What happened?
 //  ❗️❗️❗️ WORK IN PROGRESS ❗️❗️❗️
 console.clear()
 window.onload = () => {
