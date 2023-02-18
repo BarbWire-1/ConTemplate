@@ -25,14 +25,68 @@ window.onload = () => {
             methodsToObserve.forEach((methodName) => {
                 const originalMethod = this.array[ methodName ].bind(this.array);
                 this.array[ methodName ] = (...args) => {
+                    // Add getters/setters to new items before adding them to the array
+                    args = args.map((item) => {
+                        if (typeof item === "object") {
+                            for (const key in item) {
+                                if (item.hasOwnProperty(key)) {
+                                    let value = item[ key ];
+                                    Object.defineProperty(item, key, {
+                                        get: () => value,
+                                        set: (newValue) => {
+                                            
+                                            value = newValue;
+                                            const index = this.array.indexOf(item);
+                                            console.log(`newValue set in Observer: ${newValue} at index ${index}`)
+
+                                            this.callback(this.array, index, key, newValue);
+                                        },
+                                    });
+                                }
+                            }
+                        }
+                        console.log(item)
+                        /** //TODO the entire item doesn't have Getters/SETTERS but its keys keys get passed to the dataHandler instead
+                         * { name: [Getter/Setter],
+                            address: [Getter/Setter],
+                            hobbies: [Getter/Setter],
+                            now: [Getter/Setter] }
+                         */
+                        return item;
+                    });
+
                     const result = originalMethod(...args);
-                    this.callback(this.array);
-                    this.length = this.array.length;
-                    return result;
+                    //this.callback(this.array);
+                    //this.length = this.array.length;
+                    //return result;
                 };
             });
         }
     }
+
+    
+    /** TODO add getters/setters to new items before adding to array
+     * arrayObserver: 
+        ArrayLengthObserver { array: 
+           [ [Getter/Setter],
+             [Getter/Setter],
+             [Getter/Setter],
+             { name: 'No. 4',
+               address: [Object],
+               hobbies: [Object],
+               now: '5:27:22 PM' },
+             { name: 'No. 5',
+               address: [Object],
+               hobbies: [Object],
+               now: '5:27:22 PM' },
+             push: [λ],
+             pop: [λ],
+             shift: [λ],
+             unshift: [λ],
+             splice: [λ] ],
+          callback: [λ],
+          length: 5 } },
+     */
 
 
 
@@ -42,22 +96,15 @@ window.onload = () => {
             this.obj = this.observeObject(this.dataSource)
             this.observers = [];
            
+           
         }
 
 
-        // ONLY observes if the length of the datasource has changed
-        // to be able to add or remove cards accordingly
-        observeDataSource() {
-            const observer = new ArrayLengthObserver(this.dataSource, (updatedArray) => {
-                this.dataSource = updatedArray;
-                this.update();
-            });
-        }
-        
     
         observeObject(obj) {
             console.log(obj)
             if (typeof obj !== 'object') {
+                console.log(obj)
                 return obj;
             }
 
