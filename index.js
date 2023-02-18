@@ -50,11 +50,9 @@ window.onload = () => {
     class DataHandler {
         constructor (dataSource) {
             this.dataSource = dataSource;
+            this.obj = this.observeObject(this.dataSource)
             this.observers = [];
-            console.log(this.dataSource, this.dataSource.length) //
-            //this.observeDataSource();// 1,2,3,4
-            //this.print()// 0 1, 1 2, 2 3 
-        
+           
         }
 
 
@@ -66,27 +64,10 @@ window.onload = () => {
                 this.update();
             });
         }
-        update() {
-            // TODO then run the observeOject on the NEW updated data here
-            // as mutations on items are NOT observed this way
-            // TODO all render logic needs to be here
-            // TODO NEED TO IGNORE FUNCTIONS IN NEW DATA ITEMS???
-            //console.log("Data updated", this.dataSource);// Data updated (4) [1, 2, 3, 4, push: ƒ, pop: ƒ, shift: ƒ, unshift: ƒ, splice: ƒ]
-            // console.log(`this.dataSource: ${this.dataSource}`)
-            // console.log(this.dataSource.length)// 4
-            this.print()//  0 1, 1 2, 2 3, 3 4 🚀
-            this.observeObject(this.dataSource)
-            // console.log(this.dataSource)
-      
-
-        }
-        // print() {
-        //     this.dataSource.forEach((item, i) => console.log(i, item))
-        //     //Logging ok, so data are passed
-        // }
         
-        // here add array-methods for (if 'object' && dataSource or add an int array?)
+       // TODO THIS DOES NOT WORK
         observeObject(obj) {
+            console.log(obj)
             if (typeof obj !== 'object') {
                 return obj;
             }
@@ -101,6 +82,7 @@ window.onload = () => {
                         get: () => temp,
                         set: (value) => {
                             temp = value;
+                            console.log(value)
                             const index = this.dataSource.indexOf(obj);
                             this.notify(index, key, value);
                             console.log(index, key, value)// this only shows the updated index instead of the new
@@ -125,42 +107,6 @@ window.onload = () => {
         }
     }
 
-
-//     // CLASS TO SUBSCRIBE TO A MODEL AND CALL FUNCTION TO CREATE CARDS
-//     class ConTemplate {
-//         constructor (model, template, parent) {
-//             this.model = model;
-//             //console.log(`model: ${JSON.stringify(this.model)}`) // here still only // CIRCULAR STRUCTURE
-//             // console.log(this.model)
-//             this.model.subscribe(this);
-//             this.cards = [];
-//             //console.log(this.cards)
-//             // TODO id and class for container or pass container's selector???
-//             this.container = document.getElementById(parent);
-//             this.template = template;
-//             this.model.dataSource.forEach((item, index) => {
-//                 //console.log(index)//TODO1.1.1.1.1.1.1.1.1// 0,1,2 but WHY??? the new added log at 4,5
-//                 this.cards[ index ] = this.createCard(item, this.template);
-//                 //TODO add class to items???
-//                 this.container.appendChild(this.cards[ index ]);
-//             });
-//         }
-// 
-//         render(index, key, value) {
-//             // const item = this.model.dataSource[ index ];
-//             //console.log(item)
-//             const card = this.cards[ index ];
-//             const property = card.querySelector(`[data-property=${key}]`) ?? '';
-//             if (property) {
-//                 property.textContent = value;
-//             }
-//         }
-// 
-//         createCard(item, chosenTemplate) {
-//             const template = chosenTemplate(item);
-//             return template;
-//         }
-//     }
     
     //TESTING TODO UPDATING FOR CARD LENGTH BUT MISSING REACTIVE
     class ConTemplate {
@@ -187,6 +133,7 @@ window.onload = () => {
 
         updateCards(newDataSource) {
             // Function to update the cards based on the new data source
+            console.log(newDataSource)
             const currentLength = this.cards.length;
             const newLength = newDataSource.length;
             const diff = newLength - currentLength;
@@ -339,11 +286,6 @@ window.onload = () => {
         clearInterval(updateNow);
     }
     
-  
-
-    
-
-
 
     testData.push({
         name: 'No. 4',
@@ -365,10 +307,14 @@ window.onload = () => {
             hobbies: [ 'reading', 'traveling' ],
             now: new Date().toLocaleTimeString()
         })
-
+    
+    
+    // ok, changes on primitives do work, Not on objects or arrays per dot.notation
     testData[ 0 ].name = 'Jennifer Toe'
+    testData[ 1 ].hobbies = [ 'mountainbiking', 'motorcycling' ]
+    //TODO: fascinating: the new added dataItems don't have getters/setters
     address = testData.map(dataSet => dataSet.address)
-    testData[ 4 ] = { address: { street: `123 Test Way` } }
+    testData[ 4 ].hobbies = ['mountainbiking', 'motorcycling']// WHY IS THIS NOT APPLIED???
     address = testData.map(dataSet => dataSet.address)
 
 
