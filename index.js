@@ -208,7 +208,7 @@ window.onload = () => {
             //console.log(index, key, value)
             const card = this.cards[ index ];
             console.log(index)
-            const property = card.querySelector(`[data=${key}]`);
+            const property = card.querySelector(`.${key}`);
 
             // Only update the card if the new value is different from the current value displayed in the card
             if (property && property.textContent !== value) {
@@ -224,12 +224,12 @@ window.onload = () => {
         const template = document.createElement('div');
         template.setAttribute('class', 'template1');
         template.innerHTML = `
-        <h2 style="text-align: center"><span data="name">${item.name}</span></h2>
-        <p>Address: <span data="street">${item.address.street}</span>,
-                        <span data="city">${item.address.city}</span>,
-                        <span data="state">${item.address.state}</span></p>
-        <p>Hobbies: <span data="hobbies">${item.hobbies.join(', ')}</span></p>
-        <p style="text-align: center; margin-top: 10px"><span data="now">${item.now}</span></p>
+        <h2 style="text-align: center"><span class="name">${item.name}</span></h2>
+        <p>Address: <span class="street">${item.address.street}</span>,
+                        <span class="city">${item.address.city}</span>,
+                        <span class="state">${item.address.state}</span></p>
+        <p>Hobbies: <span class="hobbies">${item.hobbies.join(', ')}</span></p>
+        <p style="text-align: center; margin-top: 10px"><span class="now">${item.now}</span></p>
      
         <div style="text-align: center; font-size: 30px">${item.emoji ?? ''}</div>
         <br>
@@ -242,12 +242,12 @@ window.onload = () => {
         const template = document.createElement('div');
         template.setAttribute('class', 'template2');
         template.innerHTML = `
-        <h3>Name: <span data="name">${item.name}</span></h3>
-        <p>Address: <span data="street">${item.address.street}</span></p>
-        <p>City: <span data="city">${item.address.city}</span></p>
-        <p>State: <span data="state">${item.address.state}</span></p>
-        <p>Hobbies: <span data="hobbies">${item.hobbies.join(', ')}</span></p>
-        <p>Now: <span data="now">${item.now}</span></p>
+        <h3>Name: <span class="name">${item.name}</span></h3>
+        <p>Address:
+            <span class="address">${item.address.street}, ${item.address.city}, ${item.address.state}</span>
+        </p> 
+        <p>Hobbies: <span class="hobbies">${item.hobbies.join(', ')}</span></p>
+        <p>Now: <span class="now">${item.now}</span></p>
         <br>
     `;
         return template;
@@ -259,9 +259,9 @@ window.onload = () => {
         template.setAttribute('class', 'template3');
         template.innerHTML = `
        <br>
-        <p>Address: <span data="street">${item.street}</span></p>
-        <p>City: <span data="city">${item.city}</span></p>
-        <p>State: <span data="state">${item.state}</span></p>
+        <p>Address: <span class="street">${item.street}</span></p>
+        <p>City: <span class="city">${item.city}</span></p>
+        <p>State: <span class="state">${item.state}</span></p>
        
     `;
         return template;

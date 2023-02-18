@@ -24,7 +24,7 @@ body{
     padding: 20px;
     background-color:#3131aa;
     width: 280px;
-	height: 210px;
+	height: 220px;
     line-height: 1.6;
     border-radius: 25px;
     background: #3131aa;
@@ -32,7 +32,7 @@ body{
     -webkit-box-shadow: 20px 26px 24px -2px rgba(0,0,0,0.76);
     -moz-box-shadow: 20px 26px 24px -2px rgba(0,0,0,0.76); 
     
-    margin-bottom: 0;
+    padding-bottom: 0;
 }
 
 .now{
@@ -58,10 +58,15 @@ div:has(.template1){
     box-shadow: 10px 16px 14px -2px rgba(0,0,0,0.76);
     -webkit-box-shadow: 10px 16px 14px -2px rgba(0,0,0,0.76);
     -moz-box-shadow: 10px 16px 14px -2px rgba(0,0,0,0.76);
-padding-bottom: 0px;
-    
-    
+    padding-bottom: 0px;      
 }
+.template2 > p {
+    font-weight: bold
+}
+.template2 > p > span{
+    font-weight: normal;
+}
+
 div:has(.template2){
     margin-top: 50px;
     display:flex;
