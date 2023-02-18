@@ -11,104 +11,160 @@
 // TODO add selctor for container per instance
 // then change style rules according to new circumstances
 console.clear()
-//.  ❗️❗️❗️ WORK IN PROGRESS ❗️❗️❗️
+window.onload = () => {
+    //.  ❗️❗️❗️ WORK IN PROGRESS ❗️❗️❗️
 
-// MODEL TO TAKE DATA-OBJECT AND RENDER SUBSCRIBERS PER CHANGED PROP
-// TODO loging the instance the model DOES HAVE all items buT why can't get length here? why not passing to instance????
-// TODO restructure and add array methods to be able to listen to pop and push at least? maybe sort???
-// or a custom listener??? how??
-// First observe array => pass to observeObject
-class DataHandler {
-    constructor (dataSource) {
-        this.raw = dataSource;
-        console.log(this.raw.length)// stays 3 :(
-        this.dataSource = this.observeObject(this.raw);
-        this.observers = [];
-        //this.length = this.dataSource.length;
-        //this.updatedLength = 0;
+    // MODEL TO TAKE DATA-OBJECT AND RENDER SUBSCRIBERS PER CHANGED PROP
+    // TODO loging the instance the model DOES HAVE all items buT why can't get length here? why not passing to instance????
+    // TODO restructure and add array methods to be able to listen to pop and push at least? maybe sort???
+    // or a custom listener??? how??
+    // First observe array => pass to observeObject
+
+
+    // For now ONLY observes the array's length to update source if length changed
+    class ArrayLengthObserver {
+        constructor (array, callback) {
+            this.array = array;
+            this.callback = callback;
+            this.length = array.length;
+            this.observe();
+        }
+
+        observe() {
+            const methodsToObserve = [ "push", "pop", "shift", "unshift", "splice" ];
+
+            methodsToObserve.forEach((methodName) => {
+                const originalMethod = this.array[ methodName ].bind(this.array);
+                this.array[ methodName ] = (...args) => {
+                    const result = originalMethod(...args);
+                    this.callback(this.array);
+                    this.length = this.array.length;
+                    return result;
+                };
+            });
+        }
     }
-    // here add array-methods for (if 'object' && dataSource or add an int array?)
-    observeObject(obj) {
-        if (typeof obj !== 'object') {
+
+
+
+    class DataHandler {
+        constructor (dataSource) {
+            this.dataSource = dataSource;
+            this.observers = [];
+            console.log(this.dataSource, this.dataSource.length) //
+            this.observeDataSource();// 1,2,3,4
+            this.print()// 0 1, 1 2, 2 3 
+        
+        }
+
+
+        // ONLY observes if the length of the datasource has changed
+        // to be able to add or remove cards accordingly
+        observeDataSource() {
+            const observer = new ArrayLengthObserver(this.dataSource, (updatedArray) => {
+                this.dataSource = updatedArray;
+                this.update();
+            });
+        }
+        update() {
+            // TODO then run the observeOject on the NEW updated data here
+            // as mutations on items are NOT observed this way
+            // TODO all render logic needs to be here
+            console.log("Data updated", this.dataSource);// Data updated (4) [1, 2, 3, 4, push: ƒ, pop: ƒ, shift: ƒ, unshift: ƒ, splice: ƒ]
+            console.log(`this.dataSource: ${this.dataSource}`)
+            console.log(this.dataSource.length)// 4
+            this.print()//  0 1, 1 2, 2 3, 3 4 🚀
+            this.observeObject(this.dataSource)
+      
+
+        }
+        print() {
+            this.dataSource.forEach((item, i) => console.log(i, item))
+            //Logging ok, so data are passed
+        }
+        
+        // here add array-methods for (if 'object' && dataSource or add an int array?)
+        observeObject(obj) {
+            if (typeof obj !== 'object') {
+                return obj;
+            }
+
+            for (const key in obj) {
+                if (obj.hasOwnProperty(key)) {
+                    obj[ key ] = this.observeObject(obj[ key ]);
+
+                    let temp = obj[ key ];
+
+                    Object.defineProperty(obj, key, {
+                        get: () => temp,
+                        set: (value) => {
+                            temp = value;
+                            const index = this.dataSource.indexOf(obj);
+                            this.notify(index, key, value);
+                            console.log(index, key, value)// this only shows the updated index instead of the new
+                        },
+                    });
+                }
+            }
+
             return obj;
         }
 
-        for (const key in obj) {
-            if (obj.hasOwnProperty(key)) {
-                obj[ key ] = this.observeObject(obj[ key ]);
+        subscribe(observer) {
+            this.observers.push(observer);
+        }
 
-                let temp = obj[ key ];
+        unsubscribe(observer) {
+            this.observers = this.observers.filter((obs) => obs !== observer);
+        }
 
-                Object.defineProperty(obj, key, {
-                    get: () => temp,
-                    set: (value) => {
-                        temp = value;
-                        const index = this.dataSource.indexOf(obj);
-                        this.notify(index, key, value);
-                        //console.log(index, key, value)// this only shows the updated index instead of the new
-                    },
-                });
+        notify(index, key, value) {
+            this.observers.forEach((observer) => observer.render(index, key, value));
+        }
+    }
+
+
+    // CLASS TO SUBSCRIBE TO A MODEL AND CALL FUNCTION TO CREATE CARDS
+    class ConTemplate {
+        constructor (model, template, parent) {
+            this.model = model;
+            console.log((this.model))
+            this.model.subscribe(this);
+            this.cards = [];
+            //console.log(this.cards)
+            // TODO id and class for container or pass container's selector???
+            this.container = document.getElementById(parent);
+            this.template = template;
+            this.model.dataSource.forEach((item, index) => {
+                //console.log(index)//TODO1.1.1.1.1.1.1.1.1// 0,1,2 but WHY??? the new added log at 4,5
+                this.cards[ index ] = this.createCard(item, this.template);
+                //TODO add class to items???
+                this.container.appendChild(this.cards[ index ]);
+            });
+        }
+
+        render(index, key, value) {
+            // const item = this.model.dataSource[ index ];
+            //console.log(item)
+            const card = this.cards[ index ];
+            const property = card.querySelector(`[data-property=${key}]`) ?? '';
+            if (property) {
+                property.textContent = value;
             }
         }
 
-        return obj;
-    }
-
-    subscribe(observer) {
-        this.observers.push(observer);
-    }
-
-    unsubscribe(observer) {
-        this.observers = this.observers.filter((obs) => obs !== observer);
-    }
-
-    notify(index, key, value) {
-        this.observers.forEach((observer) => observer.render(index, key, value));
-    }
-}
-
-
-// CLASS TO SUBSCRIBE TO A MODEL AND CALL FUNCTION TO CREATE CARDS
-class ConTemplate {
-    constructor (model, template, parent) {
-        this.model = model;
-        console.log((this.model))
-        this.model.subscribe(this);
-        this.cards = [];
-        //console.log(this.cards)
-        // TODO id and class for container or pass container's selector???
-        this.container = document.getElementById(parent);
-        this.template = template;
-        this.model.dataSource.forEach((item, index) => {
-            //console.log(index)//TODO1.1.1.1.1.1.1.1.1// 0,1,2 but WHY??? the new added log at 4,5
-            this.cards[ index ] = this.createCard(item, this.template);
-            //TODO add class to items???
-            this.container.appendChild(this.cards[ index ]);
-        });
-    }
-
-    render(index, key, value) {
-        // const item = this.model.dataSource[ index ];
-        //console.log(item)
-        const card = this.cards[ index ];
-        const property = card.querySelector(`[data-property=${key}]`) ?? '';
-        if (property) {
-            property.textContent = value;
+        createCard(item, chosenTemplate) {
+            const template = chosenTemplate(item);
+            return template;
         }
     }
 
-    createCard(item, chosenTemplate) {
-        const template = chosenTemplate(item);
-        return template;
-    }
-}
-
-// DIFFERENT TEMPLATE_FUNCTION BEING PASSED TO ConTemplate
-// TODO ADD AN INDEX HERE TO DIFFERCIATE!!!
-const template1 = (item) => {
-    const template = document.createElement('div');
-    template.setAttribute('class', 'template1');
-    template.innerHTML = `
+    // DIFFERENT TEMPLATE_FUNCTION BEING PASSED TO ConTemplate
+    // TODO ADD AN INDEX HERE TO DIFFERCIATE!!!
+    const template1 = (item) => {
+        const template = document.createElement('div');
+        template.setAttribute('class', 'template1');
+        template.innerHTML = `
         <h2 style="text-align: center"><span data-property="name">${item.name}</span></h2>
         <p>Address: <span data-property="street">${item.address.street}</span>,
                         <span data-property="city">${item.address.city}</span>,
@@ -120,13 +176,13 @@ const template1 = (item) => {
         <br>
        
     `;
-    return template;
-};
+        return template;
+    };
 
-const template2 = (item) => {
-    const template = document.createElement('div');
-    template.setAttribute('class', 'template2');
-    template.innerHTML = `
+    const template2 = (item) => {
+        const template = document.createElement('div');
+        template.setAttribute('class', 'template2');
+        template.innerHTML = `
         <h3>Name: <span data-property="name">${item.name}</span></h3>
         <p>Address: <span data-property="street">${item.address.street}</span></p>
         <p>City: <span data-property="city">${item.address.city}</span></p>
@@ -135,99 +191,99 @@ const template2 = (item) => {
         <p>Now: <span data-property="now">${item.now}</span></p>
         <br>
     `;
-    return template;
-};
+        return template;
+    };
 
-// testData.address only
-const template3 = (item) => {
-    const template = document.createElement('div');
-    template.setAttribute('class', 'template3');
-    template.innerHTML = `
+    // testData.address only
+    const template3 = (item) => {
+        const template = document.createElement('div');
+        template.setAttribute('class', 'template3');
+        template.innerHTML = `
        <br>
         <p>Address: <span data-property="street">${item.street}</span></p>
         <p>City: <span data-property="city">${item.city}</span></p>
         <p>State: <span data-property="state">${item.state}</span></p>
        
     `;
-    return template;
-};
+        return template;
+    };
 
-// TEST-DATASOURCE
-const testData = [
-    {
+    // TEST-DATASOURCE
+    const testData = [
+        {
+            name: 'John Doe',
+            address: {
+                street: '123 Main St',
+                city: 'Anytown',
+                state: 'CA',
+            },
+            hobbies: [ 'reading', 'traveling' ],
+            now: new Date().toLocaleTimeString(),
+            emoji: undefined
+        },
+        {
+            name: 'Jane Doe',
+            address: {
+                street: '456 Main St',
+                city: 'Anytown',
+                state: 'CA',
+            },
+            hobbies: [ 'running', 'painting' ],
+            now: new Date().toLocaleTimeString(),
+            emoji: undefined
+        },
+        {
+            name: 'BarbWire',
+            address: {
+                street: '007 Oneway',
+                city: 'Anothertown',
+                state: 'Spheres',
+            },
+            hobbies: [ 'coding', 'playing cello', 'philosphy' ],
+            now: new Date().toLocaleTimeString(),
+            emoji: '👻'
+        }
+    ];
+
+
+    // model watching all obj
+    const dataObject = new DataHandler(testData);
+    // model watching subkey of obj
+    const dataObject2 = new DataHandler(testData.map(item => item.address));
+
+
+    const firstInstance = new ConTemplate(dataObject, template1, 'container1');
+    const secondInstance = new ConTemplate(dataObject, template2, 'container2');// this seems to be problematic (???)
+
+    const thirdInstance = new ConTemplate(dataObject2, template3, 'container3');
+
+
+
+
+    //TODO THIS IS NOT WORKING YET NEED TO ADD OR REMOVE CARDS
+    testData[ 0 ].name = 'Judihui'
+    const updateNow = setInterval(tic, 1000);
+    function tic() {
+        testData[ 2 ].now = new Date().toLocaleTimeString();
+    }
+
+
+
+    testData.push({
         name: 'John Doe',
         address: {
-            street: '123 Main St',
+            street: '789 Sidewalk',
             city: 'Anytown',
             state: 'CA',
         },
         hobbies: [ 'reading', 'traveling' ],
-        now: new Date().toLocaleTimeString(),
-        emoji: undefined
-    },
-    {
-        name: 'Jane Doe',
-        address: {
-            street: '456 Main St',
-            city: 'Anytown',
-            state: 'CA',
-        },
-        hobbies: [ 'running', 'painting' ],
-        now: new Date().toLocaleTimeString(),
-        emoji: undefined
-    },
-    {
-        name: 'BarbWire',
-        address: {
-            street: '007 Oneway',
-            city: 'Anothertown',
-            state: 'Spheres',
-        },
-        hobbies: [ 'coding', 'playing cello', 'philosphy' ],
-        now: new Date().toLocaleTimeString(),
-        emoji: '👻'
-    }
-];
+        now: new Date().toLocaleTimeString()
+    })
+
+    testData[ 0 ].name = 'Jennifer Toe'
+    address = testData.map(dataSet => dataSet.address)
+    testData[ 4 ] = { address: { street: `123 Test Way` } }
+    address = testData.map(dataSet => dataSet.address)
 
 
-// model watching all obj
-const dataObject = new DataHandler(testData);
-// model watching subkey of obj
-const dataObject2 = new DataHandler(testData.map(item => item.address));
-
-
-const firstInstance = new ConTemplate(dataObject, template1, 'container1');
-const secondInstance = new ConTemplate(dataObject, template2, 'container2');// this seems to be problematic (???)
-
-const thirdInstance = new ConTemplate(dataObject2, template3, 'container3');
-
-
-
-
-//TODO THIS IS NOT WORKING YET NEED TO ADD OR REMOVE CARDS
-testData[ 0 ].name = 'Judihui'
-const updateNow = setInterval(tic, 1000);
-function tic() {
-    testData[ 2 ].now = new Date().toLocaleTimeString();
 }
-
-
-
-testData.push({
-    name: 'John Doe',
-    address: {
-        street: '789 Sidewalk',
-        city: 'Anytown',
-        state: 'CA',
-    },
-    hobbies: [ 'reading', 'traveling' ],
-    now: new Date().toLocaleTimeString()
-})
-
-testData[ 0 ].name = 'Jennifer Toe'
-address = testData.map(dataSet => dataSet.address)
-testData[ 4 ] = { address: { street: `123 Test Way` } }
-address = testData.map(dataSet => dataSet.address)
-
-
-
