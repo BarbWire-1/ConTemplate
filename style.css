@@ -24,7 +24,7 @@ body{
     padding: 20px;
     background-color:#3131aa;
     width: 280px;
-		max-height: 200px;
+	height: 210px;
     line-height: 1.6;
     border-radius: 25px;
     background: #3131aa;
@@ -43,6 +43,7 @@ body{
 div:has(.template1){
     margin-top:50px;
     display:flex;
+    flex-wrap: wrap;
     justify-content:center;
     /* background: pink */
 }
