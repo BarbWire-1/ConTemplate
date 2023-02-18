@@ -5,15 +5,16 @@
  */
 
 // TODO now only adding cards for the first subscriber
+// TODO all observe logic in ArrayObserver, now conflicting and unnessesary?
 // What happened?
 //  ❗️❗️❗️ WORK IN PROGRESS ❗️❗️❗️
 console.clear()
 window.onload = () => {
    
-
+    // INIT??? OR NOTIFY???
     // MODEL TO TAKE DATA-OBJECT AND RENDER SUBSCRIBERS PER CHANGED PROP
     // For now ONLY observes the array's length to update source if length changed
-    class ArrayLengthObserver {
+    class ArrayObserver {
         constructor (array, callback) {
             this.array = array;
             this.callback = callback;
@@ -89,12 +90,13 @@ window.onload = () => {
      */
 
 
-
+    // INIT BY ARRAY OBSERVER INSTEAD???
     class DataHandler {
         constructor (dataSource) {
             this.dataSource = dataSource;
             this.obj = this.observeObject(this.dataSource)
             this.observers = [];
+           
            
            
         }
@@ -152,7 +154,7 @@ window.onload = () => {
             this.cards = [];
             this.container = document.getElementById(parent);
             this.template = template;
-            this.arrayObserver = new ArrayLengthObserver(this.model.dataSource, (newDataSource) => {
+            this.arrayObserver = new ArrayObserver(this.model.dataSource, (newDataSource) => {
                 this.updateCards(newDataSource);
             });
 
