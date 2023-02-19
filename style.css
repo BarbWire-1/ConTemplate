@@ -41,11 +41,13 @@ body{
 
 
 div:has(.template1){
+   
     margin-top:50px;
     display:flex;
     flex-wrap: wrap;
     justify-content:center;
-    /* background: pink */
+    /* background: pink; */
+    
 }
 
 
