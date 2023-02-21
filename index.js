@@ -36,6 +36,35 @@ window.onload = () => {
         }
     }
 
+    class CardObserver {
+        constructor (card, data) {
+            this.card = card;
+            this.data = data;
+            this.observe();
+        }
+
+        observe() {
+            for (const key in this.data) {
+                if (this.data.hasOwnProperty(key)) {
+                    let temp = this.data[ key ];
+                    Object.defineProperty(this.data, key, {
+                        get: () => temp,
+                        set: (value) => {
+                            temp = value;
+                            this.updateCard(key, value);
+                        },
+                    });
+                }
+            }
+        }
+
+        updateCard(key, value) {
+            const element = this.card.querySelector(`[data-property="${key}"]`);
+            if (element) {
+                element.textContent = value;
+            }
+        }
+    }
 
 
     class DataHandler {
