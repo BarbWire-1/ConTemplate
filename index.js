@@ -66,7 +66,7 @@ window.onload = () => {
         }
     }
 
-
+    // only go on single cards here with a cardObserver per item in JSON???
     class DataHandler {
         constructor (dataSource) {
             this.dataSource = dataSource;
