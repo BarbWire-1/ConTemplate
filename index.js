@@ -4,14 +4,18 @@
      with MIT license
  */
 
-//  ❗️❗️❗️ WORK IN PROGRESS ❗️❗️❗️
 
-// TODO No getters/setters on new items so far
+// TODO not reacting on structural changes in the dataSource JSON object
+// TODO possible to convert the FirstClass into a customComponent???
+// TODO handle undefined?
+// TODO add selctor for container per instance
+// then change style rules according to new circumstances
 console.clear()
 window.onload = () => {
-
+    //.  ❗️❗️❗️ WORK IN PROGRESS ❗️❗️❗️
 
     // MODEL TO TAKE DATA-OBJECT AND RENDER SUBSCRIBERS PER CHANGED PROP
+
     // For now ONLY observes the array's length to update source if length changed
     class ArrayLengthObserver {
         constructor (array, callback) {
@@ -36,42 +40,16 @@ window.onload = () => {
         }
     }
 
-    class CardObserver {
-        constructor (card, data) {
-            this.card = card;
-            this.data = data;
-            this.observe();
-        }
 
-        observe() {
-            for (const key in this.data) {
-                if (this.data.hasOwnProperty(key)) {
-                    let temp = this.data[ key ];
-                    Object.defineProperty(this.data, key, {
-                        get: () => temp,
-                        set: (value) => {
-                            temp = value;
-                            this.updateCard(key, value);
-                        },
-                    });
-                }
-            }
-        }
 
-        updateCard(key, value) {
-            const element = this.card.querySelector(`[data-property="${key}"]`);
-            if (element) {
-                element.textContent = value;
-            }
-        }
-    }
-
-    // only go on single cards here with a cardObserver per item in JSON???
     class DataHandler {
         constructor (dataSource) {
             this.dataSource = dataSource;
-            this.obj = this.observeObject(this.dataSource)
+
             this.observers = [];
+            console.log(this.dataSource, this.dataSource.length) //
+            this.observeDataSource();// 1,2,3,4
+            //this.print()// 0 1, 1 2, 2 3 
 
         }
 
@@ -80,20 +58,37 @@ window.onload = () => {
         // to be able to add or remove cards accordingly
         observeDataSource() {
             const observer = new ArrayLengthObserver(this.dataSource, (updatedArray) => {
-                this.dataSource = updatedArray;
+                this.dataSource = updatedArray
+                console.log(this.dataSource)
                 this.update();
+                //this.notify(index, key, value);
             });
         }
+        update() {
+
+            this.observeObject(this.dataSource)
+            console.log(this.dataSource)
 
 
+        }
+        //         // print() {
+        //     this.dataSource.forEach((item, i) => console.log(i, item))
+        //     //Logging ok, so data are passed
+        // }
+
+        // here add array-methods for (if 'object' && dataSource or add an int array?)
         observeObject(obj) {
-            console.log(obj)
+            //console.log(obj)
+
             if (typeof obj !== 'object') {
+                // TODO create an array here to get the entire path???
                 return obj;
             }
 
             for (const key in obj) {
+                if (typeof key === 'function') return;
                 if (obj.hasOwnProperty(key)) {
+                    console.log(key)
                     obj[ key ] = this.observeObject(obj[ key ]);
 
                     let temp = obj[ key ];
@@ -102,10 +97,10 @@ window.onload = () => {
                         get: () => temp,
                         set: (value) => {
                             temp = value;
-                            console.log(value)
                             const index = this.dataSource.indexOf(obj);
+                            console.log(index)
                             this.notify(index, key, value);
-
+                            //console.log(index, key, value)// this only shows the updated index instead of the new
                         },
                     });
                 }
@@ -123,6 +118,9 @@ window.onload = () => {
         }
 
         notify(index, key, value) {
+
+            //TODO need to notify for key, but add all pth in datasource!!!!
+            console.log(index)// -1 for newly added cards
             this.observers.forEach((observer) => observer.render(index, key, value));
         }
     }
@@ -153,7 +151,6 @@ window.onload = () => {
 
         updateCards(newDataSource) {
             // Function to update the cards based on the new data source
-            console.log(newDataSource)
             const currentLength = this.cards.length;
             const newLength = newDataSource.length;
             const diff = newLength - currentLength;
@@ -179,8 +176,9 @@ window.onload = () => {
 
         render(index, key, value) {
             // TODO when card length changed looses track of changes on single keys? WHY SO???
-            console.log(index, key, value)
+            console.log(index, key, value)// index is -1 for added cards eG: -1 'street' '123 Test Way'
             const card = this.cards[ index ];
+            console.log(this.cards)
             const property = card.querySelector(`[data-property=${key}]`);
 
             // Only update the card if the new value is different from the current value displayed in the card
@@ -285,7 +283,7 @@ window.onload = () => {
 
 
     const firstInstance = new ConTemplate(dataObject, template1, 'container1');
-    console.log(firstInstance)
+    //console.log(firstInstance)
     const secondInstance = new ConTemplate(dataObject, template2, 'container2');// this seems to be problematic (???)
 
     const thirdInstance = new ConTemplate(dataObject2, template3, 'container3');
@@ -305,6 +303,11 @@ window.onload = () => {
     function stopIt() {
         clearInterval(updateNow);
     }
+
+
+
+
+
 
 
     testData.push({
@@ -328,22 +331,17 @@ window.onload = () => {
             now: new Date().toLocaleTimeString()
         })
 
-
-    // ok, changes on primitives do work, Not on objects or arrays per dot.notation
-    testData[ 0 ].name = 'Jennifer Toe'
-    testData[ 1 ].hobbies = [ 'mountainbiking', 'motorcycling' ]
-    //TODO: fascinating: the new added dataItems don't have getters/setters
+    testData[ 4 ].name = 'Jennifer Toe'
     address = testData.map(dataSet => dataSet.address)
-    testData[ 4 ].hobbies = [ 'mountainbiking', 'motorcycling' ]// WHY IS THIS NOT APPLIED???
+    testData[ 0 ].address.street = `123 Test Way`
+    testData[ 4 ].address.street = `123 Test Way`
     address = testData.map(dataSet => dataSet.address)
 
 
-    console.log(dataObject)
-    console.log(firstInstance)// new data are here!!!!!
+    //DOES NOT UPDATE FOR NESTED KEYS!!!!!!!
 
 
 
 }
-
 
 
