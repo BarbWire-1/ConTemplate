@@ -379,7 +379,9 @@ window.onload = () => {
     testData[ 1 ].hobbies = [ 'rollerblading', 'motor-cycling' ]
     //TODO: fascinating: the new added dataItems don't have getters/setters
     address = testData.map(dataSet => dataSet.address)
-    testData[ 4 ].hobbies = ['mountain-biking', 'motor-cycling']// WHY IS THIS NOT APPLIED???
+    testData[ 4 ].hobbies = [ 'mountain-biking', 'motor-cycling' ];
+    testData[ 4 ].hobbies = ['another hobby']// WHAAAAAAT? NOT APPLIED
+    
     address = testData.map(dataSet => dataSet.address)
 
 
