@@ -207,6 +207,7 @@ window.onload = () => {
                     this.cards.splice(index, 1);
                 }
             }
+            
         }
 
         render(index, key, value) {
@@ -319,6 +320,7 @@ window.onload = () => {
     const dataObject2 = new DataHandler(testData.map(item => item.address));
     //console.log(dataObject2) // no reference to initoal object? but should be updated each time, not?
 
+   
 
     const firstInstance = new ConTemplate(dataObject, template1, 'container1');
     //console.log(firstInstance)
@@ -392,3 +394,69 @@ window.onload = () => {
 // const remainingData = testData.filter(item => item.someProperty !== someValue);
 // const secondInstance = new ConTemplate(dataHandler, template2, 'container2', remainingData);
 
+// class Observer {
+//     constructor (name) {
+//         this.name = name;
+//     }
+// 
+//     neDataSource(index, updatedInstance) {
+//         console.log(
+//             `${this.name} received an update for instance at index ${index}: ${JSON.stringify(updatedInstance)}`
+//         );
+//     }
+// }
+// 
+// class Observable {
+//     constructor () {
+//         this.instances = [];
+//         this.subscribers = [];
+//     }
+// 
+//     addInstance(instance) {
+//         this.instances.push(instance);
+//         this.notify(instance);
+//     }
+// 
+//     removeInstance(instance) {
+//         const index = this.instances.indexOf(instance);
+//         if (index !== -1) {
+//             this.instances.splice(index, 1);
+//             this.notify(instance);
+//         }
+//     }
+// 
+//     notify(updatedInstance) {
+//         const index = this.instances.indexOf(updatedInstance);
+//         this.subscribers.forEach((subscriber) => {
+//             subscriber.neDataSource(index, updatedInstance);
+//         });
+//     }
+// 
+//     subscribe(observer) {
+//         this.subscribers.push(observer);
+//     }
+// 
+//     unsubscribe(observer) {
+//         const index = this.subscribers.indexOf(observer);
+//         if (index !== -1) {
+//             this.subscribers.splice(index, 1);
+//         }
+//     }
+// }
+// 
+// const observable = new Observable();
+// const observer1 = new Observer('Observer 1');
+// const observer2 = new Observer('Observer 2');
+// 
+// observable.subscribe(observer1);
+// observable.subscribe(observer2);
+// 
+// observable.addInstance({ name: 'Instance 1' });
+// observable.addInstance({ name: 'Instance 2' });
+// observable.addInstance({ name: 'Instance 3' });
+// 
+// observable.removeInstance({ name: 'Instance 2' });
+// 
+// observable.unsubscribe(observer2);
+// 
+// observable.addInstance({ name: 'Instance 4' });
