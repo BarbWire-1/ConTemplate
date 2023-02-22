@@ -57,17 +57,17 @@ window.onload = () => {
                                 }
                             }
 
-                            // Add getters/setters to the entire item
-                            Object.defineProperty(item, "_data", {
-                                value: {},
-                                writable: true,
-                            });
+                            // // Add getters/setters to the entire item
+                            // Object.defineProperty(item, "_data", {
+                            //     value: {},
+                            //     writable: true,
+                            // });
 
                             
                         }
                         return item;
                     });
-
+                    // get the changes
                     const result = originalMethod(...args);
                     this.length = this.array.length;
                     return result;
@@ -151,7 +151,14 @@ window.onload = () => {
         }
 
         notify(index, key, value) {
-            this.observers.forEach((observer) => observer.render(index, key, value));
+            this.observers.forEach((observer) => {
+                
+                
+                //TODO this updates length, but takes wrong dataSource
+                // no getters/setters on new cards, so get the newData HERE!!!!
+                // observer.updateCards((this.dataSource))
+                observer.render(index, key, value);
+        })
         }
     }
 
