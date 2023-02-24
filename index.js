@@ -877,86 +877,83 @@ window.onload = () => {
 
 
 class ArrayHandler {
-  constructor(data, dataHandler) {
-      this.dataHandler = dataHandler;
-      console.log(this.dataHandler)// DataHandler {innerObj: undefined, subscribers: Set(1)
-      this.data = data;// { items: [] } 
-      console.log(this.data)// 0:{ name: 'any Name', age: 100 },1:"new item"
-      this.innerObj = this.createInnerObject(data);// 
-      console.log(this.innerObj)//{innerObj: Proxy, observedData: Array(0)} { innerObj: { items: [] }, observedData: {} }
-  }
+    constructor (data) {
+        
+        this.data = data;
+        this.innerObj = this.createInnerObject(data);
+    }
 
-  createInnerObject(data) {
-    const observedData = [];
-    const self = this;
+    createInnerObject(data) {
+        const observedData = [];
+        const self = this;
 
-    const innerObj = new Proxy(data, {
-      get(target, property) {
-        if (property === "push") {
-          return function (...args) {
-            const result = target.push(...args);
-            self.dataHandler.notify();
-            return result;
-          };
-        }
-        return target[property];
-      },
-      set(target, property, value) {
-        target[property] = value;
-        observedData[property] = value;
-        self.dataHandler.notify();
-        return true;
-      },
-    });
+        const innerObj = new Proxy(data, {
+            get(target, property) {
+                if (property === "push") {
+                    return function (...args) {
+                        const result = target.push(...args);
+                        self.dataHandler.notify();
+                        return result;
+                    };
+                }
+                return target[ property ];
+            },
+            set(target, property, value) {
+                target[ property ] = value;
+                observedData[ property ] = value;
+                self.dataHandler.notify();
+                return true;
+            },
+        });
 
-    return { innerObj, observedData };
-  }
+        return { innerObj, observedData };
+    }
 
-  addItem(args) {
-    // not used in this example, but can be implemented to handle item addition
-  }
+    addItem(args) {
+        // not used in this example, but can be implemented to handle item addition
+    }
 
-  updateItem(property, value) {
-    // not used in this example, but can be implemented to handle item updates
-  }
+    updateItem(property, value) {
+        // not used in this example, but can be implemented to handle item updates
+    }
 
-  getArray() {
-    return this.data;
-  }
+    getArray() {
+        return this.data;
+    }
 
-  getObservedData() {
-    return this.innerObj.observedData;
-  }
+    getObservedData() {
+        return this.innerObj.innerObj;
+    }
 }
 
 class DataHandler {
-  constructor(innerObj) {
-      this.innerObj = innerObj;
-      console.log(this.innerObj)// undefined
-      this.subscribers = new Set();// 0:updatedData => console.log("Data updated:", updatedData)
-      console.log(this.subscribers)
-  }
+    constructor (innerObj) {
+        this.innerObj = innerObj;
+        console.log(this.innerObj)
+        this.subscribers = new Set();
+    }
 
-  subscribe(callback) {
-    this.subscribers.add(callback);
-  }
+    subscribe(callback) {
+        this.subscribers.add(callback);
+    }
 
-  unsubscribe(callback) {
-    this.subscribers.delete(callback);
-  }
+    unsubscribe(callback) {
+        this.subscribers.delete(callback);
+    }
 
-  notify() {
-    this.subscribers.forEach(callback => callback(this.innerObj));
-  }
+    notify() {
+        this.subscribers.forEach(callback => callback(this.innerObj));
+    }
 }
 
 // Example usage
-const data = [{name: 'any Name', age: 100}]
-
-const dataHandler = new DataHandler(data.items);
+const data = [ { name: 'any Name', age: 100 } ]
+const arrayHandler = new ArrayHandler(data);
+const dataHandler = new DataHandler(arrayHandler.getObservedData());
 dataHandler.subscribe(updatedData => console.log("Data updated:", updatedData));
 
-const arrayHandler = new ArrayHandler(data, dataHandler);
+//const arrayHandler = new ArrayHandler(data, dataHandler);
 data.push("new item");
 
 console.log("Data after push:", data);
+console.log("Observed data:", arrayHandler.getObservedData());
