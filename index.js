@@ -877,14 +877,13 @@ window.onload = () => {
 
 
 class ArrayHandler {
-    constructor (data) {
-        
+    constructor (data, dataHandler) {
+        this.dataHandler = dataHandler;
         this.data = data;
         this.innerObj = this.createInnerObject(data);
     }
 
     createInnerObject(data) {
-        const observedData = [];
         const self = this;
 
         const innerObj = new Proxy(data, {
@@ -900,13 +899,12 @@ class ArrayHandler {
             },
             set(target, property, value) {
                 target[ property ] = value;
-                observedData[ property ] = value;
                 self.dataHandler.notify();
                 return true;
             },
         });
 
-        return { innerObj, observedData };
+        return innerObj;
     }
 
     addItem(args) {
@@ -922,15 +920,28 @@ class ArrayHandler {
     }
 
     getObservedData() {
-        return this.innerObj.innerObj;
+        return this.innerObj;
     }
 }
 
 class DataHandler {
-    constructor (innerObj) {
-        this.innerObj = innerObj;
-        console.log(this.innerObj)
+    constructor (data) {
+        this.innerObj = this.createInnerObject(data);
         this.subscribers = new Set();
+    }
+
+    createInnerObject(data) {
+        const self = this;
+
+        const innerObj = new Proxy(data, {
+            set(target, property, value) {
+                target[ property ] = value;
+                self.notify();
+                return true;
+            },
+        });
+
+        return innerObj;
     }
 
     subscribe(callback) {
@@ -942,18 +953,42 @@ class DataHandler {
     }
 
     notify() {
-        this.subscribers.forEach(callback => callback(this.innerObj));
+        this.subscribers.forEach((callback) => callback(this.innerObj));
+    }
+}
+
+class Subscriber {
+    constructor (name) {
+        this.name = name;
+    }
+
+    update(data) {
+        console.log('I send data')
+        console.log(`Subscriber ${this.name} received updated data: `, data);
     }
 }
 
 // Example usage
-const data = [ { name: 'any Name', age: 100 } ]
-const arrayHandler = new ArrayHandler(data);
-const dataHandler = new DataHandler(arrayHandler.getObservedData());
-dataHandler.subscribe(updatedData => console.log("Data updated:", updatedData));
+const data = [ { name: "any Name", age: 100 } ];
 
-//const arrayHandler = new ArrayHandler(data, dataHandler);
-data.push("new item");
+const dataHandler = new DataHandler(data);
+dataHandler.subscribe((updatedData) =>
+    console.log("Data updated:", updatedData)
+);
+
+const arrayHandler = new ArrayHandler(data, dataHandler);
+data.push({ name: "new item", age: 200 });
 
 console.log("Data after push:", data);
-console.log("Observed data:", arrayHandler.getObservedData());
+
+const subscriber1 = new Subscriber("Subscriber 1");
+const subscriber2 = new Subscriber("Subscriber 2");
+
+dataHandler.subscribe(subscriber1.update.bind(subscriber1));
+dataHandler.subscribe(subscriber2.update.bind(subscriber2));
+
+// Update the data
+data.push({ name: "Charlie", age: 50 });
+dataHandler.notify();
+
+data[ 0 ].name = "another Name";
