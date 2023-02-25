@@ -927,6 +927,9 @@ class ArrayHandler {
 class DataHandler {
     constructor (data) {
         this.innerObj = this.createInnerObject(data);
+        this.data = Object.getPrototypeOf(this.innerObj)
+        console.log(this.data)
+        console.log(this.innerObj)
         this.subscribers = new Set();
     }
 
@@ -963,7 +966,6 @@ class Subscriber {
     }
 
     update(data) {
-        console.log('I send data')
         console.log(`Subscriber ${this.name} received updated data: `, data);
     }
 }
@@ -979,7 +981,7 @@ dataHandler.subscribe((updatedData) =>
 const arrayHandler = new ArrayHandler(data, dataHandler);
 data.push({ name: "new item", age: 200 });
 
-console.log("Data after push:", data);
+//console.log("Data after push:", data);
 
 const subscriber1 = new Subscriber("Subscriber 1");
 const subscriber2 = new Subscriber("Subscriber 2");
@@ -989,6 +991,11 @@ dataHandler.subscribe(subscriber2.update.bind(subscriber2));
 
 // Update the data
 data.push({ name: "Charlie", age: 50 });
-dataHandler.notify();
+
 
 data[ 0 ].name = "another Name";
+
+console.log(arrayHandler.data)// THIS INCLUDES ALL
+console.log(arrayHandler.innerObj)// THIS ALSO
+
+//TODO evtl extend the arrayHandler????
