@@ -21,61 +21,63 @@ window.onload = () => {
     // INIT??? OR NOTIFY???
     // MODEL TO TAKE DATA-OBJECT AND RENDER SUBSCRIBERS PER CHANGED PROP
     // For now ONLY observes the array's length to update source if length changed
-    class ArrayObserver {
-        constructor (array, callback) {
-            this.array = array;
-            this.callback = callback;
-            this.length = array.length;
-            this.observe();
-        }
-
-        observe() {
-            const methodsToObserve = [ "push", "pop", "shift", "unshift", "splice" ];
-
-            methodsToObserve.forEach((methodName) => {
-                
-                // method applied to this.array
-                const originalMethod = this.array[ methodName ].bind(this.array);
-                this.array[ methodName ] = (...args) => {
-                    // Add getters/setters to new items involving above methods before adding them to the array
-                    args = args.map((item) => {
-                        
-                        
-                        if (typeof item === "object") {
-                            // TODO change this to Object.entries(item) - throws (???)
-                            for (const key in item) {
-                                if (item.hasOwnProperty(key)) {
-                                    let value = item[ key ];
-                                    Object.defineProperty(item, key, {
-                                        get: () => value,
-                                        set: (newValue) => {
-                                            value = newValue;
-                                            const index = this.array.indexOf(item);
-                                            this.callback(this.array, index, key, newValue);
-                                        },
-                                    });
-                                }
-                            }
-
-                            // // Add getters/setters to the entire item
-                            // Object.defineProperty(item, "_data", {
-                            //     value: {},
-                            //     writable: true,
-                            // });
-
-                            
-                        }
-                        return item;
-                    });
-                    // get the changes
-                    const result = originalMethod(...args);
-                    this.length = this.array.length;
-                    return result;
-                };
-            });
-        }
-
-    }
+//     class ArrayObserver {
+//         constructor (array, callback) {
+//             this.array = array;
+//             this.callback = callback;
+//             this.length = array.length;
+//             this.observe();
+//         }
+// 
+//         observe() {
+//             const methodsToObserve = [ "push", "pop", "shift", "unshift", "splice" ];
+// 
+//             methodsToObserve.forEach((methodName) => {
+//                 
+//                 // method applied to this.array
+//                 const originalMethod = this.array[ methodName ].bind(this.array);
+//                 this.array[ methodName ] = (...args) => {
+//                    
+//                     // Add getters/setters to new items involving above methods before adding them to the array
+//                     args = args.map((item) => {
+//                         console.log(this.array.length)
+//                         
+//                         if (typeof item === "object") {
+//                             // TODO change this to Object.entries(item) - throws (???)
+//                             for (const key in item) {
+//                                 if (item.hasOwnProperty(key)) {
+//                                     let value = item[ key ];
+//                                     Object.defineProperty(item, key, {
+//                                         get: () => value,
+//                                         set: (newValue) => {
+//                                             value = newValue;
+//                                             const index = this.array.indexOf(item);
+//                                             this.callback(this.array, index, key, newValue);
+//                                         },
+//                                     });
+//                                 }
+//                             }
+// 
+//                             // // Add getters/setters to the entire item
+//                             // Object.defineProperty(item, "_data", {
+//                             //     value: {},
+//                             //     writable: true,
+//                             // });
+// 
+//                             
+//                         }
+//                         return item;
+//                     });
+//                     // get the changes
+//                     const result = originalMethod(...args);
+//                     this.length = this.array.length;
+//                     
+//                     return result;
+//                 };
+//             });
+//         }
+// 
+//     }
 
     
     /** TODO add getters/setters to new items before adding to array
@@ -102,25 +104,30 @@ window.onload = () => {
      */
 
 
-    // INIT BY ARRAY OBSERVER INSTEAD???
+    // 
     class DataHandler {
         constructor (dataSource) {
             this.dataSource = dataSource;
             this.obj = this.observeObject(this.dataSource)
             this.observers = [];
+            // this.length = this.dataSource.length
+            // console.log(this.length)// this stays 3
           
         }
 
 
     
         observeObject(obj) {
-            //console.log(obj)
+            console.log(obj)
+          
             if (typeof obj !== 'object') {
                 //console.log(obj)
                 return obj;
             }
 
             for (const key in obj) {
+                console.log(obj)
+                console.log(key)
                 if (obj.hasOwnProperty(key)) {
                     obj[ key ] = this.observeObject(obj[ key ]);
 
@@ -135,10 +142,12 @@ window.onload = () => {
                             this.notify(index, key, value);
                             
                         },
+                        enumerable: true,
+                        configurable: true
                     });
                 }
             }
-
+           
             return obj;
         }
 
@@ -150,13 +159,18 @@ window.onload = () => {
             this.observers = this.observers.filter((obs) => obs !== observer);
         }
 
+        
+        //TODO seperate Method to update length, only index of item?
         notify(index, key, value) {
             this.observers.forEach((observer) => {
                 
                 
                 //TODO this updates length, but takes wrong dataSource
                 // no getters/setters on new cards, so get the newData HERE!!!!
-                // observer.updateCards((this.dataSource))
+                observer.updateCards(this.dataSource)
+                this.length = this.dataSource.length
+                console.log(this.length)// 5
+                
                 observer.render(index, key, value);
         })
         }
@@ -169,13 +183,14 @@ window.onload = () => {
             this.model = model;
             this.model.subscribe(this);
             this.cards = [];
+            //this.newDataSource = this.model.dataSource
             // container ti create manually in html or JS to be able to place it where needed
             this.container = document.getElementById(parent);
             this.template = template;
             // get new Data and length from the ArrayObserver Instance inside DataHandler call method to reflect new length;
-            this.arrayObserver = new ArrayObserver(this.model.dataSource, (newDataSource) => {
-                this.updateCards(newDataSource);
-            });
+            // this.arrayObserver = new ArrayObserver(this.model.dataSource, (newDataSource) => {
+            //     this.updateCards(newDataSource);
+            // });
 
             this.model.dataSource.forEach((item, index) => {
                 this.cards[ index ] = this.createCard(item, this.template);
@@ -189,8 +204,10 @@ window.onload = () => {
         }
         // TODO check the length for different observers!!!
         updateCards(newDataSource) {
+    
+           console.log(this.model.dataSource.length)
             // Function to update the cards based on the new data source
-            console.log(newDataSource)
+            //console.log(newDataSource.length)
             const currentLength = this.cards.length;
             const newLength = newDataSource.length;
             const diff = newLength - currentLength;
@@ -204,6 +221,7 @@ window.onload = () => {
                     console.log(item)
                     this.cards[ index ] = this.createCard(item, this.template);
                     this.container.appendChild(this.cards[ index ]);
+                    
                 }
             } else if (diff < 0) {
                 // Remove excess cards for the removed items
@@ -214,6 +232,7 @@ window.onload = () => {
                     this.cards.splice(index, 1);
                 }
             }
+           
             
         }
 
@@ -273,9 +292,9 @@ window.onload = () => {
         template.setAttribute('class', 'template3');
         template.innerHTML = `
        <br>
-        <p>Address: <span class="street">${item.street}</span></p>
-        <p>City: <span class="city">${item.city}</span></p>
-        <p>State: <span class="state">${item.state}</span></p>
+        <p>Address: <span class="street">${item.address.street}</span></p>
+        <p>City: <span class="city">${item.address.city}</span></p>
+        <p>State: <span class="state">${item.address.state}</span></p>
        
     `;
         return template;
@@ -328,12 +347,12 @@ window.onload = () => {
     //console.log(dataObject2) // no reference to initoal object? but should be updated each time, not?
 
    
-
+    // TODO number of cards ok if subscribed to same dataHandler!!!
     const firstInstance = new ConTemplate(dataObject, template1, 'container1');
     //console.log(firstInstance)
     const secondInstance = new ConTemplate(dataObject, template2, 'container2');// this seems to be problematic (???) number of cards not updated
 
-    const thirdInstance = new ConTemplate(dataObject2, template3, 'container3');
+    const thirdInstance = new ConTemplate(dataObject, template3, 'container3');
 
 
 
@@ -343,7 +362,7 @@ window.onload = () => {
     
     // to check updating of only changed on load
     const updateNow = setInterval(tic, 1000);
-    const stop = setTimeout(stopIt, 120000)
+    const stop = setTimeout(stopIt, 12000)
     function tic() {
         testData[ 2 ].now = new Date().toLocaleTimeString();
     }
@@ -380,6 +399,7 @@ window.onload = () => {
     //TODO: fascinating: the new added dataItems don't have getters/setters
     address = testData.map(dataSet => dataSet.address)
     testData[ 4 ].hobbies = [ 'mountain-biking', 'motor-cycling' ];
+    console.log(testData[4])
     testData[ 4 ].hobbies = ['another hobby', 'no hobby']// WHAAAAAAT? NOT APPLIED
     
     address = testData.map(dataSet => dataSet.address)
@@ -390,7 +410,7 @@ window.onload = () => {
     
     const t1 = performance.now();
     console.log(`Call to init and update cards took ${t1 - t0} milliseconds.`);
-    
+    //testData.pop()// works
 }
 
 // /*
@@ -876,126 +896,126 @@ window.onload = () => {
 // // observable.addInstance({ name: 'Instance 4' });
 
 
-class ArrayHandler {
-    constructor (data, dataHandler) {
-        this.dataHandler = dataHandler;
-        this.data = data;
-        this.innerObj = this.createInnerObject(data);
-    }
-
-    createInnerObject(data) {
-        const self = this;
-
-        const innerObj = new Proxy(data, {
-            get(target, property) {
-                if (property === "push") {
-                    return function (...args) {
-                        const result = target.push(...args);
-                        self.dataHandler.notify();
-                        return result;
-                    };
-                }
-                return target[ property ];
-            },
-            set(target, property, value) {
-                target[ property ] = value;
-                self.dataHandler.notify();
-                return true;
-            },
-        });
-
-        return innerObj;
-    }
-
-    addItem(args) {
-        // not used in this example, but can be implemented to handle item addition
-    }
-
-    updateItem(property, value) {
-        // not used in this example, but can be implemented to handle item updates
-    }
-
-    getArray() {
-        return this.data;
-    }
-
-    getObservedData() {
-        return this.innerObj;
-    }
-}
-
-class DataHandler {
-    constructor (data) {
-        this.innerObj = this.createInnerObject(data);
-        this.data = Object.getPrototypeOf(this.innerObj)
-        console.log(this.data)
-        console.log(this.innerObj)
-        this.subscribers = new Set();
-    }
-
-    createInnerObject(data) {
-        const self = this;
-
-        const innerObj = new Proxy(data, {
-            set(target, property, value) {
-                target[ property ] = value;
-                self.notify();
-                return true;
-            },
-        });
-
-        return innerObj;
-    }
-
-    subscribe(callback) {
-        this.subscribers.add(callback);
-    }
-
-    unsubscribe(callback) {
-        this.subscribers.delete(callback);
-    }
-
-    notify() {
-        this.subscribers.forEach((callback) => callback(this.innerObj));
-    }
-}
-
-class Subscriber {
-    constructor (name) {
-        this.name = name;
-    }
-
-    update(data) {
-        console.log(`Subscriber ${this.name} received updated data: `, data);
-    }
-}
-
-// Example usage
-const data = [ { name: "any Name", age: 100 } ];
-
-const dataHandler = new DataHandler(data);
-dataHandler.subscribe((updatedData) =>
-    console.log("Data updated:", updatedData)
-);
-
-const arrayHandler = new ArrayHandler(data, dataHandler);
-data.push({ name: "new item", age: 200 });
-
-//console.log("Data after push:", data);
-
-const subscriber1 = new Subscriber("Subscriber 1");
-const subscriber2 = new Subscriber("Subscriber 2");
-
-dataHandler.subscribe(subscriber1.update.bind(subscriber1));
-dataHandler.subscribe(subscriber2.update.bind(subscriber2));
-
-// Update the data
-data.push({ name: "Charlie", age: 50 });
-
-
-data[ 0 ].name = "another Name";
-
-console.log(arrayHandler.data)// THIS INCLUDES ALL
-console.log(arrayHandler.innerObj)// THIS ALSO
-
-//TODO evtl extend the arrayHandler????
+// class ArrayHandler {
+//     constructor (data, dataHandler) {
+//         this.dataHandler = dataHandler;
+//         this.data = data;
+//         this.innerObj = this.createInnerObject(data);
+//     }
+// 
+//     createInnerObject(data) {
+//         const self = this;
+// 
+//         const innerObj = new Proxy(data, {
+//             get(target, property) {
+//                 if (property === "push") {
+//                     return function (...args) {
+//                         const result = target.push(...args);
+//                         self.dataHandler.notify();
+//                         return result;
+//                     };
+//                 }
+//                 return target[ property ];
+//             },
+//             set(target, property, value) {
+//                 target[ property ] = value;
+//                 self.dataHandler.notify();
+//                 return true;
+//             },
+//         });
+// 
+//         return innerObj;
+//     }
+// 
+//     addItem(args) {
+//         // not used in this example, but can be implemented to handle item addition
+//     }
+// 
+//     updateItem(property, value) {
+//         // not used in this example, but can be implemented to handle item updates
+//     }
+// 
+//     getArray() {
+//         return this.data;
+//     }
+// 
+//     getObservedData() {
+//         return this.innerObj;
+//     }
+// }
+// 
+// class DataHandler {
+//     constructor (data) {
+//         this.innerObj = this.createInnerObject(data);
+//         this.data = Object.getPrototypeOf(this.innerObj)
+//         console.log(this.data)
+//         console.log(this.innerObj)
+//         this.subscribers = new Set();
+//     }
+// 
+//     createInnerObject(data) {
+//         const self = this;
+// 
+//         const innerObj = new Proxy(data, {
+//             set(target, property, value) {
+//                 target[ property ] = value;
+//                 self.notify();
+//                 return true;
+//             },
+//         });
+// 
+//         return innerObj;
+//     }
+// 
+//     subscribe(callback) {
+//         this.subscribers.add(callback);
+//     }
+// 
+//     unsubscribe(callback) {
+//         this.subscribers.delete(callback);
+//     }
+// 
+//     notify() {
+//         this.subscribers.forEach((callback) => callback(this.innerObj));
+//     }
+// }
+// 
+// class Subscriber {
+//     constructor (name) {
+//         this.name = name;
+//     }
+// 
+//     update(data) {
+//         console.log(`Subscriber ${this.name} received updated data: `, data);
+//     }
+// }
+// 
+// // Example usage
+// const data = [ { name: "any Name", age: 100 } ];
+// 
+// const dataHandler = new DataHandler(data);
+// dataHandler.subscribe((updatedData) =>
+//     console.log("Data updated:", updatedData)
+// );
+// 
+// const arrayHandler = new ArrayHandler(data, dataHandler);
+// data.push({ name: "new item", age: 200 });
+// 
+// //console.log("Data after push:", data);
+// 
+// const subscriber1 = new Subscriber("Subscriber 1");
+// const subscriber2 = new Subscriber("Subscriber 2");
+// 
+// dataHandler.subscribe(subscriber1.update.bind(subscriber1));
+// dataHandler.subscribe(subscriber2.update.bind(subscriber2));
+// 
+// // Update the data
+// data.push({ name: "Charlie", age: 50 });
+// 
+// 
+// data[ 0 ].name = "another Name";
+// 
+// console.log(arrayHandler.data)// THIS INCLUDES ALL
+// console.log(arrayHandler.innerObj)// THIS ALSO
+// 
+// //TODO evtl extend the arrayHandler????

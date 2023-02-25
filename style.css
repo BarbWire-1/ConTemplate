@@ -72,7 +72,7 @@ div:has(.template1){
 div:has(.template2){
     margin-top: 50px;
     display:flex;
-    flex-direction: column;
+    flex-wrap: wrap;
     justify-content:center;
     align-items: center;
     /* background-color:#c4d0f810; */
