@@ -108,6 +108,7 @@ window.onload = () => {
     class DataHandler {
         constructor (dataSource) {
             this.dataSource = dataSource;
+            
             this.obj = this.observeObject(this.dataSource)
             this.observers = [];
             // this.length = this.dataSource.length
@@ -115,38 +116,48 @@ window.onload = () => {
           
         }
 
-
-    
+        
+        // TODO only works for firstLevel and arrays
         observeObject(obj) {
+            
+            // new ITEMS are NOT ITEMS OF THE ARRAY. but single objectes here
             console.log(obj)
           
-            if (typeof obj !== 'object') {
+            if (typeof obj !== 'object' ) {
                 //console.log(obj)
                 return obj;
             }
-
+            //if (!Array.isArray(obj)) {
             for (const key in obj) {
-                console.log(obj)
-                console.log(key)
-                if (obj.hasOwnProperty(key)) {
-                    obj[ key ] = this.observeObject(obj[ key ]);
+                    
+                
+                    //console.log(obj)
+                    console.log(key)// index and props
+                    console.log(obj[2])
+                    if (Object.getOwnPropertyDescriptor(obj, key)) {
+                        console.log(obj[ 2 ])
+                        obj[ key ] = this.observeObject(obj[ key ]);
 
-                    let temp = obj[ key ];
+                        let temp = obj[ key ];
 
-                    Object.defineProperty(obj, key, {
-                        get: () => temp,
-                        set: (value) => {
-                            temp = value;
-                            //console.log(value)
-                            const index = this.dataSource.indexOf(obj);
-                            this.notify(index, key, value);
+                        Object.defineProperty(obj, key, {
+                            get: () => temp,
+                            set: (value) => {
+                                temp = value
+                              
+                                //console.log(value)
+                                const index = this.dataSource.indexOf(obj);
+                                this.notify(index, key, value);
+                                
                             
-                        },
-                        enumerable: true,
-                        configurable: true
-                    });
+                            },
+                           
+                            enumerable: true,
+                            configurable: true
+                        });
+                    }
                 }
-            }
+            //}
            
             return obj;
         }
@@ -168,8 +179,9 @@ window.onload = () => {
                 //TODO this updates length, but takes wrong dataSource
                 // no getters/setters on new cards, so get the newData HERE!!!!
                 observer.updateCards(this.dataSource)
+                console.log(this.dataSource)
                 this.length = this.dataSource.length
-                console.log(this.length)// 5
+                //console.log(this.length)// 5
                 
                 observer.render(index, key, value);
         })
@@ -203,22 +215,23 @@ window.onload = () => {
             return template;
         }
         // TODO check the length for different observers!!!
+        // do this in the dataHandler and notify for diff? update => render?
         updateCards(newDataSource) {
     
-           console.log(this.model.dataSource.length)
+           //console.log(this.model.dataSource.length)
             // Function to update the cards based on the new data source
             //console.log(newDataSource.length)
             const currentLength = this.cards.length;
             const newLength = newDataSource.length;
             const diff = newLength - currentLength;
-            console.log(diff)// 2
+            //console.log(diff)// 2
 
             if (diff > 0) {
                 // Add new cards for the new items
                 for (let i = 0; i < diff; i++) {
                     const index = currentLength + i;
                     const item = newDataSource[ index ];
-                    console.log(item)
+                    //console.log(item)
                     this.cards[ index ] = this.createCard(item, this.template);
                     this.container.appendChild(this.cards[ index ]);
                     
@@ -240,7 +253,7 @@ window.onload = () => {
             // TODO when card length changed looses track of changes on single keys? WHY SO???
             //console.log(index, key, value)
             const card = this.cards[ index ];
-            console.log(index)
+            //console.log(index)
             const property = card.querySelector(`.${key}`);
 
             // Only update the card if the new value is different from the current value displayed in the card
@@ -299,6 +312,19 @@ window.onload = () => {
     `;
         return template;
     };
+    
+    class TestData {
+        constructor (name, address, hobbies, now, emoji) {
+            this.name = name;
+            this.address = address;
+            this.hobbies = hobbies;
+            this.now = now;
+            this.emoji = emoji
+        }
+       
+    }
+    
+    
 
     // TEST-DATASOURCE
     const testData = [
@@ -336,9 +362,15 @@ window.onload = () => {
             emoji: '👻'
         }
     ];
-
+    
+   let array = []
+    testData.forEach(item => {
+       array.push(new TestData(item))
+    })
+    console.log(array)// undefined
 
     // model watching all obj
+ 
     const dataObject = new DataHandler(testData);
     //const dataObject1 = new DataHandler(testData);// bad idea as interferring
     // model watching subkey of obj
@@ -348,11 +380,12 @@ window.onload = () => {
 
    
     // TODO number of cards ok if subscribed to same dataHandler!!!
+    
     const firstInstance = new ConTemplate(dataObject, template1, 'container1');
     //console.log(firstInstance)
-    const secondInstance = new ConTemplate(dataObject, template2, 'container2');// this seems to be problematic (???) number of cards not updated
-
-    const thirdInstance = new ConTemplate(dataObject, template3, 'container3');
+//     const secondInstance = new ConTemplate(dataObject, template2, 'container2');// this seems to be problematic (???) number of cards not updated
+// 
+//     const thirdInstance = new ConTemplate(dataObject, template3, 'container3');
 
 
 
@@ -394,7 +427,16 @@ window.onload = () => {
     
     
     // ok, changes on primitives do work, Not on objects or arrays per dot.notation
-    testData[ 0 ].name = 'Jennifer Toe'
+    testData[ 0 ].name = 'Anoybody Toe'
+    testData[ 0 ].address.street = 'Test Street'// NOT WORKING
+    testData[ 0 ].address = 'Test Street, Another Town, nowhere' // this is sooooo weird
+    // also not working 
+    // testData[ 0 ].address = {
+    //     street: '456 Sidewalk',
+    //     city: 'Anytown',
+    //     state: 'CA',
+    // }// aaaand also NOT
+    testData[0].now = 'never'// applied
     testData[ 1 ].hobbies = [ 'rollerblading', 'motor-cycling' ]
     //TODO: fascinating: the new added dataItems don't have getters/setters
     address = testData.map(dataSet => dataSet.address)
@@ -402,7 +444,7 @@ window.onload = () => {
     console.log(testData[4])
     testData[ 4 ].hobbies = ['another hobby', 'no hobby']// WHAAAAAAT? NOT APPLIED
     
-    address = testData.map(dataSet => dataSet.address)
+    //address = testData.map(dataSet => dataSet.address)
 
 
     //console.log(dataObject)
@@ -411,6 +453,7 @@ window.onload = () => {
     const t1 = performance.now();
     console.log(`Call to init and update cards took ${t1 - t0} milliseconds.`);
     //testData.pop()// works
+    console.log(testData[4])
 }
 
 // /*
