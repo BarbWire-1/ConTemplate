@@ -160,6 +160,8 @@ window.onload = () => {
                 for (let i = 0; i < diff; i++) {
                     const index = currentLength + i;
                     const item = newDataSource[ index ];
+                    console.log(item)
+                    //this.observeObject(item)
                     this.cards[ index ] = this.createCard(item, this.template);
                     this.container.appendChild(this.cards[ index ]);
                 }
@@ -337,7 +339,7 @@ window.onload = () => {
     testData[ 4 ].address.street = `123 Test Way`
     address = testData.map(dataSet => dataSet.address)
 
-
+console.log(testData[0])
     //DOES NOT UPDATE FOR NESTED KEYS!!!!!!!
 
 
