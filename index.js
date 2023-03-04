@@ -281,14 +281,13 @@ window.onload = () => {
     // model watching all obj
     const dataObject = new DataHandler(testData);
     // model watching subkey of obj
-    const dataObject2 = new DataHandler(testData.map(item => item.address));
-
+    
 
     const firstInstance = new ConTemplate(dataObject, template1, 'container1');
     //console.log(firstInstance)
     const secondInstance = new ConTemplate(dataObject, template2, 'container2');// this seems to be problematic (???)
 
-    const thirdInstance = new ConTemplate(dataObject2, template3, 'container3');
+    const thirdInstance = new ConTemplate(dataObject, template3, 'container3');
 
 
 
@@ -333,11 +332,11 @@ window.onload = () => {
             now: new Date().toLocaleTimeString()
         })
 
-    testData[ 4 ].name = 'Jennifer Toe'
-    address = testData.map(dataSet => dataSet.address)
+    testData[ 0].name = 'Jennifer Toe'
+    //address = testData.map(dataSet => dataSet.address)
     testData[ 0 ].address.street = `123 Test Way`
     testData[ 4 ].address.street = `123 Test Way`
-    address = testData.map(dataSet => dataSet.address)
+    //address = testData.map(dataSet => dataSet.address)
 
 console.log(testData[0])
     //DOES NOT UPDATE FOR NESTED KEYS!!!!!!!
