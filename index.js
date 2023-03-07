@@ -4,6 +4,7 @@
      with MIT license
  */
 // TODO currently update ALL cards on shift/unshift/splice/slice to prevent the indices mess
+// TODO inner arrays not updated per index!!!!!
 // TODO add class in Constructor of Contemplate
 class ObserveEncapsulatedData {
     constructor (dataSource) {
@@ -253,9 +254,12 @@ class Contemplate {
     }
 
     createCard(data) {
+       
         const card = document.createElement("div");
         card.className = "card";
+        
         const placeholders = Object.keys(data).map((key) => {
+            
             return {
                 key,
                 placeholder: `$${key}$`,
@@ -263,6 +267,7 @@ class Contemplate {
         });
         let cardContent = this.template(data);
         placeholders.forEach(({ key, placeholder }) => {
+            
             cardContent = cardContent.replace(placeholder, data[ key ]);
         });
         card.innerHTML = cardContent;
@@ -459,7 +464,7 @@ const testData = [
         },
         hobbies: [ 'reading', 'traveling' ],
         now: new Date().toLocaleTimeString(),
-        emoji: 'undefined'
+        emoji: null
     },
     {
         name: 'Jane Doe',
@@ -470,7 +475,7 @@ const testData = [
         },
         hobbies: [ 'running', 'painting' ],
         now: new Date().toLocaleTimeString(),
-        emoji: 'undefined'
+        emoji: null
     },
     {
         name: 'BarbWire',
