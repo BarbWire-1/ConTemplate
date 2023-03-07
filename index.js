@@ -3,19 +3,18 @@
  *   All rights reserved.
      with MIT license
  */
-
+// TODO currently update ALL cards on shift/unshift/splice/slice to prevent the indices mess
 class DataHandler {
     constructor (dataSource) {
         this.dataSource = dataSource;
         this.observers = [];
-        this.length = dataSource.length;
-        this.observeDataSorce()
+        this.observeDataSource()
         this.makeReactive()
-
     }
 
     // init with defining properties on all items of dataSource
     makeReactive() {
+
         this.dataSource.map((obj, index) => {
             for (const key in obj) {
                 this.defineProp(obj, key, index);
@@ -27,7 +26,8 @@ class DataHandler {
     // Define properties per item in dataSource
     defineProp(obj, key, index) {
         let self = this;
-        let value = obj[ key ];
+        let value = JSON.parse(JSON.stringify(obj[ key ]));
+
 
         Object.defineProperty(obj, key, {
             enumerable: true,
@@ -36,8 +36,8 @@ class DataHandler {
                 return value;
             },
             set: function (newValue) {
-                value = newValue;
-                if (index !== -1) {
+                value = JSON.parse(JSON.stringify(newValue));
+                if (index !== undefined) {
                     self.notify(obj, key, value, "update", index);
                 }
             },
@@ -60,50 +60,73 @@ class DataHandler {
     // Apply getters array-methods applied to the outer dataSource
     // and define operations to compute for each method.
     // NOTE that this does NOT actually change the this.dataSource,
-    // It's kind of a "Luftnummer"
+    // It's kind of a "Luftnummer", the new length and data is only here
     // TODO currently slice, splice wrong
-    observeDataSorce() {
+    observeDataSource() {
         const self = this;
         const methods = [ "push", "pop", "shift", "unshift", "splice", "slice" ];
-
+        //console.log(self.array.length)
         methods.forEach((method) => {
             const originalMethod = Array.prototype[ method ];
             Object.defineProperty(this.dataSource, method, {
                 value: function (...newObj) {
                     let result = originalMethod.apply(this, newObj);
-                    let newLength = this.length;
+                    let newLength = self.dataSource.length
+
+                    const updateIndices = () => {
+                        for (let i = 0; i < newLength; i++) {
+                            for (const key in this[ i ]) {
+                                self.defineProp(this[ i ], key, i);
+                            }
+                            self.notify(this[ i ], null, null, "update", i);
+                        }
+                    }
 
                     switch (method) {
                         case "push": {
-                            newObj.forEach((obj, i) => {
+                            // add getters/setters to new obj keys
+                            // add a card for the pushed obj at the end
+                            newObj.forEach((obj) => {
                                 for (const key in obj) {
                                     self.defineProp(obj, key, newLength - 1);
+
                                 }
                                 self.notify(obj, null, null, "add", newLength - 1);
+                                //self.array.push(obj);
+                                console.log(self.dataSource.length)
+
                             });
                             break;
                         }
                         case "unshift": {
-                            newObj.forEach((obj, i) => {
+                            const numNewItems = newObj.length;
+                            // add a new card for all obj in shift args
+                            newObj.forEach((obj, index) => {
                                 for (const key in obj) {
-                                    self.defineProp(obj, key, i);
+                                    self.defineProp(obj, key, index);
                                 }
-                                self.notify(obj, null, null, "add", i);
+                                console.log(index)
+                                self.notify(obj, null, null, "add", index);
                             });
+                            // update all to sync indices
+                            updateIndices();
                             break;
                         }
+
                         case "pop": {
+                            // remove the last card
                             self.notify(null, null, null, "delete", newLength);
+                            console.log(self.dataSource.length)
                             break;
                         }
                         case "shift": {
-                            self.notify(this[ 0 ], null, null, "delete", 0);
-                            for (let i = 0; i < this.length - 1; i++) {
-                                this[ i ] = this[ i + 1 ];
-                            }
-                            self.notify(this, null, null, "update", 0);
+                            // remove the first card
+                            self.notify(null, null, null, "delete", 0);
+                            // update all to sync indindices
+                            updateIndices();
                             break;
                         }
+                        //TODO NOT working
                         case "splice": {
                             const index = newObj[ 0 ];
                             const deleteCount = newObj[ 1 ];
@@ -124,41 +147,35 @@ class DataHandler {
                                     self.notify(null, null, null, "delete", index + i);
                                 });
                             }
+                            updateIndices();
 
-                            if (deleteCount !== itemsToAdd.length) {
-                                const shiftCount = deleteCount - itemsToAdd.length;
-                                for (let i = index + itemsToAdd.length; i < this.length; i++) {
-                                    this[ i - shiftCount ] = this[ i ];
-                                    self.notify(this[ i ], null, null, "update", i - shiftCount);
-                                }
-                                this.length -= shiftCount;
-                            }
-
-                            self.notify(obj, null, null, "update", index);
                             break;
                         }
+                        //TODO  NOT WORKING
                         case "slice": {
                             const start = newObj[ 0 ];
                             const end = newObj[ 1 ];
 
                             for (let i = start; i < end; i++) {
-                                self.notify(this[ i ], null, null, "delete", i);
+                                self.notify(null, null, null, "delete", i - start);
                             }
+                            updateIndices();
                             break;
                         }
+
                         default:
                             break;
                     }
 
-                    return result;
                 },
                 writable: true,
                 enumerable: false,
                 configurable: true,
             });
+
+
         });
 
-        return this.length;
     }
 
 
@@ -172,7 +189,7 @@ class DataHandler {
             this.observers.splice(index, 1);
         }
     }
-    // TODO split this?
+    // TODO create an outer eventHandler to modify args to notify??
     /**
      * 
      * @param {*} item Data of the current item - only needed if operation is "add"
@@ -266,8 +283,8 @@ function cardTemplate(item) {
     
     <div class="template1">
         <div class="card">
-            <h2>My Name is: <span data-key="title">${item.title}<span></h2>
-            <p data-key="description">${item.description.a ?? item.description}</p><!--the "||"not working-->
+            <h2>index in data: <span data-key="title">${item.title}<span></h2>
+            <p data-key="description">${item.description}</p><!--the "||"not working-->
             <p data-key="now"> ${item.now ?? ''}</p>
             <button data-key="delete">Delete</button>
         </div>
@@ -289,7 +306,7 @@ function cardTemplate2(item) {
 }
 
 const source = [
-    { title: "Card 1", description: { a: "This is the first card." }, now: new Date().toLocaleTimeString() },
+    { title: "Card 1", description: "This is the first card.", now: new Date().toLocaleTimeString() },
     { title: "Card 2", description: "This is the second card.", now: new Date().toLocaleTimeString() },
     { title: "Card 3", description: "This is the third card.", now: new Date().toLocaleTimeString() },
 ];
@@ -302,22 +319,22 @@ const cards1 = new Contemplate(model, template, 'container1');
 const cards2 = new Contemplate(model, cardTemplate2, 'container2');
 
 source[ 0 ].title = "renamed Card"; // will rerender
-source.push({ title: "Card 4", description: "This is the fourth card.", now: new Date().toLocaleTimeString() })// not applied
+source.push({ title: "Card 4", description: "This is the fourth card.", now: new Date().toLocaleTimeString() })
 source[ 1 ].title = "renamed me too";
 source[ 3 ].title = `I'm the new one`;// YEAH!!!!!!!
-source[ 0 ].title = "another Card"; // will rerender
-//source.pop()// does remove the code, but not the card
+
 
 source.push({ title: "Card 5", description: "This is the fifth card.", now: new Date().toLocaleTimeString() })
 source.push({ title: "Card 6", description: "This is the sixth card.", now: new Date().toLocaleTimeString() })
 
+
+// UP TO HERE INDICES ARE OK
 source[ 5 ].title = "Sexiest Card"
 
+
+// UNSHIFT MESSES WITH INDICES: 2,3,4,5,6,7,5,undefined
 source.unshift({ title: "Card 7", description: "This is the seventh card.", now: new Date().toLocaleTimeString() },
     { title: "Card 8", description: "This is the eighth card.", now: new Date().toLocaleTimeString() },)
-source[ 0 ].title = 'test 7';
-source[ 1 ].title = 'test 8'
-//source[ 0 ].title = 'used to be at index 0'
 
 // DIFFERENT TEMPLATE_FUNCTION BEING PASSED TO ConTemplate
 // TODO ADD AN INDEX HERE TO DIFFERCIATE!!!
@@ -335,9 +352,30 @@ function stopIt() {
 }
 
 
-source.pop()
-source.shift()
-//source.slice(-2)// NOT working
+source.pop()// ALSO OK
+//cards places are fine, but overwrites everything with the initial data!!!
+// TODO looks ok, but leaves shifted el as null???
+//source.shift()
+//source.splice(-1)
+console.log(JSON.stringify(source))
+//source.slice(2)// NOT working
+source.map((el, index) => el.title = index)
+console.log(JSON.stringify(source))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //DIFFERENT TEMPLATE_FUNCTION BEING PASSED TO ConTemplate
 // TODO ADD AN INDEX HERE TO DIFFERCIATE!!!
@@ -397,7 +435,7 @@ const testData = [
         },
         hobbies: [ 'reading', 'traveling' ],
         now: new Date().toLocaleTimeString(),
-        emoji: undefined
+        emoji: 'undefined'
     },
     {
         name: 'Jane Doe',
@@ -408,7 +446,7 @@ const testData = [
         },
         hobbies: [ 'running', 'painting' ],
         now: new Date().toLocaleTimeString(),
-        emoji: undefined
+        emoji: 'undefined'
     },
     {
         name: 'BarbWire',
@@ -488,7 +526,4 @@ testData[ 0 ].address.street = `123 Test Way`
 testData[ 4 ].address.street = `123 Test Way`
 // as using join in template need entire array here (?)
 testData[ 2 ].hobbies = 'debugging 🤬 '
-
-
-
 
