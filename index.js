@@ -197,12 +197,6 @@ class ObserveEncapsulatedData {
 }
 
 
-
-
-
-
-
-
 class DataHandler {
     constructor (dataSource) {
         this.data = new ObserveEncapsulatedData(dataSource);
