@@ -25,7 +25,7 @@ class ObserveEncapsulatedData {
     // Define properties per item in dataSource
     defineProp(obj, key, index) {
         let self = this;
-        let value = JSON.parse(JSON.stringify(obj[ key ]));
+        let value = (obj[ key ]);
 
 
         Object.defineProperty(obj, key, {
@@ -35,7 +35,8 @@ class ObserveEncapsulatedData {
                 return value;
             },
             set: function (newValue) {
-                value = JSON.parse(JSON.stringify(newValue));
+                value = newValue;
+                console.log(value)
                 if (index !== undefined) {
                     self.notify(obj, key, value, "update", index);
                 }
@@ -44,15 +45,26 @@ class ObserveEncapsulatedData {
 
         // Recursively define properties for nested objects or arrays
         if (typeof value === 'object' && value !== null) {
+            
             if (Array.isArray(value)) {
-                value.forEach((_, i) => {
-                    self.defineProp(value, i, index);
+                console.log(key)// hobbies
+                
+                for (let i = 0; i < obj[key].length; i++){
+               
+                    console.log(value)
+                    console.log(key)//hobbies
+                    console.log(index)
+                    console.log( obj[key][ i ])//h,o,h,o,h,o,b...
+                    self.defineProp(value, obj[key][i], index);
                     
-                    //TODO get this i out here!
-                    console.log(i)
-                });
+                }  //TODO get this i out here!
+                    //console.log(i)
+                
             } else {
+                console.log(key)// address
                 Object.keys(value).forEach((nestedKey) => {
+                    console.log(value)// is the nested obj
+                    console.log(nestedKey)//are... the nested keys
                     self.defineProp(value, nestedKey, index);
                 });
             }
@@ -257,25 +269,36 @@ class Contemplate {
     }
 
     createCard(data) {
-
         const card = document.createElement("div");
         card.className = "card";
+        const cardContent = this._replacePlaceholders(this.template(data), data);
+        card.innerHTML = cardContent;
+        return card;
+    }
 
+    _replacePlaceholders(template, data) {
         const placeholders = Object.keys(data).map((key) => {
-
             return {
                 key,
                 placeholder: `$${key}$`,
             };
         });
-        let cardContent = this.template(data);
+        let cardContent = template;
         placeholders.forEach(({ key, placeholder }) => {
-
-            cardContent = cardContent.replace(placeholder, data[ key ]);
+            const value = data[ key ];
+            if (typeof value === "object" && value !== null) {
+                // recursively replace placeholders for nested objects/arrays
+                const nestedContent = Array.isArray(value)
+                    ? value.map((item) => this._replacePlaceholders(template, item)).join('')
+                    : this._replacePlaceholders(template, value);
+                cardContent = cardContent.replace(placeholder, nestedContent);
+            } else {
+                cardContent = cardContent.replace(placeholder, value);
+            }
         });
-        card.innerHTML = cardContent;
-        return card;
+        return cardContent;
     }
+
 
     // todo split this into create/remove uptadte?
     // gets called from the dataHandler's notify and proceeds the approriate changes add/remove cards or update card (changed key only)
@@ -418,7 +441,7 @@ const template1 = (item) => {
         <p>Address: <span data-key="street">${item.address.street}</span>,
                         <span data-key="city">${item.address.city}</span>,
                         <span data-key="state">${item.address.state}</span></p>
-        <p>Hobbies: <span data-key="hobbies">${item.hobbies.join(', ')}</span></p>
+        <p>Hobbies: <span data-key="hobbies">${item.hobbies[1]}</span></p>
         <p style="text-align: center; margin-top: 10px"><span data-key="now">${item.now}</span></p>
      
         <div style="text-align: center; font-size: 30px">${item.emoji ?? ''}</div>
