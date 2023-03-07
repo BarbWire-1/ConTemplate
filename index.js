@@ -193,9 +193,9 @@ class ObserveEncapsulatedData {
         }
     }
 
-    notify(item, property, value, operation, index) {
+    notify(...args) {
         this.observers.forEach((observer) =>
-            observer.update(item, property, value, operation, index)
+            observer.update(...args)
         );
     }
 }
@@ -229,9 +229,9 @@ class DataHandler {
      * @param {*} operation the operation needed depending on applied array-method
      * @param {*} index The index of the item in outerArray/cards
      */
-    notify(item, property, value, operation, index) {
+    notify(callback) {
         this.observers.forEach((observer) =>
-            observer.update(item, property, value, operation, index)
+            observer.update(callback)
 
         );
     }
