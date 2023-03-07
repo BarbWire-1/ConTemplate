@@ -133,9 +133,9 @@ window.onload = () => {
                 
                     //console.log(obj)
                     console.log(key)// index and props
-                    console.log(obj[2])
+                    //console.log(obj[2])
                     if (Object.getOwnPropertyDescriptor(obj, key)) {
-                        console.log(obj[ 2 ])
+                        console.log(obj)
                         obj[ key ] = this.observeObject(obj[ key ]);
 
                         let temp = obj[ key ];
@@ -145,8 +145,9 @@ window.onload = () => {
                             set: (value) => {
                                 temp = value
                               
-                                //console.log(value)
+                                console.log(value)
                                 const index = this.dataSource.indexOf(obj);
+                                console.log(index)
                                 this.notify(index, key, value);
                                 
                             
@@ -218,13 +219,14 @@ window.onload = () => {
         // do this in the dataHandler and notify for diff? update => render?
         updateCards(newDataSource) {
     
-           //console.log(this.model.dataSource.length)
+            console.log(this.model.dataSource.length)
+            console.log(JSON.stringify(this.model.dataSource))
             // Function to update the cards based on the new data source
-            //console.log(newDataSource.length)
+            console.log(newDataSource.length)
             const currentLength = this.cards.length;
             const newLength = newDataSource.length;
             const diff = newLength - currentLength;
-            //console.log(diff)// 2
+            console.log(diff)// 2
 
             if (diff > 0) {
                 // Add new cards for the new items
@@ -383,9 +385,9 @@ window.onload = () => {
     
     const firstInstance = new ConTemplate(dataObject, template1, 'container1');
     //console.log(firstInstance)
-//     const secondInstance = new ConTemplate(dataObject, template2, 'container2');// this seems to be problematic (???) number of cards not updated
+    const secondInstance = new ConTemplate(dataObject, template2, 'container2');// this seems to be problematic (???) number of cards not updated
 // 
-//     const thirdInstance = new ConTemplate(dataObject, template3, 'container3');
+    const thirdInstance = new ConTemplate(dataObject, template3, 'container3');
 
 
 
@@ -397,7 +399,7 @@ window.onload = () => {
     const updateNow = setInterval(tic, 1000);
     const stop = setTimeout(stopIt, 12000)
     function tic() {
-        testData[ 2 ].now = new Date().toLocaleTimeString();
+        testData[4].now = testData[ 2 ].now = new Date().toLocaleTimeString();
     }
     function stopIt() {
         clearInterval(updateNow);
@@ -453,7 +455,9 @@ window.onload = () => {
     const t1 = performance.now();
     console.log(`Call to init and update cards took ${t1 - t0} milliseconds.`);
     //testData.pop()// works
-    console.log(testData[4])
+    console.log(testData[ 4 ])
+    testData.shift()
+    console.log(JSON.stringify(testData[0]))
 }
 
 // /*
