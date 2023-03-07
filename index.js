@@ -47,6 +47,9 @@ class ObserveEncapsulatedData {
             if (Array.isArray(value)) {
                 value.forEach((_, i) => {
                     self.defineProp(value, i, index);
+                    
+                    //TODO get this i out here!
+                    console.log(i)
                 });
             } else {
                 Object.keys(value).forEach((nestedKey) => {
