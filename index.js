@@ -4,23 +4,21 @@
      with MIT license
  */
 // TODO currently update ALL cards on shift/unshift/splice/slice to prevent the indices mess
-class DataHandler {
+// TODO add class in Constructor of Contemplate
+class ObserveEncapsulatedData {
     constructor (dataSource) {
-        this.dataSource = dataSource;
+        this.data = dataSource;
         this.observers = [];
-        this.observeDataSource()
         this.makeReactive()
     }
-
+    
     // init with defining properties on all items of dataSource
     makeReactive() {
-
-        this.dataSource.map((obj, index) => {
+        this.data.map((obj, index) => {
             for (const key in obj) {
                 this.defineProp(obj, key, index);
             }
         });
-
     }
 
     // Define properties per item in dataSource
@@ -57,6 +55,7 @@ class DataHandler {
         }
     }
 
+
     // Apply getters array-methods applied to the outer dataSource
     // and define operations to compute for each method.
     // NOTE that this does NOT actually change the this.dataSource,
@@ -68,10 +67,10 @@ class DataHandler {
         //console.log(self.array.length)
         methods.forEach((method) => {
             const originalMethod = Array.prototype[ method ];
-            Object.defineProperty(this.dataSource, method, {
+            Object.defineProperty(this.data, method, {
                 value: function (...newObj) {
                     let result = originalMethod.apply(this, newObj);
-                    let newLength = self.dataSource.length
+                    let newLength = self.data.length
 
                     const updateIndices = () => {
                         for (let i = 0; i < newLength; i++) {
@@ -93,7 +92,7 @@ class DataHandler {
                                 }
                                 self.notify(obj, null, null, "add", newLength - 1);
                                 //self.array.push(obj);
-                                console.log(self.dataSource.length)
+                                console.log(self.data.length)
 
                             });
                             break;
@@ -116,7 +115,7 @@ class DataHandler {
                         case "pop": {
                             // remove the last card
                             self.notify(null, null, null, "delete", newLength);
-                            console.log(self.dataSource.length)
+                            console.log(self.data.length)
                             break;
                         }
                         case "shift": {
@@ -166,16 +165,50 @@ class DataHandler {
                         default:
                             break;
                     }
-
+                    return result;
                 },
                 writable: true,
                 enumerable: false,
                 configurable: true,
             });
 
-
+            
         });
+       
 
+    }
+    
+    addObserver(observer) {
+        this.observers.push(observer);
+    }
+
+    removeObserver(observer) {
+        const index = this.observers.indexOf(observer);
+        if (index !== -1) {
+            this.observers.splice(index, 1);
+        }
+    }
+
+    notify(item, property, value, operation, index) {
+        this.observers.forEach((observer) =>
+            observer.update(item, property, value, operation, index)
+        );
+    }
+}
+
+
+
+
+
+
+
+
+class DataHandler {
+    constructor (dataSource) {
+        this.data = new ObserveEncapsulatedData(dataSource);
+        this.observers = [];
+        this.data.observeDataSource();
+       
     }
 
 
@@ -208,63 +241,60 @@ class DataHandler {
 
 
 class Contemplate {
-    constructor (dataHandler, template, parent) {
-        this.dataHandler = dataHandler;
-        this.container = document.getElementById(parent);
+    constructor (dataHandler, template, containerID) {
+        this.dataHandler = dataHandler.data;
+        this.container = document.getElementById(containerID);
+        this.containerID = containerID;
         this.template = template;
-
         this.dataHandler.addObserver(this);
         this.init();
     }
 
     init() {
         this.container.innerHTML = "";
-        this.dataHandler.dataSource.forEach((instance) => {
-            const cardTemplate = this.createTemplate(instance);
-            const card = cardTemplate.content.cloneNode(true);
+        this.dataHandler.data.forEach((instance) => {
+            const card = this.createCard(instance);
             this.container.appendChild(card);
         });
     }
-    //TODO check again this keyholder theory it actually didn't work as hoped
-    createTemplate(data) {
-        const template = document.createElement("template");
+
+    createCard(data) {
+        const card = document.createElement("div");
+        card.className = "card";
         const placeholders = Object.keys(data).map((key) => {
             return {
                 key,
                 placeholder: `$${key}$`,
             };
         });
-        let templateString = this.template(data);
+        let cardContent = this.template(data);
         placeholders.forEach(({ key, placeholder }) => {
-            templateString = templateString.replace(placeholder, data[ key ]);
+            cardContent = cardContent.replace(placeholder, data[ key ]);
         });
-        template.innerHTML = templateString;
-        return template;
+        card.innerHTML = cardContent;
+        return card;
     }
 
     // todo split this into create/remove uptadte?
     // gets called from the dataHandler's notify and proceeds the approriate changes add/remove cards or update card (changed key only)
     update(item, property, value, operation, index) {
-
+        
         if (operation === 'add') {
-            // Create a new card element from the template
-            const cardTemplate = this.createTemplate(item);
-            const card = cardTemplate.content.cloneNode(true);
+            const card = this.createCard(item);
             const nextSibling = this.container.children[ index ];
             this.container.insertBefore(card, nextSibling);
-
+            
         } else if (operation === 'delete') {
-            // Remove the card element from container
             this.container.children[ index ].remove();
-
+            
+            // update single values
         } else {
-            // Update the text content of elements per data-key
             const element = this.container.children[ index ];
             const key = property;
             const elementsToUpdate = Array.from(
-                element.querySelectorAll((`[data-key="${key}"]`))
+                element.querySelectorAll(`[data-key="${key}"]`)
             );
-            //TODO change this to replace - not possible??? as overwritten with value?
+            // TODO try a replace here for ${key} ONLY
             elementsToUpdate.forEach((el) => {
                 if (el.textContent !== value) {
                     el.textContent = value;
@@ -319,13 +349,13 @@ const cards1 = new Contemplate(model, template, 'container1');
 const cards2 = new Contemplate(model, cardTemplate2, 'container2');
 
 source[ 0 ].title = "renamed Card"; // will rerender
-source.push({ title: "Card 4", description: "This is the fourth card.", now: new Date().toLocaleTimeString() })
+source.push({ title: "Card 4", description: "This is the pushed fourth card.", now: new Date().toLocaleTimeString() })
 source[ 1 ].title = "renamed me too";
 source[ 3 ].title = `I'm the new one`;// YEAH!!!!!!!
 
 
-source.push({ title: "Card 5", description: "This is the fifth card.", now: new Date().toLocaleTimeString() })
-source.push({ title: "Card 6", description: "This is the sixth card.", now: new Date().toLocaleTimeString() })
+source.push({ title: "Card 5", description: "This is the pushed fifth card.", now: new Date().toLocaleTimeString() })
+source.push({ title: "Card 6", description: "This is the pushed sixth card.", now: new Date().toLocaleTimeString() })
 
 
 // UP TO HERE INDICES ARE OK
@@ -333,8 +363,8 @@ source[ 5 ].title = "Sexiest Card"
 
 
 // UNSHIFT MESSES WITH INDICES: 2,3,4,5,6,7,5,undefined
-source.unshift({ title: "Card 7", description: "This is the seventh card.", now: new Date().toLocaleTimeString() },
-    { title: "Card 8", description: "This is the eighth card.", now: new Date().toLocaleTimeString() },)
+source.unshift({ title: "Card 7", description: "This is the unshifted seventh card.", now: new Date().toLocaleTimeString() },
+    { title: "Card 8", description: "This is the unshifted eighth card.", now: new Date().toLocaleTimeString() },)
 
 // DIFFERENT TEMPLATE_FUNCTION BEING PASSED TO ConTemplate
 // TODO ADD AN INDEX HERE TO DIFFERCIATE!!!
@@ -361,7 +391,7 @@ console.log(JSON.stringify(source))
 //source.slice(2)// NOT working
 source.map((el, index) => el.title = index)
 console.log(JSON.stringify(source))
-
+//source.slice() Not working yet
 
 
 
@@ -486,7 +516,6 @@ function tic2() {
     testData[ 2 ].now = new Date().toLocaleTimeString();
 }
 
-// WHY DOES THIS KEEP RUNNING???
 function stopIt2() {
     clearInterval(updateNow2);
 }
