@@ -36,9 +36,6 @@ class ObserveEncapsulatedData {
             },
             set: function (newValue) {
                 value = JSON.parse(JSON.stringify(newValue));
-                console.log(value)// set on hobbies[0] logs here!!!! but not rerendered :(
-                // Need to pass it to the originial hobbies ARRAY
-                // so another notify for arrays needed?
                 if (index !== undefined) {
                     self.notify(obj, key, value, "update", index);
                 }
@@ -47,29 +44,44 @@ class ObserveEncapsulatedData {
 
         // Recursively define properties for nested objects or arrays
         if (typeof value === 'object' && value !== null) {
-            console.log([ key ])
-        
             if (Array.isArray(value)) {
-                let arrayObj = {}
-                for (let i = 0; i < value.length; i++) {
-                    Object.assign(arrayObj, {  [ i ]: value[ i ] })
-                }
-                console.log(key)// hobbies, which I want
-                key = arrayObj// now an object with indices as keys and items as value
-                console.log(key)
-                console.log(JSON.stringify(obj))
-                Object.keys(value).forEach((nestedKey) => {
-                    console.log(nestedKey)// index of items, which I want
-                    self.defineProp(key, nestedKey, index);
+                value.forEach((_, i) => {
+                    self.defineProp(value, i, index);
+
+                    //TODO get this i out here!
+                    console.log(i)
                 });
-                
-                
             } else {
                 Object.keys(value).forEach((nestedKey) => {
                     self.defineProp(value, nestedKey, index);
                 });
             }
         }
+        //         console.log([ key ])
+        // 
+        //         if (Array.isArray(value)) {
+        //             let arrayObj = {}
+        //             for (let i = 0; i < value.length; i++) {
+        //                 Object.assign(arrayObj, { [ key ]: { [ i ]: value[ i ] } })
+        //             }
+        //             console.log(key)// hobbies, which I want
+        //             value = arrayObj// now an object with indices as keys and items as value
+        //             console.log(value)
+        //             console.log(key)
+        //             console.log(JSON.stringify(obj))
+        //             Object.keys(value).forEach((nestedKey) => {
+        //                 console.log(key)
+        //                 console.log(nestedKey)// index of items, which I want
+        //                 self.defineProp(value, nestedKey, index);
+        //             });
+        // 
+        //         
+        //         }
+
+
+
+
+
     }
 
 
@@ -306,7 +318,6 @@ class Contemplate {
         } else {
             const element = this.container.children[ index ];
             const key = property;
-            console.log(key)
             const elementsToUpdate = Array.from(
                 element.querySelectorAll(`[data-key="${key}"]`)
             );
@@ -432,7 +443,7 @@ const template1 = (item) => {
         <p>Address: <span data-key="street">${item.address.street}</span>,
                         <span data-key="city">${item.address.city}</span>,
                         <span data-key="state">${item.address.state}</span></p>
-        <p>Hobbies: <span data-key="hobbies[0]">${item.hobbies[0]}</span></p>
+        <p>Hobbies: <span data-key="hobbies">${item.hobbies.join(', ')}</span></p>
         <p style="text-align: center; margin-top: 10px"><span data-key="now">${item.now}</span></p>
      
         <div style="text-align: center; font-size: 30px">${item.emoji ?? ''}</div>
@@ -450,7 +461,7 @@ const template2 = (item) => {
         <p>Address: <span data-key="street">${item.address.street}</span></p>
         <p>City: <span data-key="city">${item.address.city}</span></p>
         <p>State: <span data-key="state">${item.address.state}</span></p>
-        <p>Hobbies: <span data-key="hobbies[0]">${item.hobbies[0]}</span></p>
+        <p>Hobbies: <span data-key="hobbies">${item.hobbies.join(', ')}</span></p>
         <p>Now: <span data-key="now">${item.now}</span></p>
         <br>
         </div>
