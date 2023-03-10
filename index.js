@@ -136,7 +136,7 @@ class ObserveEncapsulatedData {
                             updateIndices();
                             break;
                         }
-                        //TODO NOT working
+                        
                         case "splice": {
                             const index = newObj[ 0 ];
                             const deleteCount = newObj[ 1 ];
@@ -161,7 +161,7 @@ class ObserveEncapsulatedData {
 
                             break;
                         }
-                        //TODO  NOT WORKING
+                        
                         case "slice": {
                             const start = newObj[ 0 ];
                             const end = newObj[ 1 ];
@@ -448,7 +448,17 @@ const testModifier = new Contemplate(dataObject, templateTest, 'container4', 'te
 testData[ 0 ].name = 'Lemme see'
 
 testData[ 2 ].hobbies = [ 'debugging 🤬' ] 
-testData[ 2 ].hobbies[2] = 'playing cello' // not applied
-testData[ 0 ].address.street = 'Bedwards'// throws Cannot read property 'toUpperCase' of undefined
+testData[ 2 ].hobbies[2] = 'motocycling' // TODO only applied on the NEXT update if running the setInterval for now eG
+//testData[ 0 ].address.street = 'Bedwards'// TODO throws Cannot read property 'toUpperCase' of undefined
 
+// to check updating of only changed on load
+const updateNow = setInterval(tic, 1000);
+const stop = setTimeout(stopIt, 10000)
+function tic() {
+    testData[ 2 ].now = new Date().toLocaleTimeString();
+}
+
+function stopIt() {
+    clearInterval(updateNow);
+}
 
