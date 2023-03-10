@@ -72,7 +72,9 @@ class ObserveEncapsulatedData {
                 value: function (...newObj) {
                     let result = originalMethod.apply(this, newObj);
                     let newLength = self.data.length
-
+                    // This acttually should only update the index
+                    // and define props at the correct item
+                    // content is correct when cards get (un-)shifted
                     const updateIndices = () => {
                         for (let i = 0; i < newLength; i++) {
                             for (const key in this[ i ]) {
@@ -190,9 +192,9 @@ class ObserveEncapsulatedData {
         }
     }
 
-    notify(item, property, value, operation, index) {
+    notify(...args) {
         this.observers.forEach((observer) =>
-            observer.update(item, property, value, operation, index)
+            observer.update(...args)
         );
     }
 }
@@ -206,7 +208,6 @@ class DataHandler {
        
     }
 
-
     addObserver(observer) {
         this.observers.push(observer);
     }
@@ -217,29 +218,15 @@ class DataHandler {
             this.observers.splice(index, 1);
         }
     }
-    // TODO create an outer eventHandler to modify args to notify??
-    /**
-     * 
-     * @param {*} item Data of the current item - only needed if operation is "add"
-     * @param {*} property The single key when changed
-     * @param {*} value The newValue of that key 
-     * @param {*} operation the operation needed depending on applied array-method
-     * @param {*} index The index of the item in outerArray/cards
-     */
-    notify(item, property, value, operation, index) {
-        this.observers.forEach((observer) =>
-            observer.update(item, property, value, operation, index)
-
-        );
-    }
 }
 
 
 class Contemplate {
-    constructor (dataHandler, template, containerID) {
+    constructor (dataHandler, template, containerID, className) {
         this.dataHandler = dataHandler.data;
         this.container = document.getElementById(containerID);
         this.containerID = containerID;
+        this.className = className
         this.template = template;
         this.dataHandler.addObserver(this);
         this.init();
@@ -256,12 +243,13 @@ class Contemplate {
     createCard(data) {
        
         const card = document.createElement("div");
-        card.className = "card";
-        
+        card.className = this.className;
+        console.log(data)
         const placeholders = Object.keys(data).map((key) => {
             
             return {
                 key,
+                // this only works on create as else overwritten
                 placeholder: `$${key}$`,
             };
         });
@@ -290,14 +278,16 @@ class Contemplate {
         } else {
             const element = this.container.children[ index ];
             const key = property;
+            const placeholder= `$${key}$`
             const elementsToUpdate = Array.from(
                 element.querySelectorAll(`[data-key="${key}"]`)
             );
             // TODO try a replace here for ${key} ONLY
             elementsToUpdate.forEach((el) => {
-                if (el.textContent !== value) {
+               // if (el.textContent !== value) {
+              
                     el.textContent = value;
-                }
+               // }
             });
         }
     }
@@ -309,28 +299,21 @@ class Contemplate {
 function cardTemplate(item) {
 
     return `
-    
-    <div class="template1">
-        <div class="card">
+   
             <h2>index in data: <span data-key="title">${item.title}<span></h2>
             <p data-key="description">${item.description}</p><!--the "||"not working-->
             <p data-key="now"> ${item.now ?? ''}</p>
             <button data-key="delete">Delete</button>
-        </div>
-    </div>
+    
   `;
 }
 function cardTemplate2(item) {
     return `
-    <div class="template2">
-        <div class="card">
             <h4>I am 
                 <span data-key="title">${item.title}<span>
             </h4>
             <p data-key="description">${item.description.a ?? item.description}</p><!--the "||"not working-->
             <button data-key="delete">Delete</button>
-        </div>
-    </div>
   `;
 }
 
@@ -343,9 +326,9 @@ const source = [
 const model = new DataHandler(source);
 const template = cardTemplate;
 
-const cards1 = new Contemplate(model, template, 'container1');
+const cards1 = new Contemplate(model, template, 'container1', 'template1');
 
-const cards2 = new Contemplate(model, cardTemplate2, 'container2');
+const cards2 = new Contemplate(model, cardTemplate2,'container2', 'template2', );
 
 source[ 0 ].title = "renamed Card"; // will rerender
 source.push({ title: "Card 4", description: "This is the pushed fourth card.", now: new Date().toLocaleTimeString() })
@@ -410,7 +393,6 @@ console.log(JSON.stringify(source))
 // TODO ADD AN INDEX HERE TO DIFFERCIATE!!!
 const template1 = (item) => {
     return `
-   <div class="template1">
         <h2 style="text-align: center; text-transform: uppercase"><span data-key="name">${item.name}</span></h2>
         <p>Address: <span data-key="street">${item.address.street}</span>,
                         <span data-key="city">${item.address.city}</span>,
@@ -420,7 +402,6 @@ const template1 = (item) => {
      
         <div style="text-align: center; font-size: 30px">${item.emoji ?? ''}</div>
         <br>
-        </div>
        
     `;
 
@@ -428,7 +409,6 @@ const template1 = (item) => {
 
 const template2 = (item) => {
     return `
-   <div class="template2">
         <h3>Name: <span data-key="name">${item.name}</span></h3>
         <p>Address: <span data-key="street">${item.address.street}</span></p>
         <p>City: <span data-key="city">${item.address.city}</span></p>
@@ -436,14 +416,14 @@ const template2 = (item) => {
         <p>Hobbies: <span data-key="hobbies">${item.hobbies.join(', ')}</span></p>
         <p>Now: <span data-key="now">${item.now}</span></p>
         <br>
-        </div>
+     
     `;
 };
 
 // testData.address only
 const template3 = (item) => {
     return `
-    <div class="template3">
+    
        <br>
         <p>Address: <span data-key="street">${item.address.street}</span></p>
         <p>City: <span data-key="city">${item.address.city}</span></p>
@@ -496,11 +476,11 @@ const dataObject = new DataHandler(testData);
 // model watching subkey of obj
 
 
-const firstInstance = new Contemplate(dataObject, template1, 'container4');
+const firstInstance = new Contemplate(dataObject, template1, 'container4', 'template1');
 //console.log(firstInstance)
-const secondInstance = new Contemplate(dataObject, template2, 'container5');// this seems to be problematic (???)
+const secondInstance = new Contemplate(dataObject, template2, 'container5', 'template2');// this seems to be problematic (???)
 
-const thirdInstance = new Contemplate(dataObject, template3, 'container6');
+const thirdInstance = new Contemplate(dataObject, template3, 'container6', 'template3');
 
 
 
@@ -554,4 +534,58 @@ testData[ 0 ].address.street = `123 Test Way`
 testData[ 4 ].address.street = `123 Test Way`
 // as using join in template need entire array here (?)
 testData[ 2 ].hobbies = 'debugging 🤬 '
+
+
+
+
+class ArrayObserver {
+    constructor (array, callback) {
+        this.array = array;
+        this.callback = callback;
+        this.observe();
+    }
+
+    observe() {
+        const arrayMethods = [ "push", "pop", "shift", "unshift", "splice", "sort", "reverse" ];
+        const self = this;
+        arrayMethods.forEach(function (method) {
+            const originalMethod = Array.prototype[ method ];
+            Object.defineProperty(self.array, method, {
+                value: function (...args) {
+                    const result = originalMethod.apply(this, args);
+                    self.callback({
+                        method,
+                        args,
+                        array: this
+                    });
+                    return result;
+                },
+                writable: true,
+                enumerable: false,
+                configurable: true
+            });
+        });
+    }
+
+    disconnect() {
+        const arrayMethods = [ "push", "pop", "shift", "unshift", "splice", "sort", "reverse" ];
+        const self = this;
+        arrayMethods.forEach(function (method) {
+            self.array[ method ] = Array.prototype[ method ];
+        });
+    }
+
+}
+const myArray = [ 1, 2, 3 ];
+const observer = new ArrayObserver(myArray, function (change) {
+    console.log("Array changed:", change);
+});
+myArray.push(4); // logs: "Array changed: { method: 'push', args: [ 4 ], array: [ 1, 2, 3, 4 ] }"
+
+myArray[ 1 ] = 'changed'
+myArray.slice(-2)
+//observer.disconnect();
+
+
+
 
