@@ -10,6 +10,56 @@
 //TODO if(!value)=> `{{key}}`
 // TODO diff create/update in handling keys and values!!!!
 
+class ObservableArray extends Array {
+    constructor (...args) {
+        super(...args);
+        this.observers = new Set();
+    }
+
+    push(...args) {
+        const result = super.push(...args);
+        this.notify({ method: "push", args });
+        return result;
+    }
+
+    pop() {
+        const result = super.pop();
+        this.notify({ method: "pop", args: [ result ] });
+        return result;
+    }
+
+    shift() {
+        const result = super.shift();
+        this.notify({ method: "shift", args: [ result ] });
+        return result;
+    }
+
+    unshift(...args) {
+        const result = super.unshift(...args);
+        this.notify({ method: "unshift", args });
+        return result;
+    }
+
+    splice(...args) {
+        const result = super.splice(...args);
+        this.notify({ method: "splice", args });
+        return result;
+    }
+
+    notify(update) {
+        this.observers.forEach((observer) => observer(update));
+    }
+
+    observe(observer) {
+        this.observers.add(observer);
+    }
+
+    unobserve(observer) {
+        this.observers.delete(observer);
+    }
+}
+
+
 
 class ObserveEncapsulatedData {
     constructor (dataSource) {
@@ -20,39 +70,45 @@ class ObserveEncapsulatedData {
     
     // init with defining properties on all items of dataSource
     makeReactive() {
-        this.data.map((obj, index) => {
-            for (const key in obj) {
-                this.defineProp(obj, key, index);
-            }
+        this.data.forEach((obj, index) => {
+            Object.keys(obj).forEach((key) => {
+                const descriptor = Object.getOwnPropertyDescriptor(obj, key);
+                if (!descriptor || !descriptor.set || !descriptor.get) {
+                    this.defineProp(obj, key, index);
+                }
+            });
         });
     }
+
 
     // Define properties per item in dataSource
     defineProp(obj, key, index) {
         let self = this;
         let value = obj[ key ];
 
+        // Check if the object is already reactive
+        const descriptor = Object.getOwnPropertyDescriptor(obj, '__ob__');
+        if (descriptor && descriptor.value) {
+            value = descriptor.value.data[ key ];
+        }
 
         Object.defineProperty(obj, key, {
             enumerable: true,
             configurable: true,
-            get: function () {
+            get() {
                 return value;
             },
-            set: function (newValue) {
+            set(newValue) {
                 value = newValue;
                 if (index !== undefined) {
-                    console.log(JSON.stringify(obj))
-                    //console.log(JSON.stringify([obj][0]))
                     self.notify(obj, key, value, "update", index);
                 }
             },
         });
 
         // Recursively define properties for nested objects or arrays
-        if (typeof value === 'object' && value !== null) {
+        if (typeof value === "object" && value !== null && !value.__ob__) {
             if (Array.isArray(value)) {
-                console.log(value)
                 value.forEach((_, i) => {
                     self.defineProp(value, i, index);
                 });
@@ -63,6 +119,7 @@ class ObserveEncapsulatedData {
             }
         }
     }
+
 
 
     // Apply getters array-methods applied to the outer dataSource
@@ -449,16 +506,16 @@ testData[ 0 ].name = 'Lemme see'
 
 testData[ 2 ].hobbies = [ 'debugging 🤬' ] 
 testData[ 2 ].hobbies[2] = 'motocycling' // TODO only applied on the NEXT update if running the setInterval for now eG
-//testData[ 0 ].address.street = 'Bedwards'// TODO throws Cannot read property 'toUpperCase' of undefined
-
+//testData[ 0 ].address.street= 'Bedwards'// TODO throws Cannot read property 'toUpperCase' of undefined
+console.log(testData[0].address.street)// getter is ok.
 // to check updating of only changed on load
-const updateNow = setInterval(tic, 1000);
-const stop = setTimeout(stopIt, 10000)
-function tic() {
-    testData[ 2 ].now = new Date().toLocaleTimeString();
-}
-
-function stopIt() {
-    clearInterval(updateNow);
-}
+// const updateNow = setInterval(tic, 1000);
+// const stop = setTimeout(stopIt, 10000)
+// function tic() {
+//     testData[ 2 ].now = new Date().toLocaleTimeString();
+// }
+// 
+// function stopIt() {
+//     clearInterval(updateNow);
+// }
 
