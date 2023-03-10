@@ -6,6 +6,11 @@
 // TODO currently update ALL cards on shift/unshift/splice/slice to prevent the indices mess
 // TODO inner arrays not updated per index!!!!!
 // TODO add class in Constructor of Contemplate
+
+//TODO if(!value)=> `{{key}}`
+// TODO diff create/update in handling keys and values!!!!
+
+
 class ObserveEncapsulatedData {
     constructor (dataSource) {
         this.data = dataSource;
@@ -25,7 +30,7 @@ class ObserveEncapsulatedData {
     // Define properties per item in dataSource
     defineProp(obj, key, index) {
         let self = this;
-        let value = JSON.parse(JSON.stringify(obj[ key ]));
+        let value = obj[ key ];
 
 
         Object.defineProperty(obj, key, {
@@ -35,8 +40,10 @@ class ObserveEncapsulatedData {
                 return value;
             },
             set: function (newValue) {
-                value = JSON.parse(JSON.stringify(newValue));
+                value = newValue;
                 if (index !== undefined) {
+                    console.log(JSON.stringify(obj))
+                    //console.log(JSON.stringify([obj][0]))
                     self.notify(obj, key, value, "update", index);
                 }
             },
@@ -45,6 +52,7 @@ class ObserveEncapsulatedData {
         // Recursively define properties for nested objects or arrays
         if (typeof value === 'object' && value !== null) {
             if (Array.isArray(value)) {
+                console.log(value)
                 value.forEach((_, i) => {
                     self.defineProp(value, i, index);
                 });
@@ -193,6 +201,7 @@ class ObserveEncapsulatedData {
     }
 
     notify(...args) {
+        console.log(JSON.args)
         this.observers.forEach((observer) =>
             observer.update(...args)
         );
@@ -252,6 +261,7 @@ class Contemplate {
         placeholders.forEach((placeholder) => {
             const key = placeholder.dataset.key;
             let value = this.getValue(item, key);
+            console.log(JSON.stringify(value))// string or object
             const modifiers = placeholder.dataset.modifier?.split(' ') ?? [];
 
             if (modifiers.length) {
@@ -284,16 +294,25 @@ class Contemplate {
     getValue(obj, key) {
         let value = obj;
         const keys = key.split('.');
+
         for (let i = 0; i < keys.length; i++) {
             const k = keys[ i ];
-            const arrIndexMatch = k.match(/\[(\d+)\]/); // check if the current key is an array index
+            const arrIndexMatch = k.match(/\[(\d+)\]/);
+            console.log(Array.isArray(value))
             if (arrIndexMatch) {
-                const arrIndex = parseInt(arrIndexMatch[ 1 ]); // extract the index from the key
-                value = Array.isArray(value) ? value[ arrIndex ] : ''; // use the index to access the array element
+                const arrIndex = parseInt(arrIndexMatch[ 1 ]);
+                value = Array.isArray(value) ? value[ arrIndex ] : '';
             } else {
-                value = value ? value[ k ] : '';
+                value = value ? value[ keys[ i ] ] : '';
+            }
+
+            // If the current value is undefined, break out of the loop and return an empty string
+            if (value === undefined) {
+                value = '';
+                break;
             }
         }
+
         return value;
     }
 
@@ -319,9 +338,9 @@ class Contemplate {
             placeholders.forEach((placeholder) => {
                 const key = placeholder.dataset.key;
                 console.log(key)
-                let value = item[ key ];
-                console.log(Array.isArray(item[key]))
-                console.log(value)// null for nested 🥵
+                let value = this.getValue(item, key) || item[key];// this does not work for setting address.street eg
+                console.log(typeof (key))// aaaaah....all string!!!
+                console.log(value)// undefined for nested set per .??? 🥵
                 const modifiers = placeholder.dataset.modifier?.split(' ') ?? [];
                 console.log(modifiers)
                 if (modifiers.length) {
@@ -345,10 +364,11 @@ class Contemplate {
 
 // INSTANTIATE
 const modifiers = {
-    uppercase: (value) => value?.toUpperCase(),
-    lowercase: (value) => value?.toLowerCase(),
-    reverse: (value) => value?.split("").reverse().join(""),
+    uppercase: (value) => value.toUpperCase(),
+    lowercase: (value) => value.toLowerCase(),
+    reverse: (value) => value.split("").reverse().join(""),
     localeTime: () => new Date().toLocaleTimeString(),
+    // TODO messes array if only one string inside returns chars
     join: (v) => Object.values(v).join(', '),
     
 };
@@ -365,15 +385,16 @@ const templateTest = (item) => {
       Address:
       <span data-key="address" data-modifier="join"></span>
       
-      <!-- on nested NOT applied -->
-      <span data-key="address.street"></span>
+      <!-- on nested NOT applied in update method-->
+      <span data-key="address.street" data-modifier="uppercase"></span>
       <span data-key="address.city"></span>
       <span data-key="address.state"></span>
     </p>
     <p>
       Hobbies:
-      <span data-key="hobbies[0]"></span><!--only ALL array accessible this way! 
-    </p>
+      <span data-key="hobbies"data-modifier="join"></span><br>
+        <span data-key="hobbies.0" ></span>
+      </p>
     <p style="text-align: center; margin-top: 10px">
       <span data-key="now" data-modifier="localeTime"></span>
     </p>
@@ -393,7 +414,7 @@ const testData = [
         },
         hobbies: [ 'reading', 'traveling' ],
         now: new Date(),
-        emoji: null
+        emoji: undefined
     },
     {
         name: 'Jane Doe',
@@ -404,7 +425,7 @@ const testData = [
         },
         hobbies: [ 'running', 'painting' ],
         now: new Date(),
-        emoji: null
+        emoji: undefined
     },
     {
         name: 'BarbWire',
@@ -426,4 +447,5 @@ const dataObject = new DataHandler(testData);
 const testModifier = new Contemplate(dataObject, templateTest, 'container4', 'template1', modifiers);
 testData[ 0 ].name = 'Lemme see'
 
-testData[ 2 ].hobbies = 'debugging 🤬'
+testData[ 2 ].hobbies =  ['debugging 🤬'] 
+//testData[0].address.street = 'Bedwards'
