@@ -236,43 +236,66 @@ class Contemplate {
     init() {
         this.container.innerHTML = "";
         this.dataHandler.data.forEach((instance) => {
+            console.log(instance)
             const card = this.createCard(instance);
             this.container.appendChild(card);
         });
     }
 
     createCard(item) {
+        const card = document.createElement("div");
+        card.className = this.className;
         const template = this.template(item);
-        const parser = new DOMParser();
-        const docFrag = parser.parseFromString(template, "text/html").body;
-        const elements = Array.from(docFrag.childNodes);
+        card.innerHTML = template;
+        const placeholders = card.querySelectorAll("[data-key]");
 
-        elements.forEach(element => {
-            const placeholders = element.querySelectorAll("[data-key]");
+        placeholders.forEach((placeholder) => {
+            const key = placeholder.dataset.key;
+            let value = this.getValue(item, key);
+            const modifiers = placeholder.dataset.modifier?.split(' ') ?? [];
 
-            placeholders.forEach(placeholder => {
-                const key = placeholder.dataset.key;
-                const value = item[ key ];
-                const modifier = placeholder.dataset.modifier;
-
-                if (modifier && this.modifiers[ modifier ]) {
-                    const modifiedValue = this.modifiers[ modifier ](value);
-                    placeholder.textContent = modifiedValue;
+            if (modifiers.length) {
+                modifiers.forEach((modifier) => {
+                    const modifierFn = this.modifiers[ modifier ];
+                    if (modifierFn) {
+                        value = modifierFn(value);
+                    }
+                });
+                placeholder.textContent = value;
+            } else {
+                if (Array.isArray(value)) {
+                    const arrayValues = value.map((arrayItem) => {
+                        return this.getValue(arrayItem, key.split('.').slice(1).join('.'));
+                    });
+                    placeholder.textContent = arrayValues.join(', ');
+                } else if (typeof value === 'object') {
+                    const objectValues = Object.values(value).join(', ');
+                    placeholder.textContent = objectValues;
                 } else {
                     placeholder.textContent = value;
                 }
-            });
+            }
         });
 
-        return docFrag;
+        return card;
     }
 
 
-
-
-
-
-
+    getValue(obj, key) {
+        let value = obj;
+        const keys = key.split('.');
+        for (let i = 0; i < keys.length; i++) {
+            const k = keys[ i ];
+            const arrIndexMatch = k.match(/\[(\d+)\]/); // check if the current key is an array index
+            if (arrIndexMatch) {
+                const arrIndex = parseInt(arrIndexMatch[ 1 ]); // extract the index from the key
+                value = Array.isArray(value) ? value[ arrIndex ] : ''; // use the index to access the array element
+            } else {
+                value = value ? value[ k ] : '';
+            }
+        }
+        return value;
+    }
 
 
 
@@ -291,13 +314,16 @@ class Contemplate {
             this.container.children[ index ].remove();
         } else {
             const key = property;
-            //let newValue = value;
+            let newValue = value;
 
             placeholders.forEach((placeholder) => {
                 const key = placeholder.dataset.key;
+                console.log(key)
                 let value = item[ key ];
+                console.log(Array.isArray(item[key]))
+                console.log(value)// null for nested 🥵
                 const modifiers = placeholder.dataset.modifier?.split(' ') ?? [];
-
+                console.log(modifiers)
                 if (modifiers.length) {
                     modifiers.forEach((modifier) => {
                         const modifierFn = this.modifiers[ modifier ];
@@ -314,22 +340,18 @@ class Contemplate {
         }
     }
 
-
-
-
-
-
-
 }
 
-const modifiers = {
-    uppercase: (value) => value.toUpperCase(),
-    lowercase: (value) => value.toLowerCase(),
-    reverse: (value) => value.split("").reverse().join(""),
-    localeTime: (value) => value.toLocaleTimeString()
-    // ...
-};
 
+// INSTANTIATE
+const modifiers = {
+    uppercase: (value) => value?.toUpperCase(),
+    lowercase: (value) => value?.toLowerCase(),
+    reverse: (value) => value?.split("").reverse().join(""),
+    localeTime: () => new Date().toLocaleTimeString(),
+    join: (v) => Object.values(v).join(', '),
+    
+};
 
 
 const templateTest = (item) => {
@@ -337,170 +359,29 @@ const templateTest = (item) => {
     return `
     <h2 style="text-align: center">
       <span data-key="name" data-modifier="uppercase"></span>
-      <span data-key="name" ></span>
+      <span data-key="name" data-modifier="lowercase"></span>
     </h2>
     <p>
       Address:
-      <span data-key="street">${item.address.street}</span>,
-      <span data-key="city">${item.address.city}</span>,
-      <span data-key="state">${item.address.state}</span>
+      <span data-key="address" data-modifier="join"></span>
+      
+      <!-- on nested NOT applied -->
+      <span data-key="address.street"></span>
+      <span data-key="address.city"></span>
+      <span data-key="address.state"></span>
     </p>
     <p>
       Hobbies:
-      <span data-key="hobbies" data-modifier="hobbies">${item.hobbies}</span>
+      <span data-key="hobbies[0]"></span><!--only ALL array accessible this way! 
     </p>
     <p style="text-align: center; margin-top: 10px">
-      <span data-key="now" data-modifier=localeTime></span>
+      <span data-key="now" data-modifier="localeTime"></span>
     </p>
-    <div style="text-align: center; font-size: 30px">${item.emoji ?? ""}</div>
+    <div style="text-align: center; font-size: 30px" data-key="emoji"></div>
     <br>
   `;
 };
 
-
-
-
-
-// function cardTemplate(item) {
-//     const { title, description, now } = item;
-//     return `
-//    
-//             <h2>index in data: <span data-key="title">${title}<span></h2>
-//             <p data-key="description">${description}</p><!--the "||"not working-->
-//             <p data-key="now"> ${now ?? ''}</p>
-//             <button data-key="delete">Delete</button>
-//     
-//   `;
-// }
-// function cardTemplate2(item) {
-//     return `
-//             <h4>I am 
-//                 <span data-key="title">${item.title}<span>
-//             </h4>
-//             <p data-key="description">${item.description.a ?? item.description}</p><!--the "||"not working-->
-//             <button data-key="delete">Delete</button>
-//   `;
-// }
-// 
-// const source = [
-//     { title: "Card 1", description: "This is the first card.", now: new Date().toLocaleTimeString() },
-//     { title: "Card 2", description: "This is the second card.", now: new Date().toLocaleTimeString() },
-//     { title: "Card 3", description: "This is the third card.", now: new Date().toLocaleTimeString() },
-// ];
-// 
-// const model = new DataHandler(source);
-// //const template = cardTemplate;
-// const template = templateTest
-// 
-// const cards1 = new Contemplate(model, template, 'container1', 'template1');
-
-//const cards2 = new Contemplate(model, cardTemplate2,'container2', 'template2', );
-
-// source[ 0 ].title = "renamed Card"; // will rerender
-// source.push({ title: "Card 4", description: "This is the pushed fourth card.", now: new Date().toLocaleTimeString() })
-// source[ 1 ].title = "renamed me too";
-// source[ 3 ].title = `I'm the new one`;// YEAH!!!!!!!
-// 
-// 
-// source.push({ title: "Card 5", description: "This is the pushed fifth card.", now: new Date().toLocaleTimeString() })
-// source.push({ title: "Card 6", description: "This is the pushed sixth card.", now: new Date().toLocaleTimeString() })
-// 
-// 
-// // UP TO HERE INDICES ARE OK
-// source[ 5 ].title = "Sexiest Card"
-// 
-// 
-// // UNSHIFT MESSES WITH INDICES: 2,3,4,5,6,7,5,undefined
-// source.unshift({ title: "Card 7", description: "This is the unshifted seventh card.", now: new Date().toLocaleTimeString() },
-//     { title: "Card 8", description: "This is the unshifted eighth card.", now: new Date().toLocaleTimeString() },)
-// 
-// // DIFFERENT TEMPLATE_FUNCTION BEING PASSED TO ConTemplate
-// // TODO ADD AN INDEX HERE TO DIFFERCIATE!!!
-// 
-// // to check updating of only changed on load
-// const updateNow = setInterval(tic, 1000);
-// const stop = setTimeout(stopIt, 10000)
-// function tic() {
-//     source[ 0 ].now = new Date().toLocaleTimeString();// TICKS
-//     source[ 1 ].now = new Date().toLocaleTimeString();//TICKS
-//     source[ 2 ].now = new Date().toLocaleTimeString();//WHAAAT??? TICKS NOT
-// }
-// function stopIt() {
-//     clearInterval(updateNow);
-// }
-// 
-// 
-// source.pop()// ALSO OK
-// //cards places are fine, but overwrites everything with the initial data!!!
-// // TODO looks ok, but leaves shifted el as null???
-// //source.shift()
-// //source.splice(-1)
-// console.log(JSON.stringify(source))
-// //source.slice(2)// NOT working
-// source.map((el, index) => el.title = index)
-// console.log(JSON.stringify(source))
-// //source.slice() Not working yet
-// 
-// 
-// 
-// 
-// 
-// 
-// 
-// 
-// 
-// 
-// 
-// 
-// 
-// 
-// 
-// //DIFFERENT TEMPLATE_FUNCTION BEING PASSED TO ConTemplate
-// // TODO ADD AN INDEX HERE TO DIFFERCIATE!!!
-// const template1 = (item) => {
-//     
-//     const name = item.name.toUpperCase()
-//     return `
-//         <h2 style="text-align: center; text-transform: uppercase"><span data-key="name">${name}</span></h2>
-//         <p>Address: <span data-key="street">${item.address.street}</span>,
-//                         <span data-key="city">${item.address.city}</span>,
-//                         <span data-key="state">${item.address.state}</span></p>
-//         <p>Hobbies: <span data-key="hobbies">${item.hobbies.join(', ')}</span></p>
-//         <p style="text-align: center; margin-top: 10px"><span data-key="now">${item.now}</span></p>
-//      
-//         <div style="text-align: center; font-size: 30px">${item.emoji ?? ''}</div>
-//         <br>
-//        
-//     `;
-// 
-// };
-// 
-// const template2 = (item) => {
-//     return `
-//         <h3>Name: <span data-key="name">${item.name}</span></h3>
-//         <p>Address: <span data-key="street">${item.address.street}</span></p>
-//         <p>City: <span data-key="city">${item.address.city}</span></p>
-//         <p>State: <span data-key="state">${item.address.state}</span></p>
-//         <p>Hobbies: <span data-key="hobbies">${item.hobbies.join(', ')}</span></p>
-//         <p>Now: <span data-key="now">${item.now}</span></p>
-//         <br>
-//      
-//     `;
-// };
-// 
-// // testData.address only
-// const template3 = (item) => {
-//     return `
-//     
-//        <br>
-//         <p>Address: <span data-key="street">${item.address.street}</span></p>
-//         <p>City: <span data-key="city">${item.address.city}</span></p>
-//         <p>State: <span data-key="state">${item.address.state}</span></p>
-//        
-//     `;
-// 
-// };
-// 
 // TEST-DATASOURCE
 const testData = [
     {
@@ -511,7 +392,7 @@ const testData = [
             state: 'CA',
         },
         hobbies: [ 'reading', 'traveling' ],
-        now: new Date().toLocaleTimeString(),
+        now: new Date(),
         emoji: null
     },
     {
@@ -522,7 +403,7 @@ const testData = [
             state: 'CA',
         },
         hobbies: [ 'running', 'painting' ],
-        now: new Date().toLocaleTimeString(),
+        now: new Date(),
         emoji: null
     },
     {
@@ -533,7 +414,7 @@ const testData = [
             state: 'Spheres',
         },
         hobbies: [ 'coding', 'playing cello', `playing devil's advocat` ],
-        now: new Date().toLocaleTimeString(),
+        now: new Date(),
         emoji: '👻'
     }
 ];
@@ -543,118 +424,6 @@ const testData = [
 const dataObject = new DataHandler(testData);
 // model watching subkey of obj
 const testModifier = new Contemplate(dataObject, templateTest, 'container4', 'template1', modifiers);
-testData[0].name = 'Lemme see'
-// 
-// const firstInstance = new Contemplate(dataObject, template1, 'container4', 'template1');
-// //console.log(firstInstance)
-// const secondInstance = new Contemplate(dataObject, template2, 'container5', 'template2');// this seems to be problematic (???)
-// 
-// const thirdInstance = new Contemplate(dataObject, template3, 'container6', 'template3');
-// 
-// 
-// 
-// 
-// //TODO THIS IS NOT WORKING YET NEED TO ADD OR REMOVE CARDS
-// testData[ 0 ].name = 'Judihui'
-// 
-// // to check updating of only changed on load
-// const updateNow2 = setInterval(tic2, 1000);
-// const stop2 = setTimeout(stopIt2, 10000)
-// function tic2() {
-//     testData[ 2 ].now = new Date().toLocaleTimeString();
-// }
-// 
-// function stopIt2() {
-//     clearInterval(updateNow2);
-// }
-// 
-// 
-// 
-// 
-// 
-// 
-// 
-// testData.push({
-//     name: 'No. 4',
-//     address: {
-//         street: '123 Sidewalk',
-//         city: 'Anytown',
-//         state: 'CA',
-//     },
-//     hobbies: [ 'reading', 'traveling' ],
-//     now: new Date().toLocaleTimeString()
-// },
-//     {
-//         name: 'No. 5',
-//         address: {
-//             street: '456 Sidewalk',
-//             city: 'Anytown',
-//             state: 'CA',
-//         },
-//         hobbies: [ 'reading', 'traveling' ],
-//         now: new Date().toLocaleTimeString()
-//     })
-// 
-// testData[ 0 ].name = 'Jennifer Toe'
-// 
-// 
-// // WHY ARE THESE NOT WORKING??????
-// testData[ 0 ].address.street = `123 Test Way`
-// testData[ 4 ].address.street = `123 Test Way`
-// // as using join in template need entire array here (?)
-// testData[ 2 ].hobbies = 'debugging 🤬 '
-// 
-// 
-// 
-// 
-// class ArrayObserver {
-//     constructor (array, callback) {
-//         this.array = array;
-//         this.callback = callback;
-//         this.observe();
-//     }
-// 
-//     observe() {
-//         const arrayMethods = [ "push", "pop", "shift", "unshift", "splice", "sort", "reverse" ];
-//         const self = this;
-//         arrayMethods.forEach(function (method) {
-//             const originalMethod = Array.prototype[ method ];
-//             Object.defineProperty(self.array, method, {
-//                 value: function (...args) {
-//                     const result = originalMethod.apply(this, args);
-//                     self.callback({
-//                         method,
-//                         args,
-//                         array: this
-//                     });
-//                     return result;
-//                 },
-//                 writable: true,
-//                 enumerable: false,
-//                 configurable: true
-//             });
-//         });
-//     }
-// 
-//     disconnect() {
-//         const arrayMethods = [ "push", "pop", "shift", "unshift", "splice", "sort", "reverse" ];
-//         const self = this;
-//         arrayMethods.forEach(function (method) {
-//             self.array[ method ] = Array.prototype[ method ];
-//         });
-//     }
-// 
-// }
-// const myArray = [ 1, 2, 3 ];
-// const observer = new ArrayObserver(myArray, function (change) {
-//     console.log("Array changed:", change);
-// });
-// myArray.push(4); // logs: "Array changed: { method: 'push', args: [ 4 ], array: [ 1, 2, 3, 4 ] }"
-// 
-// myArray[ 1 ] = 'changed'
-// myArray.slice(-2)
-// //observer.disconnect();
-// 
-// 
-// 
+testData[ 0 ].name = 'Lemme see'
 
+testData[ 2 ].hobbies = 'debugging 🤬'
