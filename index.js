@@ -334,15 +334,15 @@ class Contemplate {
 }
 
 
-function cardTemplate() {
+function cardTemplate(item) {
 
     return `
     
     <div class="template1">
         <div class="card">
-            <h2>index in data: <span data-key="title"><span></h2>
-            <p data-key="description"></p><!--the "||"not working-->
-            <p data-key="now"></p>
+            <h2>index in data: <span data-key="title">${item.title}<span></h2>
+            <p data-key="description">${item.description}</p><!--the "||"not working-->
+            <p data-key="now"> ${item.now ?? ''}</p>
             <button data-key="delete">Delete</button>
         </div>
     </div>
