@@ -222,7 +222,7 @@ class DataHandler {
 
 
 class Contemplate {
-    constructor (dataHandler, template, containerID, className) {
+    constructor (dataHandler, template, containerID, className, modifiers) {
         this.dataHandler = dataHandler.data;
         this.container = document.getElementById(containerID);
         this.containerID = containerID;
@@ -242,26 +242,34 @@ class Contemplate {
     }
 
     createCard(item) {
-        const card = document.createElement("div");
-        card.classList.add("card");
+        const template = this.template(item);
+        const parser = new DOMParser();
+        const docFrag = parser.parseFromString(template, "text/html").body;
+        const elements = Array.from(docFrag.childNodes);
 
-        card.innerHTML = templateTest(item);
+        elements.forEach(element => {
+            const placeholders = element.querySelectorAll("[data-key]");
 
-        const elementsToUpdate = card.querySelectorAll("[data-modifier]");
-        elementsToUpdate.forEach((el) => {
-            const key = el.getAttribute("data-key");
-            const modifier = modifiers[ key ];
-            const value = item[ key ];
-            if (modifier) {
-                const modifiedValue = modifier(value);
-                el.textContent = modifiedValue;
-            } else {
-                el.textContent = value;
-            }
+            placeholders.forEach(placeholder => {
+                const key = placeholder.dataset.key;
+                const value = item[ key ];
+                const modifier = placeholder.dataset.modifier;
+
+                if (modifier && this.modifiers[ modifier ]) {
+                    const modifiedValue = this.modifiers[ modifier ](value);
+                    placeholder.textContent = modifiedValue;
+                } else {
+                    placeholder.textContent = value;
+                }
+            });
         });
 
-        return card;
+        return docFrag;
     }
+
+
+
+
 
 
 
@@ -272,6 +280,9 @@ class Contemplate {
     // todo split this into create/remove uptadte?
     // gets called from the dataHandler's notify and proceeds the approriate changes add/remove cards or update card (changed key only)
     update(item, property, value, operation, index) {
+        const element = this.container.children[ index ];
+        const placeholders = element.querySelectorAll("[data-key]");
+
         if (operation === "add") {
             const card = this.createCard(item);
             const nextSibling = this.container.children[ index ];
@@ -279,27 +290,32 @@ class Contemplate {
         } else if (operation === "delete") {
             this.container.children[ index ].remove();
         } else {
-            const element = this.container.children[ index ];
             const key = property;
-            const placeholder = `$${key}$`;
-            const elementsToUpdate = element.querySelectorAll(`[data-key="${key}"]`);
-            const method = elementsToUpdate[ 0 ].getAttribute("data-method");
-            if (method !== "none") {
-                elementsToUpdate.forEach((el) => {
-                    const valueToUse = (method === "raw") ? value : item[ key ];
-                    const modifier = this.modifiers[ method ];
-                    if (modifier) {
-                        const modifierFunction = this.modifiers[ modifier ];
-                        if (typeof modifierFunction === "function") {
-                            el.textContent = modifierFunction(valueToUse);
+            //let newValue = value;
+
+            placeholders.forEach((placeholder) => {
+                const key = placeholder.dataset.key;
+                let value = item[ key ];
+                const modifiers = placeholder.dataset.modifier?.split(' ') ?? [];
+
+                if (modifiers.length) {
+                    modifiers.forEach((modifier) => {
+                        const modifierFn = this.modifiers[ modifier ];
+                        if (modifierFn) {
+                            value = modifierFn(value);
                         }
-                    } else {
-                        el.textContent = valueToUse;
-                    }
-                });
-            }
+                    });
+                    placeholder.textContent = value;
+                } else {
+                    placeholder.textContent = value;
+                }
+            });
+
         }
     }
+
+
+
 
 
 
@@ -310,23 +326,18 @@ const modifiers = {
     uppercase: (value) => value.toUpperCase(),
     lowercase: (value) => value.toLowerCase(),
     reverse: (value) => value.split("").reverse().join(""),
+    localeTime: (value) => value.toLocaleTimeString()
     // ...
 };
 
 
 
 const templateTest = (item) => {
-    // const uppercase = (value) => value.toUpperCase();
-    // const join = (value) => value.join(", ");
-    // const modifiers = {
-    //     name: uppercase,
-    //     hobbies: join,
-    // };
-
+    
     return `
-    <h2 style="text-align: center; text-transform: uppercase">
-      <span data-key="name" data-modifier="name">${item.name}</span>
-      <span data-key="name" >${item.name}</span>
+    <h2 style="text-align: center">
+      <span data-key="name" data-modifier="uppercase"></span>
+      <span data-key="name" ></span>
     </h2>
     <p>
       Address:
@@ -339,7 +350,7 @@ const templateTest = (item) => {
       <span data-key="hobbies" data-modifier="hobbies">${item.hobbies}</span>
     </p>
     <p style="text-align: center; margin-top: 10px">
-      <span data-key="now">${new Date().toLocaleString()}</span>
+      <span data-key="now" data-modifier=localeTime></span>
     </p>
     <div style="text-align: center; font-size: 30px">${item.emoji ?? ""}</div>
     <br>
@@ -531,7 +542,7 @@ const testData = [
 // model watching all obj
 const dataObject = new DataHandler(testData);
 // model watching subkey of obj
-const testModifier = new Contemplate(dataObject, templateTest, 'container4', 'template1');
+const testModifier = new Contemplate(dataObject, templateTest, 'container4', 'template1', modifiers);
 testData[0].name = 'Lemme see'
 // 
 // const firstInstance = new Contemplate(dataObject, template1, 'container4', 'template1');
