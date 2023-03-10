@@ -447,5 +447,8 @@ const dataObject = new DataHandler(testData);
 const testModifier = new Contemplate(dataObject, templateTest, 'container4', 'template1', modifiers);
 testData[ 0 ].name = 'Lemme see'
 
-testData[ 2 ].hobbies =  ['debugging 🤬'] 
-//testData[0].address.street = 'Bedwards'
+testData[ 2 ].hobbies = [ 'debugging 🤬' ] 
+testData[ 2 ].hobbies[2] = 'playing cello' // not applied
+testData[ 0 ].address.street = 'Bedwards'// throws Cannot read property 'toUpperCase' of undefined
+
+
