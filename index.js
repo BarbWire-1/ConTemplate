@@ -505,11 +505,11 @@ const testModifier = new Contemplate(dataObject, templateTest, 'container4', 'te
 testData[ 0 ].name = 'Lemme see'
 
 testData[ 2 ].hobbies = [ 'debugging 🤬' ] 
-testData[ 2 ].hobbies[2] = 'motocycling' // TODO only applied on the NEXT update if running the setInterval for now eG
+testData[ 2 ].hobbies[2] = 'motocycling' // TODO only applied on the NEXT update the card... this is.... hahahahaha
 //testData[ 0 ].address.street= 'Bedwards'// TODO throws Cannot read property 'toUpperCase' of undefined
 console.log(testData[0].address.street)// getter is ok.
 // to check updating of only changed on load
-// const updateNow = setInterval(tic, 1000);
+//const updateNow = setInterval(tic, 1000);
 // const stop = setTimeout(stopIt, 10000)
 // function tic() {
 //     testData[ 2 ].now = new Date().toLocaleTimeString();
@@ -518,4 +518,5 @@ console.log(testData[0].address.street)// getter is ok.
 // function stopIt() {
 //     clearInterval(updateNow);
 // }
+//testData[2].name= 'tired girl'
 
