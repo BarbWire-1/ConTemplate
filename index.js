@@ -159,8 +159,7 @@ class ObserveEncapsulatedData {
 
                                 }
                                 self.notify(obj, null, null, "add", newLength - 1);
-                                //self.array.push(obj);
-                                console.log(self.data.length)
+                                
 
                             });
                             break;
@@ -172,7 +171,7 @@ class ObserveEncapsulatedData {
                                 for (const key in obj) {
                                     self.defineProp(obj, key, index);
                                 }
-                                console.log(index)
+                               
                                 self.notify(obj, null, null, "add", index);
                             });
                             // update all to sync indices
@@ -257,10 +256,9 @@ class ObserveEncapsulatedData {
         }
     }
 
-    notify(...args) {
-        console.log(JSON.args)
+    notify(item, property, value, operation, index) {
         this.observers.forEach((observer) =>
-            observer.update(...args)
+            observer.update(item, property, value, operation, index)
         );
     }
 }
@@ -302,7 +300,7 @@ class Contemplate {
     init() {
         this.container.innerHTML = "";
         this.dataHandler.data.forEach((instance) => {
-            console.log(instance)
+            
             const card = this.createCard(instance);
             this.container.appendChild(card);
         });
@@ -317,8 +315,9 @@ class Contemplate {
 
         placeholders.forEach((placeholder) => {
             const key = placeholder.dataset.key;
+            console.log|({key})
             let value = this.getValue(item, key);
-            console.log(JSON.stringify(value))// string or object
+            //console.log(JSON.stringify(value))// string or object
             const modifiers = placeholder.dataset.modifier?.split(' ') ?? [];
 
             if (modifiers.length) {
@@ -350,18 +349,23 @@ class Contemplate {
 
     getValue(obj, key) {
         let value = obj;
+        //console.log(JSON.stringify(value))
         const keys = key.split('.');
+        console.log(keys)
 
         for (let i = 0; i < keys.length; i++) {
             const k = keys[ i ];
-            const arrIndexMatch = k.match(/\[(\d+)\]/);
-            console.log(Array.isArray(value))
-            if (arrIndexMatch) {
-                const arrIndex = parseInt(arrIndexMatch[ 1 ]);
-                value = Array.isArray(value) ? value[ arrIndex ] : '';
-            } else {
-                value = value ? value[ keys[ i ] ] : '';
-            }
+        //     const arrIndexMatch = k.match(/\[(\d+)\]/);
+        //     console.log(arrIndexMatch)
+        //    
+        //     if (arrIndexMatch) {
+        //         const arrIndex = parseInt(arrIndexMatch[ 1 ]);
+        //         value = Array.isArray(value) ? value[ arrIndex ] : '';
+        //         console.log(value)
+        //      } else {
+            value = value ? value[ keys[ i ] ] : value[ keys ];
+            //console.log(value)
+            //  }
 
             // If the current value is undefined, break out of the loop and return an empty string
             if (value === undefined) {
@@ -369,6 +373,7 @@ class Contemplate {
                 break;
             }
         }
+        //console.log(value)
 
         return value;
     }
@@ -379,6 +384,10 @@ class Contemplate {
     // todo split this into create/remove uptadte?
     // gets called from the dataHandler's notify and proceeds the approriate changes add/remove cards or update card (changed key only)
     update(item, property, value, operation, index) {
+        
+        console.log({property,value,operation, index})
+        
+        
         const element = this.container.children[ index ];
         const placeholders = element.querySelectorAll("[data-key]");
 
@@ -386,20 +395,23 @@ class Contemplate {
             const card = this.createCard(item);
             const nextSibling = this.container.children[ index ];
             this.container.insertBefore(card, nextSibling);
+            
         } else if (operation === "delete") {
             this.container.children[ index ].remove();
+            
         } else {
             const key = property;
-            let newValue = value;
-
+            //let newValue = value;
+console.log(value)
             placeholders.forEach((placeholder) => {
-                const key = placeholder.dataset.key;
-                console.log(key)
+                console.log(placeholder)
+                let key = placeholder.dataset.key;
+               
                 let value = this.getValue(item, key) || item[key];// this does not work for setting address.street eg
-                console.log(typeof (key))// aaaaah....all string!!!
-                console.log(value)// undefined for nested set per .??? 🥵
+                //console.log(typeof (key))// aaaaah....all string!!!
+                //console.log(value)// undefined for nested set per .??? 🥵
                 const modifiers = placeholder.dataset.modifier?.split(' ') ?? [];
-                console.log(modifiers)
+                //console.log(modifiers)
                 if (modifiers.length) {
                     modifiers.forEach((modifier) => {
                         const modifierFn = this.modifiers[ modifier ];
@@ -506,17 +518,17 @@ testData[ 0 ].name = 'Lemme see'
 
 testData[ 2 ].hobbies = [ 'debugging 🤬' ] 
 testData[ 2 ].hobbies[2] = 'motocycling' // TODO only applied on the NEXT update the card... this is.... hahahahaha
-//testData[ 0 ].address.street= 'Bedwards'// TODO throws Cannot read property 'toUpperCase' of undefined
+testData[ 0 ].address.street= 'Bedwards'// TODO throws Cannot read property 'toUpperCase' of undefined
 console.log(testData[0].address.street)// getter is ok.
 // to check updating of only changed on load
-//const updateNow = setInterval(tic, 1000);
-// const stop = setTimeout(stopIt, 10000)
-// function tic() {
-//     testData[ 2 ].now = new Date().toLocaleTimeString();
-// }
-// 
-// function stopIt() {
-//     clearInterval(updateNow);
-// }
-//testData[2].name= 'tired girl'
+const updateNow = setInterval(tic, 1000);
+const stop = setTimeout(stopIt, 10000)
+function tic() {
+    testData[ 2 ].now = new Date().toLocaleTimeString();
+}
+
+function stopIt() {
+    clearInterval(updateNow);
+}
+testData[2].name= 'tired girl'
 
