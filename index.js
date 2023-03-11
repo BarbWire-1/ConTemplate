@@ -86,28 +86,32 @@ class ObserveEncapsulatedData {
         let self = this;
         let value = obj[ key ];
 
-        // Check if the object is already reactive
-        const descriptor = Object.getOwnPropertyDescriptor(obj, '__ob__');
-        if (descriptor && descriptor.value) {
-            value = descriptor.value.data[ key ];
-        }
+        // // Check if the object is already reactive
+        // const descriptor = Object.getOwnPropertyDescriptor(obj, '__ob__');
+        // console.log(descriptor)
+        // if (descriptor && descriptor.value) {
+        //     value = descriptor.value.data[ key ];
+        //     console.log(value)
+        // }
 
         Object.defineProperty(obj, key, {
             enumerable: true,
-            configurable: true,
+            configurable: false,
             get() {
+                console.log(value)
                 return value;
             },
             set(newValue) {
                 value = newValue;
                 if (index !== undefined) {
+                    //TODO throws undefined at ​​​Object.set [as street]
                     self.notify(obj, key, value, "update", index);
                 }
             },
         });
 
         // Recursively define properties for nested objects or arrays
-        if (typeof value === "object" && value !== null && !value.__ob__) {
+        if (typeof value === "object" && value !== null ) {
             if (Array.isArray(value)) {
                 value.forEach((_, i) => {
                     self.defineProp(value, i, index);
@@ -386,10 +390,11 @@ class Contemplate {
     update(item, property, value, operation, index) {
         
         console.log({property,value,operation, index})
-        
+        console.log(typeof property)
         
         const element = this.container.children[ index ];
-        const placeholders = element.querySelectorAll("[data-key]");
+        const placeHolders = element.querySelectorAll("[data-key]");
+        console.log(placeHolders)
 
         if (operation === "add") {
             const card = this.createCard(item);
@@ -403,7 +408,7 @@ class Contemplate {
             const key = property;
             //let newValue = value;
 console.log(value)
-            placeholders.forEach((placeholder) => {
+            placeHolders.forEach((placeholder) => {
                 console.log(placeholder)
                 let key = placeholder.dataset.key;
                
@@ -455,7 +460,7 @@ const templateTest = (item) => {
       <span data-key="address" data-modifier="join"></span>
       
       <!-- on nested NOT applied in update method-->
-      <span data-key="address.street" data-modifier="uppercase"></span>
+      <span data-key="address.street"></span>
       <span data-key="address.city"></span>
       <span data-key="address.state"></span>
     </p>
@@ -518,7 +523,7 @@ testData[ 0 ].name = 'Lemme see'
 
 testData[ 2 ].hobbies = [ 'debugging 🤬' ] 
 testData[ 2 ].hobbies[2] = 'motocycling' // TODO only applied on the NEXT update the card... this is.... hahahahaha
-testData[ 0 ].address.street= 'Bedwards'// TODO throws Cannot read property 'toUpperCase' of undefined
+//testData[ 0 ].address.street= 'Bedwards'// TODO throws Cannot read property 'toUpperCase' of undefined
 console.log(testData[0].address.street)// getter is ok.
 // to check updating of only changed on load
 const updateNow = setInterval(tic, 1000);
