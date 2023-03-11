@@ -4,60 +4,9 @@
      with MIT license
  */
 // TODO currently update ALL cards on shift/unshift/splice/slice to prevent the indices mess
-// TODO inner arrays not updated per index!!!!!
-// TODO add class in Constructor of Contemplate
+// TODO nestedObj.item not re-rendered;
+// while setting nestedOb = {key: value } works and overwrites
 
-//TODO if(!value)=> `{{key}}`
-// TODO diff create/update in handling keys and values!!!!
-
-class ObservableArray extends Array {
-    constructor (...args) {
-        super(...args);
-        this.observers = new Set();
-    }
-
-    push(...args) {
-        const result = super.push(...args);
-        this.notify({ method: "push", args });
-        return result;
-    }
-
-    pop() {
-        const result = super.pop();
-        this.notify({ method: "pop", args: [ result ] });
-        return result;
-    }
-
-    shift() {
-        const result = super.shift();
-        this.notify({ method: "shift", args: [ result ] });
-        return result;
-    }
-
-    unshift(...args) {
-        const result = super.unshift(...args);
-        this.notify({ method: "unshift", args });
-        return result;
-    }
-
-    splice(...args) {
-        const result = super.splice(...args);
-        this.notify({ method: "splice", args });
-        return result;
-    }
-
-    notify(update) {
-        this.observers.forEach((observer) => observer(update));
-    }
-
-    observe(observer) {
-        this.observers.add(observer);
-    }
-
-    unobserve(observer) {
-        this.observers.delete(observer);
-    }
-}
 
 
 
@@ -84,7 +33,10 @@ class ObserveEncapsulatedData {
     // Define properties per item in dataSource
     defineProp(obj, key, index) {
         let self = this;
+        console.log(obj)
         let value = obj[ key ];
+        
+        
 
         Object.defineProperty(obj, key, {
             enumerable: true,
@@ -98,18 +50,22 @@ class ObserveEncapsulatedData {
                 console.log(value)// set on address-street is NOT HERE!!!
                 self.notify(obj, key, value, "update", index);
 
-                // recursively define properties on nested objects or arrays
                 if (typeof value === "object" && value !== null) {
+                    console.log(value)
                     Object.keys(value).forEach((nestedKey) => {
                         console.log(value, nestedKey)//['debugging 🤬'], '0'
-
-                        if (typeof value[ nestedKey ] === "object" && value[ nestedKey ] !== null) {
+                        console.log(value[ nestedKey ])
+                        if (typeof obj[ nestedKey ] === "object" && obj[ nestedKey ] !== null) {
                             self.defineProp(value, nestedKey);
-                            value[ nestedKey ] = newValue;
+                            obj[ nestedKey ] = newValue;
+                            console.log(value)
 
                         }
                     });
+                    return value;
                 }
+                // recursively define properties on nested objects or arrays
+                
             },
         });
     }
@@ -117,10 +73,7 @@ class ObserveEncapsulatedData {
 
 
 
-    // Apply getters array-methods applied to the outer dataSource
-    // and define operations to compute for each method.
-    // NOTE that this does NOT actually change the this.dataSource,
-    // It's kind of a "Luftnummer", the new length and data is only here
+    //TODO this is UGLY LIKE HELL... change when logic once should run
     // TODO currently slice, splice wrong
     observeDataSource() {
         const self = this;
@@ -350,7 +303,7 @@ class Contemplate {
 
         for (let i = 0; i < keys.length; i++) {
             const k = keys[ i ];
-            value = value ? value[ keys [ i ]] : value;
+            value = value[ keys[ i ] ] ??  `{{${key}}}`;
             
         }
         console.log(value)// keys set on array[index] or on obj.item are NOT HERE
@@ -381,21 +334,21 @@ class Contemplate {
         } else {
             
             const element = this.container.children[ index ];
+            
+            // ALL TAGS
             const tags = element.querySelectorAll("[data-key]");
-             const key = property;
-             console.log(key)// here is ONLY forstLevel key!!!!
+            const key = property;
+             
+            // TODO need to get the dot key here???
+            console.log(key)// here is ONLY firstLevel key!!!!
             let value = this.getValue(item, key);
+            
             const elementsToUpdate = Array.from(
                 element.querySelectorAll(`[data-key="${key}"]`)
-                
-                
+             
             );
-            // TODO try a replace here for ${key} ONLY
-            elementsToUpdate.forEach((el) => {
-               // if (el.textContent !== value) {
-                    el.textContent = value;
-                //}
-            });
+           
+           
            
 
             tags.forEach((tag) => {
@@ -403,7 +356,7 @@ class Contemplate {
                 const key = tag.dataset.key;
                 console.log({ key })
                 //let value = item[key]
-                value = this.getValue(item, key) ?? value;
+                value = this.getValue(item, key) ?? `{{${key}}}`;
                 console.log(JSON.stringify(value))// string or object
                 const modifiers = tag.dataset.modifier?.split(' ') ?? [];
 
@@ -549,16 +502,16 @@ const dataObject = new DataHandler(testData);
 const testModifier = new Contemplate(dataObject, templateTest, 'container4', 'template1', modifiers);
 testData[ 0 ].name = 'Lemme see'
 
-testData[ 2 ].hobbies[ 0 ] = 'debugging 🤬'
-testData[ 2 ].hobbies = ['debugging 🤬'] 
-testData[ 2 ].hobbies[1] = 'motocycling'
+testData[ 2 ].hobbies[ 0 ] = 'debugging 🤬';
+testData[ 2 ].hobbies[ 1 ] = 'motocycling';
+
+testData[ 0 ].hobbies[ 1 ] = 'dreaming';
 
 
-testData[ 2 ].hobbies[ 2 ] = 'dreaming';
-testData[ 0 ].hobbies[ 0 ] = 'dreaming'// NOT applied as array not overwritten prev
-
-testData[ 0 ].address.street = 'Bedwards'// TODO NOT applied
+testData[ 0 ].address.street = 'Home'// TODO NOT applied
 console.log(testData[ 0 ].address.street)// getter is ok.
+testData[ 0 ].address = { street: 'Home' }// renders 'HOME' for all items!!!
+testData[0].address.city = 'MyTown'
 // to check updating of only changed on load
 // const updateNow = setInterval(tic, 1000);
 // const stop = setTimeout(stopIt, 10000)
@@ -569,7 +522,8 @@ console.log(testData[ 0 ].address.street)// getter is ok.
 // function stopIt() {
 //     clearInterval(updateNow);
 // }
-testData[ 2 ].name = 'tired girl'
+testData[ 2 ].name = 'Tired Girl'
+//testData[ 3 ].name = 'tired girl'// WTF throws undefined for card????
 
 testData.push({
     name: 'BarbWire',
