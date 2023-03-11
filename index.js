@@ -33,7 +33,7 @@ class ObserveEncapsulatedData {
     // Define properties per item in dataSource
     defineProp(obj, key, index) {
         let self = this;
-        console.log(obj)
+        //console.log(obj)
         let value = obj[ key ];
         
         
@@ -47,18 +47,18 @@ class ObserveEncapsulatedData {
             },
             set(newValue) {
                 value = newValue;
-                console.log(value)// set on address-street is NOT HERE!!!
+                //console.log(value)// set on address-street is NOT HERE!!!
                 self.notify(obj, key, value, "update", index);
 
                 if (typeof value === "object" && value !== null) {
                     console.log(value)
                     Object.keys(value).forEach((nestedKey) => {
-                        console.log(value, nestedKey)//['debugging 🤬'], '0'
-                        console.log(value[ nestedKey ])
+                        //console.log(value, nestedKey)//['debugging 🤬'], '0'
+                        //console.log(value[ nestedKey ])
                         if (typeof obj[ nestedKey ] === "object" && obj[ nestedKey ] !== null) {
                             self.defineProp(value, nestedKey);
                             obj[ nestedKey ] = newValue;
-                            console.log(value)
+                            //console.log(value)
 
                         }
                     });
@@ -127,7 +127,7 @@ class ObserveEncapsulatedData {
                         case "pop": {
                             // remove the last card
                             self.notify(null, null, null, "delete", newLength);
-                            console.log(self.data.length)
+                           // console.log(self.data.length)
                             break;
                         }
                         case "shift": {
@@ -262,7 +262,7 @@ class Contemplate {
         tags.forEach((tag) => {
             
             const key = tag.dataset.key;
-            console.log ({ key })
+            //console.log ({ key })
             //let value = item[key]
              let value = this.getValue(item, key);
             //console.log(JSON.stringify(value))// string or object
@@ -299,14 +299,13 @@ class Contemplate {
         let value = obj;
         //console.log(JSON.stringify(value))
         const keys = key.split('.');
-        console.log(keys)
-
+       
         for (let i = 0; i < keys.length; i++) {
             const k = keys[ i ];
             value = value[ keys[ i ] ] ??  `{{${key}}}`;
             
         }
-        console.log(value)// keys set on array[index] or on obj.item are NOT HERE
+        //console.log(value)// keys set on array[index] or on obj.item are NOT HERE
 
         return value;
     }
@@ -317,9 +316,10 @@ class Contemplate {
     // todo split this into create/remove uptadte?
     // gets called from the dataHandler's notify and proceeds the approriate changes add/remove cards or update card (changed key only)
     update(item, property, value, operation, index) {
-        
+        // TODO operation "update" for index 3 not here
         console.log({property,value,operation, index})
         console.log(typeof property)
+        console.log(index)
         
         
 
@@ -335,7 +335,7 @@ class Contemplate {
         } else if (operation === "update") {
             
             const element = this.container.children[ index ];
-            console.log(index)
+            console.log(index)// index 3 NOT HERE why???
             
             // ALL TAGS
             const tags = element.querySelectorAll("[data-key]");
@@ -429,7 +429,7 @@ const modifiers = {
 };
 
 
-const templateTest = () => {
+const templateTest = (item) => {
     
     return `
     <h2 style="text-align: center">
@@ -525,10 +525,10 @@ testData[ 0 ].address.state = 'Everywhere'
 //     clearInterval(updateNow);
 // }
 testData[ 2 ].name = 'Tired Girl'
-//testData[ 3 ].name = 'tired girl'// WTF throws undefined for card????
+
 
 testData.push({
-    name: 'BarbWire',
+    name: 'Pushed Card',
     address: {
         street: '007 Oneway',
         city: 'Anothertown',
@@ -538,4 +538,5 @@ testData.push({
     now: new Date(),
     emoji: '👻'
 })
+testData[ 3 ].name = 'Stupid Girl'
 
