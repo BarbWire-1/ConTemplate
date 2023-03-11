@@ -86,14 +86,6 @@ class ObserveEncapsulatedData {
         let self = this;
         let value = obj[ key ];
 
-        // // Check if the object is already reactive
-        // const descriptor = Object.getOwnPropertyDescriptor(obj, '__ob__');
-        // console.log(descriptor)
-        // if (descriptor && descriptor.value) {
-        //     value = descriptor.value.data[ key ];
-        //     console.log(value)
-        // }
-
         Object.defineProperty(obj, key, {
             enumerable: true,
             configurable: false,
@@ -103,26 +95,24 @@ class ObserveEncapsulatedData {
             },
             set(newValue) {
                 value = newValue;
-                if (index !== undefined) {
-                    //TODO throws undefined at ​​​Object.set [as street]
-                    self.notify(obj, key, value, "update", index);
+                console.log(value)// set on address-street is NOT HERE!!!
+                self.notify(obj, key, value, "update", index);
+
+                // recursively define properties on nested objects or arrays
+                if (typeof value === "object" && value !== null) {
+                    Object.keys(value).forEach((nestedKey) => {
+                        console.log(value, nestedKey)//['debugging 🤬'], '0'
+
+                        if (typeof value[ nestedKey ] === "object" && value[ nestedKey ] !== null) {
+                            self.defineProp(value, nestedKey);
+
+                        }
+                    });
                 }
             },
         });
-
-        // Recursively define properties for nested objects or arrays
-        if (typeof value === "object" && value !== null ) {
-            if (Array.isArray(value)) {
-                value.forEach((_, i) => {
-                    self.defineProp(value, i, index);
-                });
-            } else {
-                Object.keys(value).forEach((nestedKey) => {
-                    self.defineProp(value, nestedKey, index);
-                });
-            }
-        }
     }
+
 
 
 
@@ -141,9 +131,8 @@ class ObserveEncapsulatedData {
                 value: function (...newObj) {
                     let result = originalMethod.apply(this, newObj);
                     let newLength = self.data.length
-                    // This acttually should only update the index
-                    // and define props at the correct item
-                    // content is correct when cards get (un-)shifted
+                    
+                    // define props at the correct item's index
                     const updateIndices = () => {
                         for (let i = 0; i < newLength; i++) {
                             for (const key in this[ i ]) {
@@ -155,12 +144,10 @@ class ObserveEncapsulatedData {
 
                     switch (method) {
                         case "push": {
-                            // add getters/setters to new obj keys
                             // add a card for the pushed obj at the end
                             newObj.forEach((obj) => {
                                 for (const key in obj) {
                                     self.defineProp(obj, key, newLength - 1);
-
                                 }
                                 self.notify(obj, null, null, "add", newLength - 1);
                                 
@@ -315,15 +302,17 @@ class Contemplate {
         card.className = this.className;
         const template = this.template(item);
         card.innerHTML = template;
-        const placeholders = card.querySelectorAll("[data-key]");
+        // get all tags including a data-key
+        const tags = card.querySelectorAll("[data-key]");
 
-        placeholders.forEach((placeholder) => {
-            const key = placeholder.dataset.key;
-            console.log | ({ key })
-            let value = item[key]
-            //let value = this.getValue(item, key);
+        tags.forEach((tag) => {
+            
+            const key = tag.dataset.key;
+            console.log ({ key })
+            //let value = item[key]
+             let value = this.getValue(item, key);
             //console.log(JSON.stringify(value))// string or object
-            const modifiers = placeholder.dataset.modifier?.split(' ') ?? [];
+            const modifiers = tag.dataset.modifier?.split(' ') ?? [];
 
             if (modifiers.length) {
                 modifiers.forEach((modifier) => {
@@ -332,18 +321,18 @@ class Contemplate {
                         value = modifierFn(value);
                     }
                 });
-                placeholder.textContent = value;
+                tag.textContent = value;
             } else {
                 if (Array.isArray(value)) {
                     const arrayValues = value.map((arrayItem) => {
                         return this.getValue(arrayItem, key.split('.').slice(1).join('.'));
                     });
-                    placeholder.textContent = arrayValues.join(', ');
+                    tag.textContent = arrayValues.join(', ');
                 } else if (typeof value === 'object') {
                     const objectValues = Object.values(value).join(', ');
-                    placeholder.textContent = objectValues;
+                    tag.textContent = objectValues;
                 } else {
-                    placeholder.textContent = value;
+                    tag.textContent = value;
                 }
             }
         });
@@ -352,36 +341,21 @@ class Contemplate {
     }
 
 
-//     getValue(obj, key) {
-//         let value = obj;
-//         //console.log(JSON.stringify(value))
-//         const keys = key.split('.');
-//         console.log(keys)
-// 
-//         for (let i = 0; i < keys.length; i++) {
-//             const k = keys[ i ];
-//         //     const arrIndexMatch = k.match(/\[(\d+)\]/);
-//         //     console.log(arrIndexMatch)
-//         //    
-//         //     if (arrIndexMatch) {
-//         //         const arrIndex = parseInt(arrIndexMatch[ 1 ]);
-//         //         value = Array.isArray(value) ? value[ arrIndex ] : '';
-//         //         console.log(value)
-//         //      } else {
-//             value = value ? value[ keys[ i ] ] : value[ keys ];
-//             //console.log(value)
-//             //  }
-// 
-//             // If the current value is undefined, break out of the loop and return an empty string
-//             if (value === undefined) {
-//                 value = '';
-//                 break;
-//             }
-//         }
-//         //console.log(value)
-// 
-//         return value;
-//     }
+    getValue(obj, key) {
+        let value = obj;
+        //console.log(JSON.stringify(value))
+        const keys = key.split('.');
+        console.log(keys)
+
+        for (let i = 0; i < keys.length; i++) {
+            const k = keys[ i ];
+            value = value ? value[ keys [ i ]] : value;
+            
+        }
+        console.log(value)// keys set on array[index] or on obj.item are NOT HERE
+
+        return value;
+    }
 
 
 
@@ -406,9 +380,14 @@ class Contemplate {
         } else {
             
             const element = this.container.children[ index ];
-            const key = property;
+            const tags = element.querySelectorAll("[data-key]");
+             const key = property;
+             console.log(key)// here is ONLY forstLevel key!!!!
+            let value = this.getValue(item, key);
             const elementsToUpdate = Array.from(
                 element.querySelectorAll(`[data-key="${key}"]`)
+                
+                
             );
             // TODO try a replace here for ${key} ONLY
             elementsToUpdate.forEach((el) => {
@@ -416,32 +395,65 @@ class Contemplate {
                     el.textContent = value;
                 //}
             });
-            
+           
+
+            tags.forEach((tag) => {
+
+                const key = tag.dataset.key;
+                console.log({ key })
+                //let value = item[key]
+                value = this.getValue(item, key) ?? value;
+                console.log(JSON.stringify(value))// string or object
+                const modifiers = tag.dataset.modifier?.split(' ') ?? [];
+
+                if (modifiers.length) {
+                    modifiers.forEach((modifier) => {
+                        const modifierFn = this.modifiers[ modifier ];
+                        if (modifierFn) {
+                            value = modifierFn(value);
+                        }
+                    });
+                    tag.textContent = value;
+                } else {
+                    if (Array.isArray(value)) {
+                        const arrayValues = value.map((arrayItem) => {
+                            return this.getValue(arrayItem, key.split('.').slice(1).join('.'));
+                        });
+                        tag.textContent = arrayValues.join(', ');
+                    } else if (typeof value === 'object') {
+                        const objectValues = Object.values(value).join(', ');
+                        tag.textContent = objectValues;
+                    } else {
+                        tag.textContent = value;
+                    }
+                }
+            });
            
             
-//             //let newValue = value;
-// console.log(value)
-//             elementsToUpdate.forEach((placeholder) => {
-//                 console.log(placeholder)
-//                 //let key = placeholder.dataset.key;
-//                
-//                 let value = this.getValue(item, key) || item[key];// this does not work for setting address.street eg
-//                 //console.log(typeof (key))// aaaaah....all string!!!
-//                 //console.log(value)// undefined for nested set per .??? 🥵
-//                 const modifiers = placeholder.dataset.modifier?.split(' ') ?? [];
-//                 //console.log(modifiers)
-//                 if (modifiers.length) {
-//                     modifiers.forEach((modifier) => {
-//                         const modifierFn = this.modifiers[ modifier ];
-//                         if (modifierFn) {
-//                             value = modifierFn(value);
-//                         }
-//                     });
-//                     placeholder.textContent = value;
-//                 } else {
-//                     placeholder.textContent = value;
-//                 }
-//             });
+            //let newValue = value;
+            console.log(value)// values on array[index] or obj.item are NOT HERE!!!
+            elementsToUpdate.forEach((tag) => {
+                console.log(tag)
+                //let key = tag.dataset.key;
+               
+                //let value = item[ key ];// this does not work for setting address.street eg
+                let value = this.getValue(item, property);
+                //console.log(typeof (key))// aaaaah....all string!!!
+                console.log(value)// undefined for nested set per .??? 🥵
+                const modifiers = tag.dataset.modifier?.split(' ') ?? [];
+                //console.log(modifiers)
+                if (modifiers.length) {
+                    modifiers.forEach((modifier) => {
+                        const modifierFn = this.modifiers[ modifier ];
+                        if (modifierFn) {
+                            value = modifierFn(value);
+                        }
+                    });
+                    tag.textContent = value;
+                } else {
+                    tag.textContent = value;
+                }
+            });
 
         }
     }
@@ -473,14 +485,16 @@ const templateTest = (item) => {
       <span data-key="address" data-modifier="join"></span>
       
       <!-- on nested NOT applied in update method-->
-      <span data-key="address.street"></span>
+      <span data-key="address.street" data-modifier="uppercase"></span>
       <span data-key="address.city"></span>
       <span data-key="address.state"></span>
     </p>
     <p>
       Hobbies:
       <span data-key="hobbies"data-modifier="join"></span><br>
-        <span data-key="hobbies.0" ></span>
+      <!--TODO this shows the INITIAL value-->
+      <span data-key="hobbies.0" data-modifier="uppercase" ></span><br>
+        <span data-key="hobbies.1" data-modifier="uppercase" ></span>
       </p>
     <p style="text-align: center; margin-top: 10px">
       <span data-key="now" data-modifier="localeTime"></span>
@@ -534,20 +548,21 @@ const dataObject = new DataHandler(testData);
 const testModifier = new Contemplate(dataObject, templateTest, 'container4', 'template1', modifiers);
 testData[ 0 ].name = 'Lemme see'
 
-testData[ 2 ].hobbies = [ 'debugging 🤬' ] 
-testData[ 2 ].hobbies[2] = 'motocycling' // TODO only applied on the NEXT update the card... this is.... hahahahaha
-//testData[ 0 ].address.street= 'Bedwards'// TODO throws Cannot read property 'toUpperCase' of undefined
+testData[ 2 ].hobbies[ 0 ] = 'debugging 🤬'
+testData[ 2 ].hobbies = ['debugging 🤬'] 
+testData[ 2 ].hobbies[2] = 'motocycling'
+testData[ 0 ].address.street= 'Bedwards'// TODO NOT applied
 console.log(testData[0].address.street)// getter is ok.
 // to check updating of only changed on load
-const updateNow = setInterval(tic, 1000);
-const stop = setTimeout(stopIt, 10000)
-function tic() {
-    testData[ 2 ].now = new Date().toLocaleTimeString();
-}
-
-function stopIt() {
-    clearInterval(updateNow);
-}
+// const updateNow = setInterval(tic, 1000);
+// const stop = setTimeout(stopIt, 10000)
+// function tic() {
+//     testData[ 2 ].now = new Date().toLocaleTimeString();
+// }
+// 
+// function stopIt() {
+//     clearInterval(updateNow);
+// }
 testData[ 2 ].name = 'tired girl'
 
 testData.push({
