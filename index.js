@@ -436,11 +436,11 @@ const templateTest = () => {
     </h2>
     <p>
       Address:
-      <span data-key="address" data-modifier="join"></span>
+      <span data-key="address" data-modifier="join"></span><br>
       
       <!-- on nested NOT applied in update method-->
-      <span data-key="address.street" data-modifier="uppercase"></span>
-      <span data-key="address.city"></span>
+      <span data-key="address.street" data-modifier="uppercase"></span>,
+      <span data-key="address.city"></span>,
       <span data-key="address.state"></span>
     </p>
     <p>
@@ -510,8 +510,8 @@ testData[ 0 ].hobbies[ 1 ] = 'dreaming';
 
 testData[ 0 ].address.street = 'Home'// TODO NOT applied
 console.log(testData[ 0 ].address.street)// getter is ok.
-testData[ 0 ].address = { street: 'Home' }// renders 'HOME' for all items!!!
-testData[0].address.city = 'MyTown'
+testData[ 0 ].address = { street: 'Home', city: 'MyTown' }// renders 'HOME' for all items!!!
+testData[ 0 ].address.state = 'Everywhere'
 // to check updating of only changed on load
 // const updateNow = setInterval(tic, 1000);
 // const stop = setTimeout(stopIt, 10000)
