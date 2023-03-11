@@ -42,7 +42,13 @@ class ObserveEncapsulatedData {
             enumerable: true,
             configurable: false,
             get() {
-                //console.log(value)
+                //TODO how to GET the nested obj keys here??????
+                if (typeof obj === 'object' && typeof obj !== 'string' && !Array.isArray(obj)) {
+                    for (const key in value) {
+                        console.log(obj,key)
+                    }
+                }
+                console.log(value)
                 return value;
             },
             set(newValue) {
@@ -62,9 +68,8 @@ class ObserveEncapsulatedData {
 
                         }
                     });
-                    return value;
+                    //return value;
                 }
-                // recursively define properties on nested objects or arrays
                 
             },
         });
@@ -251,20 +256,42 @@ class Contemplate {
         });
     }
 
-    createCard(item, index) {
+    createCard = (item, index)=> {
         const card = document.createElement("div");
         card.className = this.className;
         const template = this.template(item);
         card.innerHTML = template;
-        // get all tags including a data-key
+       
+        
+        this.write2Card(item,card)
+         // get all tags including a data-key
+        return card;
+       
+       
+    }
+    write2Card(item,card) {
         const tags = card.querySelectorAll("[data-key]");
+        const getValue = (obj, key) => {
+            let value = obj;
+            //console.log(JSON.stringify(value))
+            const keys = key.split('.');
+            console.log({ keys })
+
+            for (let i = 0; i < keys.length; i++) {
+                const k = keys[ i ];
+                value = value[ keys[ i ] ] ?? `{{${key}}}`;
+
+            }
+            return value;
+        }
 
         tags.forEach((tag) => {
-            
+            // TODO currently not receiving the correct key for nested objects 
+            // to use dot.notation in data.key
             const key = tag.dataset.key;
             //console.log ({ key })
             //let value = item[key]
-             let value = this.getValue(item, key);
+            let value = getValue(item, key);
             //console.log(JSON.stringify(value))// string or object
             const modifiers = tag.dataset.modifier?.split(' ') ?? [];
 
@@ -291,36 +318,15 @@ class Contemplate {
             }
         });
 
-        return card;
     }
-
-
-    getValue(obj, key) {
-        let value = obj;
-        //console.log(JSON.stringify(value))
-        const keys = key.split('.');
-       
-        for (let i = 0; i < keys.length; i++) {
-            const k = keys[ i ];
-            value = value[ keys[ i ] ] ??  `{{${key}}}`;
-            
-        }
-        //console.log(value)// keys set on array[index] or on obj.item are NOT HERE
-
-        return value;
-    }
-
-
-
-
-    // todo split this into create/remove uptadte?
-    // gets called from the dataHandler's notify and proceeds the approriate changes add/remove cards or update card (changed key only)
+   
+    //TODO check the notify for needed params after changes made here
     update(item, property, value, operation, index) {
-        // TODO operation "update" for index 3 not here
-         console.log({property,value,operation, index})
+       
+         //console.log({property,value,operation, index})
         // console.log(typeof property)
         // console.log(index)
-        
+        console.count()
         
 
         if (operation === "add") {
@@ -333,91 +339,8 @@ class Contemplate {
             this.container.children[ index ].remove();
             
         } else if (operation === "update") {
-            
-            const element = this.container.children[ index ];
-            //console.log(index)
-            
-            // ALL TAGS
-            const tags = element.querySelectorAll("[data-key]");
-            const key = property;
-             
-            // TODO need to get the dot key here???
-            //console.log(key)// here is ONLY firstLevel key!!!!
-            let value = this.getValue(item, key);
-            
-            const elementsToUpdate = Array.from(
-                element.querySelectorAll(`[data-key="${key}"]`)
-             
-            );
-           
-           
-           
-
-            tags.forEach((tag) => {
-
-                const key = tag.dataset.key;
-                //console.log({ key })
-                //let value = item[key]
-                value = this.getValue(item, key) ?? `{{${key}}}`;
-                if (Array.isArray(value) && typeof value !== 'string') {
-                    //console.log(value)
-                    const arrayValues = value.map((arrayItem) => {
-                        //console.log(arrayItem)
-                        tag.textContent = arrayItem
-                    });
-                    //tag.textContent = arrayValues.join(', ');
-                } else if (typeof value === 'object') {
-                    
-                    for (const keys in value) {
-                        // TODO ONLY shows those set manually WHY???
-                        //console.log(item[ property ][ keys ])
-                    
-                        tag.textContent = item[ property ][ keys ];
-                    }
-                } else {
-                    tag.textContent = value;
-                }
-                //console.log(JSON.stringify(value))// string or object
-                const modifiers = tag.dataset.modifier?.split(' ') ?? [];
-
-                while (modifiers.length) {
-                    
-                    modifiers.forEach((modifier) => {
-                        const modifierFn = this.modifiers[ modifier ];
-                        if (modifierFn) {
-                            value = modifierFn(value);
-                        }
-                    });
-                    modifiers.length--;
-                    tag.textContent = value;
-                }
-            });
-           
-            
-            //let newValue = value;
-            //console.log(value)// values on array[index] or obj.item are NOT HERE!!!
-            elementsToUpdate.forEach((tag) => {
-                //console.log(tag)
-                //let key = tag.dataset.key;
-               
-                //let value = item[ key ];// this does not work for setting address.street eg
-                let value = this.getValue(item, property);
-                //console.log(typeof (key))// aaaaah....all string!!!
-                //console.log(value)// nested set per . NOT HERE ??? 🥵
-                const modifiers = tag.dataset.modifier?.split(' ') ?? [];
-                //console.log(modifiers)
-                if (modifiers.length) {
-                    modifiers.forEach((modifier) => {
-                        const modifierFn = this.modifiers[ modifier ];
-                        if (modifierFn) {
-                            value = modifierFn(value);
-                        }
-                    });
-                    tag.textContent = value;
-                } else {
-                    tag.textContent = value;
-                }
-            });
+            const card = this.container.children[ index ];  
+            this.write2Card(item, card)
 
         }
     }
@@ -427,12 +350,13 @@ class Contemplate {
 
 // INSTANTIATE
 const modifiers = {
-    uppercase: (value) => value.toUpperCase(),
-    lowercase: (value) => value.toLowerCase(),
-    reverse: (value) => value.split("").reverse().join(""),
+    // v is the raw value
+    uppercase: (v) => v.toUpperCase(),
+    lowercase: (v) => v.toLowerCase(),
+    reverse: (v) => v.split("").reverse().join(""),
     localeTime: () => new Date().toLocaleTimeString(),
-    // TODO messes array if only one string inside returns chars
-    join: (v) => Object.values(v).join(', '),
+    // prevent splitting strings into chars
+    join: (v) => typeof v !== 'string' ? Object.values(v).join(', ') : v,
     
 };
 
@@ -523,15 +447,15 @@ testData[ 0 ].address.street = 'Home'// TODO NOT applied
 testData[ 0 ].address = { street: 'Home', city: 'MyTown' }
 testData[ 0 ].address.state = 'Everywhere'
 // to check updating of only changed on load
-const updateNow = setInterval(tic, 1000);
-const stop = setTimeout(stopIt, 10000)
-function tic() {
-    testData[ 2 ].now = new Date().toLocaleTimeString();
-}
-
-function stopIt() {
-    clearInterval(updateNow);
-}
+// const updateNow = setInterval(tic, 1000);
+// const stop = setTimeout(stopIt, 10000)
+// function tic() {
+//     testData[ 2 ].now = new Date().toLocaleTimeString();
+// }
+// 
+// function stopIt() {
+//     clearInterval(updateNow);
+// }
 testData[ 2 ].name = 'Tired Girl'
 
 
@@ -547,4 +471,5 @@ testData.push({
     emoji: '👻'
 })
 testData[ 3 ].name = 'Stupid Girl'
+//testData.shift()// TODO remove listeners for removed cards
 
