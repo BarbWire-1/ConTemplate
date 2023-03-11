@@ -319,8 +319,9 @@ class Contemplate {
 
         placeholders.forEach((placeholder) => {
             const key = placeholder.dataset.key;
-            console.log|({key})
-            let value = this.getValue(item, key);
+            console.log | ({ key })
+            let value = item[key]
+            //let value = this.getValue(item, key);
             //console.log(JSON.stringify(value))// string or object
             const modifiers = placeholder.dataset.modifier?.split(' ') ?? [];
 
@@ -351,36 +352,36 @@ class Contemplate {
     }
 
 
-    getValue(obj, key) {
-        let value = obj;
-        //console.log(JSON.stringify(value))
-        const keys = key.split('.');
-        console.log(keys)
-
-        for (let i = 0; i < keys.length; i++) {
-            const k = keys[ i ];
-        //     const arrIndexMatch = k.match(/\[(\d+)\]/);
-        //     console.log(arrIndexMatch)
-        //    
-        //     if (arrIndexMatch) {
-        //         const arrIndex = parseInt(arrIndexMatch[ 1 ]);
-        //         value = Array.isArray(value) ? value[ arrIndex ] : '';
-        //         console.log(value)
-        //      } else {
-            value = value ? value[ keys[ i ] ] : value[ keys ];
-            //console.log(value)
-            //  }
-
-            // If the current value is undefined, break out of the loop and return an empty string
-            if (value === undefined) {
-                value = '';
-                break;
-            }
-        }
-        //console.log(value)
-
-        return value;
-    }
+//     getValue(obj, key) {
+//         let value = obj;
+//         //console.log(JSON.stringify(value))
+//         const keys = key.split('.');
+//         console.log(keys)
+// 
+//         for (let i = 0; i < keys.length; i++) {
+//             const k = keys[ i ];
+//         //     const arrIndexMatch = k.match(/\[(\d+)\]/);
+//         //     console.log(arrIndexMatch)
+//         //    
+//         //     if (arrIndexMatch) {
+//         //         const arrIndex = parseInt(arrIndexMatch[ 1 ]);
+//         //         value = Array.isArray(value) ? value[ arrIndex ] : '';
+//         //         console.log(value)
+//         //      } else {
+//             value = value ? value[ keys[ i ] ] : value[ keys ];
+//             //console.log(value)
+//             //  }
+// 
+//             // If the current value is undefined, break out of the loop and return an empty string
+//             if (value === undefined) {
+//                 value = '';
+//                 break;
+//             }
+//         }
+//         //console.log(value)
+// 
+//         return value;
+//     }
 
 
 
@@ -404,34 +405,43 @@ class Contemplate {
             
         } else {
             
-            
             const element = this.container.children[ index ];
-            const placeHolders = element.querySelectorAll("[data-key]");
-            console.log(placeHolders)
             const key = property;
-            //let newValue = value;
-console.log(value)
-            placeHolders.forEach((placeholder) => {
-                console.log(placeholder)
-                let key = placeholder.dataset.key;
-               
-                let value = this.getValue(item, key) || item[key];// this does not work for setting address.street eg
-                //console.log(typeof (key))// aaaaah....all string!!!
-                //console.log(value)// undefined for nested set per .??? 🥵
-                const modifiers = placeholder.dataset.modifier?.split(' ') ?? [];
-                //console.log(modifiers)
-                if (modifiers.length) {
-                    modifiers.forEach((modifier) => {
-                        const modifierFn = this.modifiers[ modifier ];
-                        if (modifierFn) {
-                            value = modifierFn(value);
-                        }
-                    });
-                    placeholder.textContent = value;
-                } else {
-                    placeholder.textContent = value;
-                }
+            const elementsToUpdate = Array.from(
+                element.querySelectorAll(`[data-key="${key}"]`)
+            );
+            // TODO try a replace here for ${key} ONLY
+            elementsToUpdate.forEach((el) => {
+               // if (el.textContent !== value) {
+                    el.textContent = value;
+                //}
             });
+            
+           
+            
+//             //let newValue = value;
+// console.log(value)
+//             elementsToUpdate.forEach((placeholder) => {
+//                 console.log(placeholder)
+//                 //let key = placeholder.dataset.key;
+//                
+//                 let value = this.getValue(item, key) || item[key];// this does not work for setting address.street eg
+//                 //console.log(typeof (key))// aaaaah....all string!!!
+//                 //console.log(value)// undefined for nested set per .??? 🥵
+//                 const modifiers = placeholder.dataset.modifier?.split(' ') ?? [];
+//                 //console.log(modifiers)
+//                 if (modifiers.length) {
+//                     modifiers.forEach((modifier) => {
+//                         const modifierFn = this.modifiers[ modifier ];
+//                         if (modifierFn) {
+//                             value = modifierFn(value);
+//                         }
+//                     });
+//                     placeholder.textContent = value;
+//                 } else {
+//                     placeholder.textContent = value;
+//                 }
+//             });
 
         }
     }
@@ -538,5 +548,17 @@ function tic() {
 function stopIt() {
     clearInterval(updateNow);
 }
-testData[2].name= 'tired girl'
+testData[ 2 ].name = 'tired girl'
+
+testData.push({
+    name: 'BarbWire',
+    address: {
+        street: '007 Oneway',
+        city: 'Anothertown',
+        state: 'Spheres',
+    },
+    hobbies: [ 'coding', 'playing cello', `playing devil's advocat` ],
+    now: new Date(),
+    emoji: '👻'
+})
 
