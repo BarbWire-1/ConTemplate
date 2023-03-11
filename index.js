@@ -317,7 +317,7 @@ class Contemplate {
     // gets called from the dataHandler's notify and proceeds the approriate changes add/remove cards or update card (changed key only)
     update(item, property, value, operation, index) {
         // TODO operation "update" for index 3 not here
-        // console.log({property,value,operation, index})
+         console.log({property,value,operation, index})
         // console.log(typeof property)
         // console.log(index)
         
@@ -359,29 +359,37 @@ class Contemplate {
                 //console.log({ key })
                 //let value = item[key]
                 value = this.getValue(item, key) ?? `{{${key}}}`;
+                if (Array.isArray(value) && typeof value !== 'string') {
+                    //console.log(value)
+                    const arrayValues = value.map((arrayItem) => {
+                        //console.log(arrayItem)
+                        tag.textContent = arrayItem
+                    });
+                    //tag.textContent = arrayValues.join(', ');
+                } else if (typeof value === 'object') {
+                    
+                    for (const keys in value) {
+                        // TODO ONLY shows those set manually WHY???
+                        //console.log(item[ property ][ keys ])
+                    
+                        tag.textContent = item[ property ][ keys ];
+                    }
+                } else {
+                    tag.textContent = value;
+                }
                 //console.log(JSON.stringify(value))// string or object
                 const modifiers = tag.dataset.modifier?.split(' ') ?? [];
 
-                if (modifiers.length) {
+                while (modifiers.length) {
+                    
                     modifiers.forEach((modifier) => {
                         const modifierFn = this.modifiers[ modifier ];
                         if (modifierFn) {
                             value = modifierFn(value);
                         }
                     });
+                    modifiers.length--;
                     tag.textContent = value;
-                } else {
-                    if (Array.isArray(value)) {
-                        const arrayValues = value.map((arrayItem) => {
-                            return this.getValue(arrayItem, key.split('.').slice(1).join('.'));
-                        });
-                        tag.textContent = arrayValues.join(', ');
-                    } else if (typeof value === 'object') {
-                        const objectValues = Object.values(value).join(', ');
-                        tag.textContent = objectValues;
-                    } else {
-                        tag.textContent = value;
-                    }
                 }
             });
            
@@ -429,12 +437,12 @@ const modifiers = {
 };
 
 
-const templateTest = (item) => {
+const templateTest = () => {
     
     return `
     <h2 style="text-align: center">
       <span data-key="name" data-modifier="uppercase"></span>
-      <span data-key="name" data-modifier="lowercase"></span>
+      <span data-key="name" data-modifier="lowercase reverse"></span>
     </h2>
     <p>
       Address:
@@ -512,7 +520,7 @@ testData[ 0 ].hobbies[ 1 ] = 'dreaming';
 
 testData[ 0 ].address.street = 'Home'// TODO NOT applied
 //console.log(testData[ 0 ].address.street)// getter is ok.
-testData[ 0 ].address = { street: 'Home', city: 'MyTown' }// renders 'HOME' for all items!!!
+testData[ 0 ].address = { street: 'Home', city: 'MyTown' }
 testData[ 0 ].address.state = 'Everywhere'
 // to check updating of only changed on load
 const updateNow = setInterval(tic, 1000);
