@@ -251,7 +251,7 @@ class Contemplate {
         });
     }
 
-    createCard(item) {
+    createCard(item, index) {
         const card = document.createElement("div");
         card.className = this.className;
         const template = this.template(item);
@@ -326,14 +326,16 @@ class Contemplate {
         if (operation === "add") {
             const card = this.createCard(item);
             const nextSibling = this.container.children[ index ];
+            console.log(index)
             this.container.insertBefore(card, nextSibling);
             
         } else if (operation === "delete") {
             this.container.children[ index ].remove();
             
-        } else {
+        } else if (operation === "update") {
             
             const element = this.container.children[ index ];
+            console.log(index)
             
             // ALL TAGS
             const tags = element.querySelectorAll("[data-key]");
