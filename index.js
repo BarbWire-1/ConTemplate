@@ -473,7 +473,7 @@ const modifiers = {
 };
 
 
-const templateTest = (item) => {
+const templateTest = () => {
     
     return `
     <h2 style="text-align: center">
@@ -492,9 +492,9 @@ const templateTest = (item) => {
     <p>
       Hobbies:
       <span data-key="hobbies"data-modifier="join"></span><br>
-      <!--TODO this shows the INITIAL value-->
+     
       <span data-key="hobbies.0" data-modifier="uppercase" ></span><br>
-        <span data-key="hobbies.1" data-modifier="uppercase" ></span>
+        <span data-key="hobbies.1" data-modifier="lowercase" ></span>
       </p>
     <p style="text-align: center; margin-top: 10px">
       <span data-key="now" data-modifier="localeTime"></span>
@@ -550,9 +550,14 @@ testData[ 0 ].name = 'Lemme see'
 
 testData[ 2 ].hobbies[ 0 ] = 'debugging 🤬'
 testData[ 2 ].hobbies = ['debugging 🤬'] 
-testData[ 2 ].hobbies[2] = 'motocycling'
-testData[ 0 ].address.street= 'Bedwards'// TODO NOT applied
-console.log(testData[0].address.street)// getter is ok.
+testData[ 2 ].hobbies[1] = 'motocycling'
+
+
+testData[ 2 ].hobbies[ 2 ] = 'dreaming';
+testData[ 0 ].hobbies[ 0 ] = 'dreaming'// NOT applied as array not overwritten prev
+
+testData[ 0 ].address.street = 'Bedwards'// TODO NOT applied
+console.log(testData[ 0 ].address.street)// getter is ok.
 // to check updating of only changed on load
 // const updateNow = setInterval(tic, 1000);
 // const stop = setTimeout(stopIt, 10000)
