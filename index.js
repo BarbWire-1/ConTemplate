@@ -42,7 +42,7 @@ class ObserveEncapsulatedData {
             enumerable: true,
             configurable: false,
             get() {
-                console.log(value)
+                //console.log(value)
                 return value;
             },
             set(newValue) {
@@ -317,16 +317,16 @@ class Contemplate {
     // gets called from the dataHandler's notify and proceeds the approriate changes add/remove cards or update card (changed key only)
     update(item, property, value, operation, index) {
         // TODO operation "update" for index 3 not here
-        console.log({property,value,operation, index})
-        console.log(typeof property)
-        console.log(index)
+        // console.log({property,value,operation, index})
+        // console.log(typeof property)
+        // console.log(index)
         
         
 
         if (operation === "add") {
             const card = this.createCard(item);
             const nextSibling = this.container.children[ index ];
-            console.log(index)
+            //console.log(index)
             this.container.insertBefore(card, nextSibling);
             
         } else if (operation === "delete") {
@@ -335,14 +335,14 @@ class Contemplate {
         } else if (operation === "update") {
             
             const element = this.container.children[ index ];
-            console.log(index)// index 3 NOT HERE why???
+            //console.log(index)
             
             // ALL TAGS
             const tags = element.querySelectorAll("[data-key]");
             const key = property;
              
             // TODO need to get the dot key here???
-            console.log(key)// here is ONLY firstLevel key!!!!
+            //console.log(key)// here is ONLY firstLevel key!!!!
             let value = this.getValue(item, key);
             
             const elementsToUpdate = Array.from(
@@ -356,10 +356,10 @@ class Contemplate {
             tags.forEach((tag) => {
 
                 const key = tag.dataset.key;
-                console.log({ key })
+                //console.log({ key })
                 //let value = item[key]
                 value = this.getValue(item, key) ?? `{{${key}}}`;
-                console.log(JSON.stringify(value))// string or object
+                //console.log(JSON.stringify(value))// string or object
                 const modifiers = tag.dataset.modifier?.split(' ') ?? [];
 
                 if (modifiers.length) {
@@ -387,15 +387,15 @@ class Contemplate {
            
             
             //let newValue = value;
-            console.log(value)// values on array[index] or obj.item are NOT HERE!!!
+            //console.log(value)// values on array[index] or obj.item are NOT HERE!!!
             elementsToUpdate.forEach((tag) => {
-                console.log(tag)
+                //console.log(tag)
                 //let key = tag.dataset.key;
                
                 //let value = item[ key ];// this does not work for setting address.street eg
                 let value = this.getValue(item, property);
                 //console.log(typeof (key))// aaaaah....all string!!!
-                console.log(value)// undefined for nested set per .??? 🥵
+                //console.log(value)// nested set per . NOT HERE ??? 🥵
                 const modifiers = tag.dataset.modifier?.split(' ') ?? [];
                 //console.log(modifiers)
                 if (modifiers.length) {
@@ -511,19 +511,19 @@ testData[ 0 ].hobbies[ 1 ] = 'dreaming';
 
 
 testData[ 0 ].address.street = 'Home'// TODO NOT applied
-console.log(testData[ 0 ].address.street)// getter is ok.
+//console.log(testData[ 0 ].address.street)// getter is ok.
 testData[ 0 ].address = { street: 'Home', city: 'MyTown' }// renders 'HOME' for all items!!!
 testData[ 0 ].address.state = 'Everywhere'
 // to check updating of only changed on load
-// const updateNow = setInterval(tic, 1000);
-// const stop = setTimeout(stopIt, 10000)
-// function tic() {
-//     testData[ 2 ].now = new Date().toLocaleTimeString();
-// }
-// 
-// function stopIt() {
-//     clearInterval(updateNow);
-// }
+const updateNow = setInterval(tic, 1000);
+const stop = setTimeout(stopIt, 10000)
+function tic() {
+    testData[ 2 ].now = new Date().toLocaleTimeString();
+}
+
+function stopIt() {
+    clearInterval(updateNow);
+}
 testData[ 2 ].name = 'Tired Girl'
 
 
