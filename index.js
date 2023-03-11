@@ -105,6 +105,7 @@ class ObserveEncapsulatedData {
 
                         if (typeof value[ nestedKey ] === "object" && value[ nestedKey ] !== null) {
                             self.defineProp(value, nestedKey);
+                            value[ nestedKey ] = newValue;
 
                         }
                     });
