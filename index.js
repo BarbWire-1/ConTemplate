@@ -392,9 +392,7 @@ class Contemplate {
         console.log({property,value,operation, index})
         console.log(typeof property)
         
-        const element = this.container.children[ index ];
-        const placeHolders = element.querySelectorAll("[data-key]");
-        console.log(placeHolders)
+        
 
         if (operation === "add") {
             const card = this.createCard(item);
@@ -405,6 +403,11 @@ class Contemplate {
             this.container.children[ index ].remove();
             
         } else {
+            
+            
+            const element = this.container.children[ index ];
+            const placeHolders = element.querySelectorAll("[data-key]");
+            console.log(placeHolders)
             const key = property;
             //let newValue = value;
 console.log(value)
