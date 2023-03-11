@@ -33,44 +33,23 @@ class ObserveEncapsulatedData {
     // Define properties per item in dataSource
     defineProp(obj, key, index) {
         let self = this;
-        //console.log(obj)
         let value = obj[ key ];
-        
-        
 
         Object.defineProperty(obj, key, {
             enumerable: true,
-            configurable: false,
+            //configurable: false,
             get() {
-                //TODO how to GET the nested obj keys here??????
-                if (typeof obj === 'object' && typeof obj !== 'string' && !Array.isArray(obj)) {
-                    for (const key in value) {
-                        console.log(obj,key)
-                    }
+                if (typeof value === "object" && value !== null) {
+                    // define getters recursively for nested properties
+                    Object.keys(value).forEach((nestedKey) => {
+                        self.defineProp(value, nestedKey, index);
+                    });
                 }
-                console.log(value)
                 return value;
             },
             set(newValue) {
                 value = newValue;
-                //console.log(value)// set on address-street is NOT HERE!!!
                 self.notify(obj, key, value, "update", index);
-
-                if (typeof value === "object" && value !== null) {
-                    console.log(value)
-                    Object.keys(value).forEach((nestedKey) => {
-                        //console.log(value, nestedKey)//['debugging 🤬'], '0'
-                        //console.log(value[ nestedKey ])
-                        if (typeof obj[ nestedKey ] === "object" && obj[ nestedKey ] !== null) {
-                            self.defineProp(value, nestedKey);
-                            obj[ nestedKey ] = newValue;
-                            //console.log(value)
-
-                        }
-                    });
-                    //return value;
-                }
-                
             },
         });
     }
