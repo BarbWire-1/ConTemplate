@@ -55,17 +55,22 @@ class ObserveEncapsulatedData {
             Object.defineProperty(obj, key, {
                 enumerable: true,
                 get() {
-                    console.log(`Getting ${JSON.stringify(value)} for ${key} in object`, JSON.stringify([ key ]));
+                    //console.log(`Getting ${JSON.stringify(value)} for ${key} in object`, JSON.stringify([ key ]));
                     return value;
                 },
                 set(newValue) {
-                    console.log(`Setting ${newValue} for ${key} in object`, obj);
+                    //console.log(`Setting ${newValue} for ${key} in object`, obj);
                     value = newValue;
-                    self.notify(obj, key, value, "update", index, parentObj);
+                    self.notify(obj, key, value, "update", index);
+                    //Update the parent object
+                    // if (parentObj) {
+                    //     parentObj[ key ] = value;
+                    // }
                 },
             });
         });
     }
+
 
 
 
@@ -259,23 +264,24 @@ class Contemplate {
     }
     
     
-    createCard = (item)=> {
+    createCard = (item, index)=> {
         const card = document.createElement("div");
         card.className = this.className;
         const template = this.template(item);
         card.innerHTML = template;
        
         
-        this.write2Card(item,card)
+        this.write2Card(item,card, index)
          // get all tags including a data-key
         return card;
        
        
     }
-    write2Card(item, card) {
-        //console.log(item)
+    write2Card(item, card, index) {
+        console.log(index)
         const tags = card.querySelectorAll("[data-key]");
-
+        console.log(card)
+        console.log(index, JSON.stringify(item))
         const getValue = (obj, key) => {
             let value = obj;
             const dataKeys = key.split('.');
@@ -321,6 +327,7 @@ class Contemplate {
     update(item, key, value, operation, index) {
         console.log(key)
         console.log(index)
+        console.log(value)
        
          //console.log({property,value,operation, index})
         // console.log(typeof property)
@@ -338,7 +345,7 @@ class Contemplate {
             
         } else if (operation === "update") {
             const card = this.container.children[ index ];  
-            this.write2Card(item, card)
+            this.write2Card(item, card, index)
 
         }
     }
@@ -403,28 +410,28 @@ const testData = [
         now: new Date(),
         emoji: 'emoji'
     },
-    // {
-    //     name: 'Jane Doe',
-    //     address: {
-    //         street: '456 Main St',
-    //         city: 'Anytown',
-    //         state: 'CA',
-    //     },
-    //     hobbies: [ 'running', 'painting' ],
-    //     now: new Date(),
-    //     emoji: 'emoji'
-    // },
-    // {
-    //     name: 'BarbWire',
-    //     address: {
-    //         street: '007 Oneway',
-    //         city: 'Anothertown',
-    //         state: 'Spheres',
-    //     },
-    //     hobbies: [ 'coding', 'playing cello', `playing devil's advocat` ],
-    //     now: new Date(),
-    //     emoji: '👻'
-    // }
+    {
+        name: 'Jane Doe',
+        address: {
+            street: '456 Main St',
+            city: 'Anytown',
+            state: 'CA',
+        },
+        hobbies: [ 'running', 'painting' ],
+        now: new Date(),
+        emoji: 'emoji'
+    },
+    {
+        name: 'BarbWire',
+        address: {
+            street: '007 Oneway',
+            city: 'Anothertown',
+            state: 'Spheres',
+        },
+        hobbies: [ 'coding', 'playing cello', `playing devil's advocat` ],
+        now: new Date(),
+        emoji: '👻'
+    }
 ];
 
 
@@ -434,8 +441,8 @@ const dataObject = new DataHandler(testData);
 const testModifier = new Contemplate(dataObject, templateTest, 'container4', 'template1', modifiers);
 testData[ 0 ].name = 'Lemme see'
 
-//testData[ 2 ].hobbies[ 0 ] = 'debugging 🤬';
-//testData[ 2 ].hobbies[ 1 ] = 'motocycling';
+testData[ 2 ].hobbies[ 0 ] = 'debugging 🤬';
+testData[ 2 ].hobbies[ 1 ] = 'motocycling';
 
 testData[ 0 ].hobbies[3 ] = 'dreaming';
 
@@ -457,18 +464,18 @@ testData[ 0 ].address.street = 'Everywhere'
 //testData[ 2 ].name = 'Tired Girl'
 
 
-// testData.push({
-//     name: 'Pushed Card',
-//     address: {
-//         street: '007 Oneway',
-//         city: 'Anothertown',
-//         state: 'Spheres',
-//     },
-//     hobbies: [ 'coding', 'playing cello', `playing devil's advocat` ],
-//     now: new Date(),
-//     emoji: '👻'
-// })
-// testData[ 2 ].name = 'Stupid Girl'
+testData.push({
+    name: 'Pushed Card',
+    address: {
+        street: '007 Oneway',
+        city: 'Anothertown',
+        state: 'Spheres',
+    },
+    hobbies: [ 'coding', 'playing cello', `playing devil's advocat` ],
+    now: new Date(),
+    emoji: '👻'
+})
+testData[ 2 ].name = 'Stupid Girl'
 //testData.shift()// TODO remove listeners for removed cards
 
 //testData.pop()
