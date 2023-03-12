@@ -33,7 +33,7 @@ class ObserveEncapsulatedData {
         // set prototype for all other items in the data source
         this.data.slice(1).forEach((item, index) => {
             Object.setPrototypeOf(item, prototype);
-            this.defineProp(item, prototype, index + 1, '');
+            this.defineProp(item, prototype, index + 1);
         });
     }
 
@@ -41,45 +41,71 @@ class ObserveEncapsulatedData {
         let self = this;
         Object.keys(obj).forEach(key => {
             let value = obj[ key ];
-            console.log(key)
-
             const dataKey = parentKey ? `${parentKey}.${key}` : key;
-            console.log(dataKey)
+
             // Recursively define properties for nested objects or arrays
             if (typeof value === "object" && value !== null) {
-                self.defineProp(value, prototype, index, dataKey);
-                console.log(key)
-                console.log(value)
                 // Check if the nested object is already defined
-                if (!Object.getOwnPropertyDescriptor(obj, key)) {
-                    // Define the nested object with an empty object
-                    obj[ key ] = {};
-                }
-
+                //if (!Object.getOwnPropertyDescriptor(obj, key)) {
+                    // Check if obj[key] is an object before setting it to an empty object
+                    // if (typeof obj[ key ] === "object" && obj[ key ] !== null) {
+                    //     // If it is an object, copy its properties to an empty object
+                    //     let temp  = Object.assign({}, obj[ key ]);
+                    // } else {
+                    //     // If it is not an object, set it to an empty object
+                    //     obj[ key ] = {};
+                    // }
+                //}
                 // Define properties for the nested object, passing the parentObj reference
+                
                 self.defineProp(obj[ key ], prototype, index, key);
-            } else {
-                // Define getter and setter for the property
-                Object.defineProperty(obj, key, {
-                    enumerable: true,
-                    get() {
-                        console.log(`Getting ${JSON.stringify(value)} for ${key} in object`, JSON.stringify([ key ]));
-                        return value;
-                    },
-                    set(newValue) {
-                        console.log(`Setting ${newValue} for ${key} in object`, obj);
-                        value = newValue;
-                        self.notify(obj, parentKey, value, "update", index);
-                        self.notify(obj, dataKey, value, "update", index);
-                        // Update the parent object
-                        // if (parentKey) {
-                        //     obj[ parentKey ][ key ] = value;
-                        // }
-                    },
-                });
             }
+            // Define getter and setter for the property
+            Object.defineProperty(obj, key, {
+               
+                enumerable: true,
+                get() {
+                    //console.log(`Getting ${JSON.stringify(value)} for ${key} in object`, JSON.stringify([ key ]));
+                    return value;
+                },
+                set(newValue) {
+                    //console.log(`Setting ${newValue} for ${key} in object`, obj);
+                    value = newValue;
+
+                    self.notify(obj, dataKey, value, "update", index);
+                    //Update the parent object
+                    if (parentKey) {
+                       // parentKey = value;
+                        //self.defineProp(obj, prototype, index, parentKey);
+                        console.log([ key ], value)
+                        
+                         self.notify(obj, parentKey, value, "update", index);
+                    }
+                },
+            });
         });
     }
+    //TODO implement this notify to re-render parent if necessary
+    /**
+     * function notify(obj, key, value, action) {
+  // split the key into parent and child keys
+  const [parentKey, childKey] = key.split('.');
+  
+  // if there is no parent key, the notification is for the top level object
+  if (!parentKey) {
+    console.log(`Top level property ${childKey} has been ${action}d with value ${value}`);
+  } else {
+    // get the parent object by recursively calling notify with the parent key
+    const parentObj = notify(obj[parentKey], childKey, value, action);
+    
+    // update the parent object with the modified child object
+    obj[parentKey] = parentObj;
+  }
+  
+  return obj;
+}
+
+     */
 
 
 
@@ -290,7 +316,7 @@ class Contemplate {
                 this.write2Card(item, key, value, card)
                 const fullKey = prefix ? `${prefix}.${key}` : key;
                 if (typeof value === "object") {
-                    console.log(value)
+                    //console.log(value)
                     write2CardRecursive(value, fullKey, card);
                 } else {
                     this.write2Card(item, fullKey, value, card);
@@ -318,17 +344,9 @@ class Contemplate {
                     }
                 });
             }
-            console.log(value)
-            if (typeof value === "object" && value !== null) {
-                // recursively call write2Card for objects
-                for (const objKey in value) {
-                    const objValue = value[ objKey ];
-                    const objDataKey = `${key}.${objKey}`;
-                    this.write2Card(item, objDataKey, objValue, card);
-                }
-            } else {
+            
                 tag.textContent = value;
-            }
+          
         });
     }
 
@@ -336,14 +354,14 @@ class Contemplate {
 
     //TODO check the notify for needed params after changes made here
     update(item, key, value, operation, index) {
-        console.log(key)
-        console.log(index)
-        console.log(value)
+        // console.log(key)
+        // console.log(index)
+        // console.log(value)
 
         //console.log({property,value,operation, index})
         // console.log(typeof property)
         // console.log(index)
-        console.count()
+        // console.count()
 
 
         if (operation === "add") {
@@ -355,7 +373,7 @@ class Contemplate {
             this.container.children[ index ].remove();
 
         } else if (operation === "update") {
-            console.log(index)
+            // console.log(index)
             const card = this.container.children[ index ];
             this.write2Card(item, key, value, card)
 
@@ -420,7 +438,7 @@ const testData = [
         },
         hobbies: [ 'reading', 'traveling' ],
         now: new Date(),
-        emoji: 'emoji'
+        emoji: undefined
     },
     {
         name: 'Jane Doe',
@@ -431,7 +449,7 @@ const testData = [
         },
         hobbies: [ 'running', 'painting' ],
         now: new Date(),
-        emoji: 'emoji'
+        emoji: undefined
     },
     {
         name: 'BarbWire',
@@ -464,16 +482,16 @@ testData[ 0 ].address.street = 'Home'// TODO NOT applied
 //testData[ 0 ].address = { street: 'Home', city: 'MyTown' }
 testData[ 0 ].address.street = 'Everywhere'
 // to check updating of only changed on load
-//const updateNow = setInterval(tic, 1000);
-// const stop = setTimeout(stopIt, 10000)
-// function tic() {
-//     testData[ 2 ].now = new Date().toLocaleTimeString();
-// }
-// 
-// function stopIt() {
-//     clearInterval(updateNow);
-// }
-//testData[ 2 ].name = 'Tired Girl'
+const updateNow = setInterval(tic, 1000);
+const stop = setTimeout(stopIt, 10000)
+function tic() {
+    testData[ 2 ].now = new Date().toLocaleTimeString();
+}
+
+function stopIt() {
+    clearInterval(updateNow);
+}
+testData[ 1 ].name = 'Tired Girl'
 
 
 testData.push({
@@ -485,7 +503,7 @@ testData.push({
     },
     hobbies: [ 'coding', 'playing cello', `playing devil's advocat` ],
     now: new Date(),
-    emoji: '👻'
+    emoji: undefined
 })
 testData[ 2 ].name = 'Stupid Girl'
 //testData.shift()// TODO remove listeners for removed cards
