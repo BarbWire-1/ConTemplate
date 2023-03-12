@@ -47,6 +47,7 @@ class ObserveEncapsulatedData {
                             self.defineProp(value, nestedKey, index);
                         });
                     }
+                    console.log(value)
                     return value;
                 },
                 set(newValue) {
@@ -219,13 +220,14 @@ class DataHandler {
 
 
 class Contemplate {
-    constructor (dataHandler, template, containerID, className, modifiers) {
+    constructor (dataHandler, template, containerID, className, modifiers=[], show=false) {
         this.dataHandler = dataHandler.data;
         this.container = document.getElementById(containerID);
         this.containerID = containerID;
         this.className = className
         this.template = template;
-        this.modifiers = modifiers; // make modifiers accessible in this instance
+        this.modifiers = modifiers; 
+        this.show = show;
         this.dataHandler.addObserver(this);
         this.init();
     }
@@ -261,7 +263,7 @@ class Contemplate {
             console.log({ keys })
 
             for (let i = 0; i < keys.length; i++) {
-                value = value[ keys[ i ] ] ?? `{{${key}}}`;
+                value = value[ keys[ i ] ] ?? (this.show ? `{{${key}}}` : '');
             }
             return value;
         }
@@ -439,3 +441,4 @@ testData.push({
 testData[ 2 ].name = 'Stupid Girl'
 //testData.shift()// TODO remove listeners for removed cards
 
+//testData.pop()
