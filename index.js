@@ -3,12 +3,6 @@
  *   All rights reserved.
      with MIT license
  */
-// TODO currently update ALL cards on shift/unshift/splice/slice to prevent the indices mess
-// TODO nestedObj.item not re-rendered;
-// while setting nestedOb = {key: value } works and overwrites
-
-// TODO crashed unshift again 😭
-
 
 class ObserveEncapsulatedData {
     constructor (dataSource) {
@@ -37,18 +31,25 @@ class ObserveEncapsulatedData {
         });
     }
 
+    // TODO probs when re-assigning entire nested object. WHY???
+    // TODO add arrayObserver for nested arrays?
+    // TODO test level of nested possible
     defineProp(obj, prototype, index, parentKey = null) {
         let self = this;
+        //clone to keep values of a parentObj
         const all = JSON.parse(JSON.stringify(obj));
+        
         Object.keys(obj).forEach(key => {
             let value = obj[ key ];
+            // TODO chaine this for deeper nested structures?
             const dataKey = parentKey ? `${parentKey}.${key}` : key;
 
             // Recursively define properties for nested objects or arrays
+            // and pass current key as parentKey
             if (typeof value === "object" && value !== null) {
-                self.defineProp(obj[ key ], prototype, index, key);
-
+                self.defineProp(value, prototype, index, key);
             }
+            
             Object.defineProperty(obj, key, {
 
                 enumerable: true,
@@ -70,41 +71,7 @@ class ObserveEncapsulatedData {
             });
         });
     }
-    //TODO implement this notify to re-render parent if necessary
-    /**
-     * function notify(obj, key, value, action) {
-  // split the key into parent and child keys
-  const [parentKey, childKey] = key.split('.');
-  
-  // if there is no parent key, the notification is for the top level object
-  if (!parentKey) {
-    console.log(`Top level property ${childKey} has been ${action}d with value ${value}`);
-  } else {
-    // get the parent object by recursively calling notify with the parent key
-    const parentObj = notify(obj[parentKey], childKey, value, action);
-    
-    // update the parent object with the modified child object
-    obj[parentKey] = parentObj;
-  }
-  
-  return obj;
-}
-
-     */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+   
     //TODO this is UGLY LIKE HELL... change when logic once should run
     // TODO currently slice, splice wrong
     observeDataSource() {
@@ -295,7 +262,7 @@ class Contemplate {
         card.innerHTML = template;
 
         // recursively call write2Card for nested objects
-        const write2CardRecursive = (item, prefix, parent) => {
+        const write2CardRecursive = (item, prefix) => {
             for (const key in item) {
                 const value = item[ key ];
                 this.write2Card(item, key, value, card)
@@ -316,15 +283,10 @@ class Contemplate {
 
     // TODO check here for how to update parent[item] if parent
     // instead of oberwriting it!
-    write2Card(item, key, value, card) {
-    //------------------------------------------------------------------------------------------------------    
-        let keys = key.split('.')
-        if (keys.length > 0 && item[ keys[ 0 ]] !== undefined&& typeof item[keys[0]] === 'object')
-        console.log(JSON.stringify((item[keys[0]])))
-        console.log(keys[keys.length-1])
+    write2Card(_, key, value, card) {
+    
         const tags2Update = card.querySelectorAll(`[data-key="${key}"]`);
-        // TODO might need to go back to this to be able to update the parent obj
-        const tags = card.querySelectorAll(`[data-key]`)
+        
         
         tags2Update.forEach((tag) => {
             const modifiers = tag.dataset.modifier?.split(" ") ?? [];
@@ -343,20 +305,9 @@ class Contemplate {
         });
     }
 
-
-
     //TODO check the notify for needed params after changes made here
     update(item, key, value, operation, index) {
-        // console.log(key)
-        // console.log(index)
-        // console.log(value)
-
-        //console.log({property,value,operation, index})
-        // console.log(typeof property)
-        // console.log(index)
-        // console.count()
-
-
+       
         if (operation === "add") {
             const card = this.createCard(item);
             const nextSibling = this.container.children[ index ];
@@ -467,7 +418,7 @@ testData[ 0 ].name = 'Lemme see'
 testData[ 2 ].hobbies[ 0 ] = 'debugging 🤬';
 testData[ 2 ].hobbies[ 1 ] = 'motocycling';
 
-testData[ 0 ].hobbies[ 3 ] = 'dreaming';
+testData[ 0 ].hobbies[ 0 ] = 'dreaming';
 
 
 testData[ 0 ].address.street = 'Home'// TODO NOT applied
