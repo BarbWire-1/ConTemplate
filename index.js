@@ -30,8 +30,8 @@ class ObserveEncapsulatedData {
     // Define properties per item in dataSource
     defineProp(obj, key, index) {
         // prevent redefining props
-        const descriptor = Object.getOwnPropertyDescriptor(obj, key);
-        if (!descriptor || !descriptor.set || !descriptor.get) {
+        // const descriptor = Object.getOwnPropertyDescriptor(obj, key);
+        // if (!descriptor || !descriptor.set || !descriptor.get) {
             
             let self = this;
             let value = obj[ key ];
@@ -53,7 +53,7 @@ class ObserveEncapsulatedData {
                     self.notify(obj, value, "update", index);
                 },
             });
-        }
+        // }
     }
 
 
@@ -435,6 +435,6 @@ testData.push({
     now: new Date(),
     emoji: '👻'
 })
-testData[ 3 ].name = 'Stupid Girl'
+testData[ 2 ].name = 'Stupid Girl'
 //testData.shift()// TODO remove listeners for removed cards
 
