@@ -30,6 +30,7 @@ class ObserveEncapsulatedData {
     // Define properties per item in dataSource
     defineProp(obj, key, index) {
         // prevent redefining props
+        // This would crash reordering and re-assigning index unfortunately
         // const descriptor = Object.getOwnPropertyDescriptor(obj, key);
         // if (!descriptor || !descriptor.set || !descriptor.get) {
             
