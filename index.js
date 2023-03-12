@@ -42,25 +42,12 @@ class ObserveEncapsulatedData {
         Object.keys(obj).forEach(key => {
             let value = obj[ key ];
             const dataKey = parentKey ? `${parentKey}.${key}` : key;
-
+            
             // Recursively define properties for nested objects or arrays
             if (typeof value === "object" && value !== null) {
-                // Check if the nested object is already defined
-                //if (!Object.getOwnPropertyDescriptor(obj, key)) {
-                    // Check if obj[key] is an object before setting it to an empty object
-                    // if (typeof obj[ key ] === "object" && obj[ key ] !== null) {
-                    //     // If it is an object, copy its properties to an empty object
-                    //     let temp  = Object.assign({}, obj[ key ]);
-                    // } else {
-                    //     // If it is not an object, set it to an empty object
-                    //     obj[ key ] = {};
-                    // }
-                //}
-                // Define properties for the nested object, passing the parentObj reference
-                
                 self.defineProp(obj[ key ], prototype, index, key);
             }
-           
+            //self.defineProp(obj, prototype, index, key);
             // Define getter and setter for the property
             Object.defineProperty(obj, key, {
                
@@ -74,13 +61,16 @@ class ObserveEncapsulatedData {
                     value = newValue;
 
                     self.notify(obj, dataKey, value, "update", index);
+                    //console.log(dataKey)
                     //Update the parent object
                     if (parentKey) {
                        // parentKey = value;
                         //self.defineProp(obj, prototype, index, parentKey);
-                        console.log([ key ], value)
+                        //console.log([ key ], value)
+                        for (const keys in obj[parentKey]) {
                         
-                         self.notify(obj, parentKey, value, "update", index);
+                            self.notify(obj, parentKey, keys, "update", index);
+                        }
                     }
                 },
             });
@@ -330,9 +320,14 @@ class Contemplate {
         return card;
     };
 
-// TODO check here to update when parent
+    // TODO check here for how to update parent[item] if parent
+    // instead of oberwriting it!
     write2Card(item, key, value, card) {
-        console.log([key])
+    //------------------------------------------------------------------------------------------------------    
+        let keys = key.split('.')
+        if (keys.length > 0 && item[ keys[ 0 ]] !== undefined&& typeof item[keys[0]] === 'object')
+        console.log((item[keys[0]]))
+    
         const tags2Update = card.querySelectorAll(`[data-key="${key}"]`);
 
         tags2Update.forEach((tag) => {
