@@ -39,38 +39,32 @@ class ObserveEncapsulatedData {
 
     defineProp(obj, prototype, index, parentKey = null) {
         let self = this;
+        const all = JSON.parse(JSON.stringify(obj));
         Object.keys(obj).forEach(key => {
             let value = obj[ key ];
             const dataKey = parentKey ? `${parentKey}.${key}` : key;
-            
+
             // Recursively define properties for nested objects or arrays
             if (typeof value === "object" && value !== null) {
                 self.defineProp(obj[ key ], prototype, index, key);
+
             }
-            //self.defineProp(obj, prototype, index, key);
-            // Define getter and setter for the property
             Object.defineProperty(obj, key, {
-               
+
                 enumerable: true,
                 get() {
-                    //console.log(`Getting ${JSON.stringify(value)} for ${key} in object`, JSON.stringify([ key ]));
                     return value;
                 },
                 set(newValue) {
-                    //console.log(`Setting ${newValue} for ${key} in object`, obj);
                     value = newValue;
-
                     self.notify(obj, dataKey, value, "update", index);
-                    //console.log(dataKey)
-                    //Update the parent object
+                    // update parent object
                     if (parentKey) {
-                       // parentKey = value;
-                        //self.defineProp(obj, prototype, index, parentKey);
-                        //console.log([ key ], value)
-                        for (const keys in obj[parentKey]) {
-                        
-                            self.notify(obj, parentKey, keys, "update", index);
-                        }
+                        // write the new value to the clone obj
+                        // then trigger the notify of parentObj with the value of the clone
+                        all[ key ] = value;
+                        self.notify(parentKey, parentKey, all, "update", index);
+                     
                     }
                 },
             });
@@ -326,10 +320,12 @@ class Contemplate {
     //------------------------------------------------------------------------------------------------------    
         let keys = key.split('.')
         if (keys.length > 0 && item[ keys[ 0 ]] !== undefined&& typeof item[keys[0]] === 'object')
-        console.log((item[keys[0]]))
-    
+        console.log(JSON.stringify((item[keys[0]])))
+        console.log(keys[keys.length-1])
         const tags2Update = card.querySelectorAll(`[data-key="${key}"]`);
-
+        // TODO might need to go back to this to be able to update the parent obj
+        const tags = card.querySelectorAll(`[data-key]`)
+        
         tags2Update.forEach((tag) => {
             const modifiers = tag.dataset.modifier?.split(" ") ?? [];
 
