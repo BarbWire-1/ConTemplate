@@ -37,7 +37,8 @@ class ObserveEncapsulatedData {
         });
     }
 
-    defineProp(obj, prototype, index, parentObj) {
+    defineProp(obj, prototype, index) {
+        console.log(index)
         let self = this;
         Object.keys(obj).forEach(key => {
             let value = obj[ key ];
@@ -241,14 +242,14 @@ class DataHandler {
 
 class Contemplate {
     constructor (dataHandler, template, containerID, className, modifiers=[], show=false) {
-        this.dataHandler = dataHandler.data;
+        this.data = dataHandler.data;
         this.container = document.getElementById(containerID);
         this.containerID = containerID;
         this.className = className
         this.template = template;
         this.modifiers = modifiers; 
         this.show = show;
-        this.dataHandler.addObserver(this);
+        this.data.addObserver(this);
         this.init();
     }
 
@@ -256,7 +257,7 @@ class Contemplate {
         
     // do the rest of the initialization
         this.container.innerHTML = "";
-        this.dataHandler.data.forEach((instance) => {
+        this.data.data.forEach((instance) => {
             
             const card = this.createCard(instance);
             this.container.appendChild(card);
@@ -264,33 +265,31 @@ class Contemplate {
     }
     
     
-    createCard = (item, index)=> {
+    createCard = (item)=> {
         const card = document.createElement("div");
         card.className = this.className;
         const template = this.template(item);
         card.innerHTML = template;
        
         
-        this.write2Card(item,card, index)
+        this.write2Card(item,card)
          // get all tags including a data-key
         return card;
        
        
     }
-    write2Card(item, card, index) {
-        console.log(index)
+    write2Card(item, card) {
+       
         const tags = card.querySelectorAll("[data-key]");
-        console.log(card)
-        console.log(index, JSON.stringify(item))
         const getValue = (obj, key) => {
             let value = obj;
             const dataKeys = key.split('.');
             //console.log(dataKeys)
 
             for (let i = 0; i < dataKeys.length; i++) {
-                // if (typeof (item[ obj ]) !== 'undefined' && typeof (item[ obj ]) !== 'string' && i > 0) {
-                //     value = value[ keys[ 1 ] ];
-                // } else {
+                //  if (typeof (item[ obj ]) !== 'undefined' && typeof (item[ obj ]) !== 'string' && i > 0) {
+                //      value = value[ keys[ 1 ] ];
+                //  } else {
                 value = value[ dataKeys[ i ] ] ?? (this.show ? `{{${key}}}` : '');
                 // }
             }
@@ -344,8 +343,9 @@ class Contemplate {
             this.container.children[ index ].remove();
             
         } else if (operation === "update") {
+            console.log(index)
             const card = this.container.children[ index ];  
-            this.write2Card(item, card, index)
+            this.write2Card(item, card)
 
         }
     }
