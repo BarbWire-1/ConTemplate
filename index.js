@@ -37,8 +37,7 @@ class ObserveEncapsulatedData {
         });
     }
 
-    // Define properties per item in dataSource
-    defineProp(obj, prototype, index) {
+    defineProp(obj, prototype, index, parentObj) {
         let self = this;
         Object.keys(obj).forEach(key => {
             let value = obj[ key ];
@@ -49,8 +48,8 @@ class ObserveEncapsulatedData {
                     // Define the nested object with an empty object
                     obj[ key ] = {};
                 }
-                // Define properties for the nested object
-                self.defineProp(obj[ key ], prototype, index);
+                // Define properties for the nested object, passing the parentObj reference
+                self.defineProp(obj[ key ], prototype, index, obj);
             }
             // Define getter and setter for the property
             Object.defineProperty(obj, key, {
@@ -62,11 +61,12 @@ class ObserveEncapsulatedData {
                 set(newValue) {
                     console.log(`Setting ${newValue} for ${key} in object`, obj);
                     value = newValue;
-                    self.notify(obj, key, value, "update", index);
+                    self.notify(obj, key, value, "update", index, parentObj);
                 },
             });
         });
     }
+
 
 
 
@@ -403,28 +403,28 @@ const testData = [
         now: new Date(),
         emoji: 'emoji'
     },
-    {
-        name: 'Jane Doe',
-        address: {
-            street: '456 Main St',
-            city: 'Anytown',
-            state: 'CA',
-        },
-        hobbies: [ 'running', 'painting' ],
-        now: new Date(),
-        emoji: 'emoji'
-    },
-    {
-        name: 'BarbWire',
-        address: {
-            street: '007 Oneway',
-            city: 'Anothertown',
-            state: 'Spheres',
-        },
-        hobbies: [ 'coding', 'playing cello', `playing devil's advocat` ],
-        now: new Date(),
-        emoji: '👻'
-    }
+    // {
+    //     name: 'Jane Doe',
+    //     address: {
+    //         street: '456 Main St',
+    //         city: 'Anytown',
+    //         state: 'CA',
+    //     },
+    //     hobbies: [ 'running', 'painting' ],
+    //     now: new Date(),
+    //     emoji: 'emoji'
+    // },
+    // {
+    //     name: 'BarbWire',
+    //     address: {
+    //         street: '007 Oneway',
+    //         city: 'Anothertown',
+    //         state: 'Spheres',
+    //     },
+    //     hobbies: [ 'coding', 'playing cello', `playing devil's advocat` ],
+    //     now: new Date(),
+    //     emoji: '👻'
+    // }
 ];
 
 
@@ -434,41 +434,41 @@ const dataObject = new DataHandler(testData);
 const testModifier = new Contemplate(dataObject, templateTest, 'container4', 'template1', modifiers);
 testData[ 0 ].name = 'Lemme see'
 
-testData[ 2 ].hobbies[ 0 ] = 'debugging 🤬';
-testData[ 2 ].hobbies[ 1 ] = 'motocycling';
+//testData[ 2 ].hobbies[ 0 ] = 'debugging 🤬';
+//testData[ 2 ].hobbies[ 1 ] = 'motocycling';
 
 testData[ 0 ].hobbies[3 ] = 'dreaming';
 
 
 testData[ 0 ].address.street = 'Home'// TODO NOT applied
 //console.log(testData[ 0 ].address.street)// getter is ok.
-testData[ 0 ].address = { street: 'Home', city: 'MyTown' }
+//testData[ 0 ].address = { street: 'Home', city: 'MyTown' }
 testData[ 0 ].address.street = 'Everywhere'
 // to check updating of only changed on load
-const updateNow = setInterval(tic, 1000);
-const stop = setTimeout(stopIt, 10000)
-function tic() {
-    testData[ 2 ].now = new Date().toLocaleTimeString();
-}
+//const updateNow = setInterval(tic, 1000);
+// const stop = setTimeout(stopIt, 10000)
+// function tic() {
+//     testData[ 2 ].now = new Date().toLocaleTimeString();
+// }
+// 
+// function stopIt() {
+//     clearInterval(updateNow);
+// }
+//testData[ 2 ].name = 'Tired Girl'
 
-function stopIt() {
-    clearInterval(updateNow);
-}
-testData[ 2 ].name = 'Tired Girl'
 
-
-testData.push({
-    name: 'Pushed Card',
-    address: {
-        street: '007 Oneway',
-        city: 'Anothertown',
-        state: 'Spheres',
-    },
-    hobbies: [ 'coding', 'playing cello', `playing devil's advocat` ],
-    now: new Date(),
-    emoji: '👻'
-})
-testData[ 2 ].name = 'Stupid Girl'
+// testData.push({
+//     name: 'Pushed Card',
+//     address: {
+//         street: '007 Oneway',
+//         city: 'Anothertown',
+//         state: 'Spheres',
+//     },
+//     hobbies: [ 'coding', 'playing cello', `playing devil's advocat` ],
+//     now: new Date(),
+//     emoji: '👻'
+// })
+// testData[ 2 ].name = 'Stupid Girl'
 //testData.shift()// TODO remove listeners for removed cards
 
 //testData.pop()
