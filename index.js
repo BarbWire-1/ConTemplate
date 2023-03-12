@@ -60,6 +60,7 @@ class ObserveEncapsulatedData {
                 
                 self.defineProp(obj[ key ], prototype, index, key);
             }
+           
             // Define getter and setter for the property
             Object.defineProperty(obj, key, {
                
@@ -329,8 +330,9 @@ class Contemplate {
         return card;
     };
 
-
+// TODO check here to update when parent
     write2Card(item, key, value, card) {
+        console.log([key])
         const tags2Update = card.querySelectorAll(`[data-key="${key}"]`);
 
         tags2Update.forEach((tag) => {
