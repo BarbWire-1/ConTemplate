@@ -21,7 +21,7 @@ class ObserveEncapsulatedData {
     makeReactive() {
         // create prototype object with all getters/setters
         const prototype = Object.create(null);
-        this.defineProp(this.data[ 0 ], prototype);
+        this.defineProp(this.data[ 0 ], prototype, 0);
 
         // create a copy of the prototype for item 0
         const item0 = Object.create(prototype);
@@ -31,43 +31,44 @@ class ObserveEncapsulatedData {
         Object.setPrototypeOf(this.data[ 0 ], prototype);
 
         // set prototype for all other items in the data source
-        this.data.slice(1).forEach(item => {
+        this.data.slice(1).forEach((item, index) => {
             Object.setPrototypeOf(item, prototype);
+            this.defineProp(item, prototype, index + 1);
         });
-    
-
     }
-   
-
-
 
     // Define properties per item in dataSource
-    defineProp(obj) {
+    defineProp(obj, prototype, index) {
         let self = this;
         Object.keys(obj).forEach(key => {
             let value = obj[ key ];
-            // console.log(obj)
-            // console.log(value)
+            // Recursively define properties for nested objects or arrays
+            if (typeof value === "object" && value !== null) {
+                // Check if the nested object is already defined
+                if (!Object.getOwnPropertyDescriptor(obj, key)) {
+                    // Define the nested object with an empty object
+                    obj[ key ] = {};
+                }
+                // Define properties for the nested object
+                self.defineProp(obj[ key ], prototype, index);
+            }
+            // Define getter and setter for the property
             Object.defineProperty(obj, key, {
                 enumerable: true,
                 get() {
-                    //console.log(value)
                     console.log(`Getting ${JSON.stringify(value)} for ${key} in object`, JSON.stringify([ key ]));
                     return value;
                 },
                 set(newValue) {
                     console.log(`Setting ${newValue} for ${key} in object`, obj);
                     value = newValue;
-                    self.notify(obj, key, value, "update");
+                    self.notify(obj, key, value, "update", index);
                 },
             });
-
-            // Recursively define properties for nested objects or arrays
-            if (typeof value === "object" && value !== null) {
-                self.defineProp(value);
-            }
         });
     }
+
+
 
 
 
@@ -274,10 +275,9 @@ class Contemplate {
     write2Card(item, card) {
         //console.log(item)
         const tags = card.querySelectorAll("[data-key]");
-        
+
         const getValue = (obj, key) => {
             let value = obj;
-            //console.log(value)
             const dataKeys = key.split('.');
             //console.log(dataKeys)
 
@@ -285,7 +285,7 @@ class Contemplate {
                 // if (typeof (item[ obj ]) !== 'undefined' && typeof (item[ obj ]) !== 'string' && i > 0) {
                 //     value = value[ keys[ 1 ] ];
                 // } else {
-                    value = value[ dataKeys[ i ] ] ?? (this.show ? `{{${key}}}` : '');
+                value = value[ dataKeys[ i ] ] ?? (this.show ? `{{${key}}}` : '');
                 // }
             }
 
@@ -313,10 +313,14 @@ class Contemplate {
             tag.textContent = value;
         });
 
+    
+
     }
    
     //TODO check the notify for needed params after changes made here
     update(item, key, value, operation, index) {
+        console.log(key)
+        console.log(index)
        
          //console.log({property,value,operation, index})
         // console.log(typeof property)
@@ -433,7 +437,7 @@ testData[ 0 ].name = 'Lemme see'
 testData[ 2 ].hobbies[ 0 ] = 'debugging 🤬';
 testData[ 2 ].hobbies[ 1 ] = 'motocycling';
 
-testData[ 0 ].hobbies[ 1 ] = 'dreaming';
+testData[ 0 ].hobbies[3 ] = 'dreaming';
 
 
 testData[ 0 ].address.street = 'Home'// TODO NOT applied
