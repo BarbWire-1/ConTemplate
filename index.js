@@ -19,40 +19,54 @@ class ObserveEncapsulatedData {
     
     // init with defining properties on all items of dataSource
     makeReactive() {
-        this.data.forEach((item, index) => {
-            Object.keys(item).forEach((key) => {
-                this.defineProp(item, key, index);
-            });
+        // create prototype object with all getters/setters
+        const prototype = Object.create(null);
+        this.defineProp(this.data[ 0 ], prototype);
+
+        // set prototype for all other items in the data source
+        this.data.slice(1).forEach(item => {
+            Object.setPrototypeOf(item, prototype);
         });
+        // this.data.forEach((item, index) => {
+        //     Object.keys(item).forEach((key) => {
+        //         this.defineProp(item, key, index);
+        //     });
+        // });
     }
+   
+
 
 
     // Define properties per item in dataSource
-    defineProp(obj, key, index) {
-        let self = this;
-        let value = obj[ key ];
+    
+    defineProp(obj, prototype) {
+        const prototypeKeys = Object.keys(prototype)
+        if (prototypeKeys.length === obj.length && prototypeKeys.every(key => obj.hasOwnProperty(key))) {
+            let self = this;
+            Object.keys(obj).forEach(key => {
+                let value = obj[ key ];
+                Object.defineProperty(prototype, key, {
+                    enumerable: true,
+                    get() {
+                        console.log(value)
+                        console.log(`Getting ${value} for ${key} in object`, JSON.stringify([ key ]));
+                        return value;
+                    },
+                    set(newValue) {
+                        console.log(`Setting ${newValue} for ${key} in object`, obj);
+                        value = newValue;
+                        self.notify(obj, key, value, "update");
+                    },
+                });
 
-        Object.defineProperty(obj, key, {
-            enumerable: true,
-            get() {
-                console.log(`Getting value for ${key} in object`, JSON.stringify([key]));
-                return value;
-            },
-            set(newValue) {
-                console.log(`Setting value for ${key} in object`, obj);
-                value = newValue;
-                self.notify(obj, key, value, "update", index);
-            },
-        });
-
-        // Recursively define properties for nested objects or arrays
-        if (typeof value === "object" && value !== null) {
-            Object.keys(value).forEach((nestedKey) => {
-                console.log(`Recursively defining prop for ${nestedKey} in object`, value);
-                self.defineProp(value, nestedKey, index);
+                // Recursively define properties for nested objects or arrays
+                if (typeof value === "object" && value !== null) {
+                    self.defineProp(value, prototype);
+                }
             });
         }
     }
+
 
 
 
@@ -231,6 +245,8 @@ class Contemplate {
     }
 
     init() {
+        
+    // do the rest of the initialization
         this.container.innerHTML = "";
         this.dataHandler.data.forEach((instance) => {
             
@@ -238,7 +254,8 @@ class Contemplate {
             this.container.appendChild(card);
         });
     }
-
+    
+    
     createCard = (item)=> {
         const card = document.createElement("div");
         card.className = this.className;
@@ -252,35 +269,34 @@ class Contemplate {
        
        
     }
-    write2Card(item,card) {
+    write2Card(item, card) {
+        //console.log(item)
         const tags = card.querySelectorAll("[data-key]");
+        
         const getValue = (obj, key) => {
             let value = obj;
-            //console.log(JSON.stringify(value))
-            const keys = key.split('.');
-            console.log({ keys })
-          
+            console.log(value)
+            const dataKeys = key.split('.');
+            console.log(dataKeys)
 
-            
-                for (let i = 0; i < keys.length; i++) {
-                    console.log(value)
-                    console.log(value[ keys[ i ] ])
-                    console.log(value[ keys ])
-                    if (typeof (item[ obj ] !== undefined && item[obj]) !== 'string' && (i)>0)
-                    console.log(value[keys[1]])
-                    value = value[ keys[ i ] ] ?? (this.show ? `{{${key}}}` : '');
-                
-                
+            for (let i = 0; i < dataKeys.length; i++) {
+                // if (typeof (item[ obj ]) !== 'undefined' && typeof (item[ obj ]) !== 'string' && i > 0) {
+                //     value = value[ keys[ 1 ] ];
+                // } else {
+                    value = value[ dataKeys[ i ] ] ?? (this.show ? `{{${key}}}` : '');
+                // }
             }
+
             return value;
         }
+
 
         tags.forEach((tag) => {
             // TODO currently not receiving the correct key for nested objects 
             // to use dot.notation in data.key
             const key = tag.dataset.key;
             let value = getValue(item, key);
-            console.log(value)
+            //console.log(value)
             //console.log(JSON.stringify(value))// string or object
             const modifiers = tag.dataset.modifier?.split(' ') ?? [];
 
