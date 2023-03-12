@@ -272,17 +272,18 @@ class Contemplate {
         card.innerHTML = template;
        
         
-        this.write2Card(item,card)
+        this.write2Card(item,null,null,card)
          // get all tags including a data-key
         return card;
        
        
     }
-    write2Card(item, card) {
-       
-        const tags = card.querySelectorAll("[data-key]");
+    write2Card(item, key, value, card) {
+       console.log(card)
+        const tags = card.querySelectorAll(`[data-key = "${ key }"]`);
         const getValue = (obj, key) => {
             let value = obj;
+            console.log(key)
             const dataKeys = key.split('.');
             //console.log(dataKeys)
 
@@ -345,7 +346,7 @@ class Contemplate {
         } else if (operation === "update") {
             console.log(index)
             const card = this.container.children[ index ];  
-            this.write2Card(item, card)
+            this.write2Card(item, key, value, card)
 
         }
     }
@@ -378,16 +379,16 @@ const templateTest = () => {
       <span data-key="address" data-modifier="join"></span><br>
       
       <!-- on nested NOT applied in update method-->
-      <span data-key="address.street" data-modifier="uppercase"></span>,
-      <span data-key="address.city"></span>,
-      <span data-key="address.state"></span>
+      <span data-key="street" data-modifier="uppercase"></span>,
+      <span data-key="city"></span>,
+      <span data-key="state"></span>
     </p>
     <p>
       Hobbies:
       <span data-key="hobbies"data-modifier="join"></span><br>
      
-      <span data-key="hobbies.0" data-modifier="uppercase" ></span><br>
-        <span data-key="hobbies.1" data-modifier="lowercase" ></span>
+      <span data-key="0" data-modifier="uppercase" ></span><br>
+        <span data-key="1" data-modifier="lowercase" ></span>
       </p>
     <p style="text-align: center; margin-top: 10px">
       <span data-key="now" data-modifier="localeTime"></span>
