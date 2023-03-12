@@ -29,34 +29,32 @@ class ObserveEncapsulatedData {
 
     // Define properties per item in dataSource
     defineProp(obj, key, index) {
-        // prevent redefining props
-        // This would crash reordering and re-assigning index unfortunately
-        // const descriptor = Object.getOwnPropertyDescriptor(obj, key);
-        // if (!descriptor || !descriptor.set || !descriptor.get) {
-            
-            let self = this;
-            let value = obj[ key ];
+        let self = this;
+        let value = obj[ key ];
 
-            Object.defineProperty(obj, key, {
-                enumerable: true,
-                //configurable: false,
-                get() {
-                    if (typeof value === "object" && value !== null) {
-                        // define getters recursively for nested properties
-                        Object.keys(value).forEach((nestedKey) => {
-                            self.defineProp(value, nestedKey, index);
-                        });
-                    }
-                    console.log(value)
-                    return value;
-                },
-                set(newValue) {
-                    value = newValue;
-                    self.notify(obj, value, "update", index);
-                },
+        Object.defineProperty(obj, key, {
+            enumerable: true,
+            get() {
+                console.log(`Getting value for ${key} in object`, JSON.stringify([key]));
+                return value;
+            },
+            set(newValue) {
+                console.log(`Setting value for ${key} in object`, obj);
+                value = newValue;
+                self.notify(obj, key, value, "update", index);
+            },
+        });
+
+        // Recursively define properties for nested objects or arrays
+        if (typeof value === "object" && value !== null) {
+            Object.keys(value).forEach((nestedKey) => {
+                console.log(`Recursively defining prop for ${nestedKey} in object`, value);
+                self.defineProp(value, nestedKey, index);
             });
-        // }
+        }
     }
+
+
 
 
 
@@ -81,7 +79,7 @@ class ObserveEncapsulatedData {
                             for (const key in this[ i ]) {
                                 self.defineProp(this[ i ], key, i);
                             }
-                            self.notify(this[ i ],  null, "update", i);
+                            self.notify(this[ i ], null,  null, "update", i);
                         }
                     }
 
@@ -92,7 +90,7 @@ class ObserveEncapsulatedData {
                                 for (const key in obj) {
                                     self.defineProp(obj, key, newLength - 1);
                                 }
-                                self.notify(obj,  null, "add", newLength - 1);
+                                self.notify(obj,null,  null, "add", newLength - 1);
                                 
 
                             });
@@ -106,7 +104,7 @@ class ObserveEncapsulatedData {
                                     self.defineProp(obj, key, index);
                                 }
                                
-                                self.notify(obj,  null, "add", index);
+                                self.notify(obj, null, null, "add", index);
                             });
                             // update all to sync indices
                             updateIndices();
@@ -115,13 +113,13 @@ class ObserveEncapsulatedData {
 
                         case "pop": {
                             // remove the last card
-                            self.notify(null,  null, "delete", newLength);
+                            self.notify(null, null, null, "delete", newLength);
                            // console.log(self.data.length)
                             break;
                         }
                         case "shift": {
                             // remove the first card
-                            self.notify(null,  null, "delete", 0);
+                            self.notify(null,null,  null, "delete", 0);
                             // update all to sync indindices
                             updateIndices();
                             break;
@@ -137,14 +135,14 @@ class ObserveEncapsulatedData {
                                     for (const key in obj) {
                                         self.defineProp(obj, key);
                                     }
-                                    self.notify(obj,  null, "add", index + i);
+                                    self.notify(obj, null,  null, "add", index + i);
                                 });
                             }
 
                             if (deleteCount > 0) {
                                 const deletedItems = this.slice(index, index + deleteCount);
                                 deletedItems.forEach((_, i) => {
-                                    self.notify(null, null, "delete", index + i);
+                                    self.notify(null, null, null, "delete", index + i);
                                 });
                             }
                             updateIndices();
@@ -157,7 +155,7 @@ class ObserveEncapsulatedData {
                             const end = newObj[ 1 ];
 
                             for (let i = start; i < end; i++) {
-                                self.notify(null,  null, "delete", i - start);
+                                self.notify(null, null,  null, "delete", i - start);
                             }
                             updateIndices();
                             break;
@@ -190,9 +188,9 @@ class ObserveEncapsulatedData {
         }
     }
 
-    notify(item, value, operation, index) {
+    notify(item, key, value, operation, index) {
         this.observers.forEach((observer) =>
-            observer.update(item, value, operation, index)
+            observer.update(item, key, value, operation, index)
         );
     }
 }
@@ -261,9 +259,18 @@ class Contemplate {
             //console.log(JSON.stringify(value))
             const keys = key.split('.');
             console.log({ keys })
+          
 
-            for (let i = 0; i < keys.length; i++) {
-                value = value[ keys[ i ] ] ?? (this.show ? `{{${key}}}` : '');
+            
+                for (let i = 0; i < keys.length; i++) {
+                    console.log(value)
+                    console.log(value[ keys[ i ] ])
+                    console.log(value[ keys ])
+                    if (typeof (item[ obj ] !== undefined && item[obj]) !== 'string' && (i)>0)
+                    console.log(value[keys[1]])
+                    value = value[ keys[ i ] ] ?? (this.show ? `{{${key}}}` : '');
+                
+                
             }
             return value;
         }
@@ -273,6 +280,7 @@ class Contemplate {
             // to use dot.notation in data.key
             const key = tag.dataset.key;
             let value = getValue(item, key);
+            console.log(value)
             //console.log(JSON.stringify(value))// string or object
             const modifiers = tag.dataset.modifier?.split(' ') ?? [];
 
@@ -290,7 +298,7 @@ class Contemplate {
     }
    
     //TODO check the notify for needed params after changes made here
-    update(item, value, operation, index) {
+    update(item, key, value, operation, index) {
        
          //console.log({property,value,operation, index})
         // console.log(typeof property)
@@ -371,7 +379,7 @@ const testData = [
         },
         hobbies: [ 'reading', 'traveling' ],
         now: new Date(),
-        emoji: undefined
+        emoji: 'emoji'
     },
     {
         name: 'Jane Doe',
@@ -382,7 +390,7 @@ const testData = [
         },
         hobbies: [ 'running', 'painting' ],
         now: new Date(),
-        emoji: undefined
+        emoji: 'emoji'
     },
     {
         name: 'BarbWire',
@@ -413,17 +421,17 @@ testData[ 0 ].hobbies[ 1 ] = 'dreaming';
 testData[ 0 ].address.street = 'Home'// TODO NOT applied
 //console.log(testData[ 0 ].address.street)// getter is ok.
 testData[ 0 ].address = { street: 'Home', city: 'MyTown' }
-testData[ 0 ].address.state = 'Everywhere'
+testData[ 0 ].address.street = 'Everywhere'
 // to check updating of only changed on load
-// const updateNow = setInterval(tic, 1000);
-// const stop = setTimeout(stopIt, 10000)
-// function tic() {
-//     testData[ 2 ].now = new Date().toLocaleTimeString();
-// }
-// 
-// function stopIt() {
-//     clearInterval(updateNow);
-// }
+const updateNow = setInterval(tic, 1000);
+const stop = setTimeout(stopIt, 10000)
+function tic() {
+    testData[ 2 ].now = new Date().toLocaleTimeString();
+}
+
+function stopIt() {
+    clearInterval(updateNow);
+}
 testData[ 2 ].name = 'Tired Girl'
 
 
