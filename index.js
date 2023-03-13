@@ -31,18 +31,37 @@ class DataObserver {
             this.defineProp(item, prototype, index);
         });
     }
- 
+    
+    
+    // THIS IS CURRENTLY NOT WORKING
+    // init with defining properties on all items of dataSource
+//     makeReactive() {
+//         // create prototype object with all getters/setters
+//         const prototype = Object.create(this.proto);
+//         Object.getOwnPropertyNames(this.proto).forEach((key) => {
+//             this.defineProp(this.proto, prototype, key, this);
+//         });
+// 
+//         // set prototype for all other items in the data source
+//         this.data.forEach((item, index) => {
+//             Object.setPrototypeOf(item, prototype);
+//             Object.getOwnPropertyNames(prototype).forEach((key) => {
+//                 this.defineProp(item, prototype, key, this);
+//             });
+//         });
+//     }
+
    
     // TODO add arrayObserver for nested arrays?
     // TODO test level of nested possible
     defineProp(currentObj, prototype, index, parentKey = null) {
         let self = this;
         //clone to keep values of a parentObj
-        const all = JSON.parse(JSON.stringify(currentObj));
+        const parentData = JSON.parse(JSON.stringify(currentObj));
 
         Object.keys(currentObj).forEach(key => {
             let value = currentObj[ key ];
-            // TODO chaine this for deeper nested structures?
+            
             // dataKey is used to notify and update tags with corresponding data-key
             let dataKey = parentKey ? `${parentKey}.${key}` : key;
             // recursively notify and update nested arrays
@@ -82,8 +101,8 @@ class DataObserver {
                     if (parentKey) {
                         // write the new value to the clone obj
                         // then trigger the notify of parentObj with the value of the clone
-                        all[ key ] = value;
-                        self.notify(parentKey, parentKey, all, "update", index);
+                        parentData[ key ] = value;
+                        self.notify(parentKey, parentKey, parentData, "update", index);
                         
                     }
                 },
@@ -110,12 +129,10 @@ class DataObserver {
         }
 
         function addCard(obj, index) {
-            //TODO creates a cord of type proto, but does not add values of 
-            // Object.setPrototypeOf(obj, prototype);
-            // self.defineProp(obj, prototype, index);
-            
-            
-            for (const key in obj) {   
+            for (const key in obj) {
+                // TODO makeReactive her => as kind of prototype
+                // Object.setPrototypeOf(item, prototype);
+                // this.defineProp(item, prototype, index);        
                 self.defineProp(obj, key, index);
             }
             self.notify(obj, null, null, "add", index);
@@ -130,10 +147,12 @@ class DataObserver {
             Object.defineProperty(array, method, {
                 value: function (...newObj) {
                     let result = originalMethod.apply(this, newObj);
-                    let newLength = result;
+                    let newLength = result
                     switch (method) {
                         case "push":
-                            addCard(newObj, newLength  -1);
+                            newObj.forEach((obj, index) => {
+                                addCard(obj, newLength - newObj.length + index);
+                            });
                             break;
 
                         case "unshift":
@@ -433,7 +452,7 @@ testData[ 2 ].hobbies[ 2 ] = 'dreaming';
 
 testData[ 0 ].address.street = 'Home'// TODO NOT applied
 //console.log(testData[ 0 ].address.street)// getter is ok.
-testData[ 0 ].address = { street: 'Another Home', city: 'MyTown' }
+//testData[ 0 ].address = { street: 'Another Home', city: 'MyTown' }
 testData[ 0 ].address.street = 'Everywhere'
 // to check updating of only changed on load
 const updateNow = setInterval(tic, 1000);
