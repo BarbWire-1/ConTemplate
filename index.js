@@ -10,6 +10,7 @@ class ObserveEncapsulatedData {
         this.proto = proto ?? this.data[0]
         this.observers = [];
         this.makeReactive()
+        this.observeDataSource(this.data)
     }
 
     // init with defining properties on all items of dataSource
@@ -17,77 +18,88 @@ class ObserveEncapsulatedData {
         // create prototype object with all getters/setters
         const prototype = Object.create(null);
         this.defineProp(this.proto, prototype, 0);
-
-        // create a copy of the prototype for item 0
-        const item0 = Object.create(prototype);
-        Object.assign(item0, this.data[ 0 ]);
-
-        // set prototype for item 0
-        Object.setPrototypeOf(this.data[ 0 ], prototype);
+        console.log(prototype)// {}
 
         // set prototype for all other items in the data source
-        this.data.slice(1).forEach((item, index) => {
+        this.data.forEach((item, index) => {
             Object.setPrototypeOf(item, prototype);
-            this.defineProp(item, prototype, index + 1);
+            this.defineProp(item, prototype, index);
         });
     }
 
-    // TODO probs when re-assigning entire nested object. WHY???
+   
     // TODO add arrayObserver for nested arrays?
     // TODO test level of nested possible
-    defineProp(obj, prototype, index, parentKey = null) {
+    defineProp(currentObj, prototype, index, parentKey = null) {
         let self = this;
         //clone to keep values of a parentObj
-        const all = JSON.parse(JSON.stringify(obj));
-        
-        Object.keys(obj).forEach(key => {
-            let value = obj[ key ];
+        const all = JSON.parse(JSON.stringify(currentObj));
+
+        Object.keys(currentObj).forEach(key => {
+            let value = currentObj[ key ];
             // TODO chaine this for deeper nested structures?
-            const dataKey = parentKey ? `${parentKey}.${key}` : key;
+            // dataKey is used to notify and update tags with corresponding data-key
+            let dataKey = parentKey ? `${parentKey}.${key}` : key;
 
             // Recursively define properties for nested objects or arrays
             // and pass current key as parentKey
             if (typeof value === "object" && value !== null) {
                 self.defineProp(value, prototype, index, key);
             }
-            
-            Object.defineProperty(obj, key, {
+
+            Object.defineProperty(currentObj, key, {
 
                 enumerable: true,
                 get() {
+                    console.log(value)
                     return value;
                 },
                 set(newValue) {
-                    value = newValue;
-                    self.notify(obj, dataKey, value, "update", index);
-                    
-                    // TODO if value === object notify ALL children!!!
                     console.log(value)
-                    // update parent object
+                    value = newValue;
+                    self.notify(currentObj, dataKey, value, "update", index);
+
+                    // update all items when parentobj has changed
+                    //TODO hmmm. need to remove single subs with now no value!
+                    if (typeof value === "object" && value !== null) {
+
+                        Object.keys(value).forEach(key => {
+                            let subKey = dataKey + `.${key}`
+                            self.notify(key, subKey, value[ key ], "update", index);
+                        })
+                    }
+                    // update parent object if single item changed
                     if (parentKey) {
                         // write the new value to the clone obj
                         // then trigger the notify of parentObj with the value of the clone
                         all[ key ] = value;
                         self.notify(parentKey, parentKey, all, "update", index);
 
-
+                        // recursively notify and update nested arrays
+                        if (Array.isArray(value)) {
+                            console.log(value)
+                            self.notify(value, dataKey, value, "update", index);
+                            self.observeArray(value, dataKey, index);
+                        }
                     }
                 },
             });
         });
     }
+
+
        
     
    
     //TODO this is UGLY LIKE HELL... change when logic once should run
     // TODO currently slice, splice wrong
-    observeDataSource() {
+    observeDataSource(array) {
         const self = this;
         const methods = [ "push", "pop", "shift", "unshift", "splice", "slice" ];
         //console.log(self.array.length)
         methods.forEach((method) => {
             const originalMethod = Array.prototype[ method ];
-            Object.defineProperty(this.data, method, {
+            Object.defineProperty(array, method, {
                 value: function (...newObj) {
                     let result = originalMethod.apply(this, newObj);
                     let newLength = self.data.length
@@ -222,7 +234,7 @@ class DataHandler {
         this.data = new ObserveEncapsulatedData(dataSource, this.proto);
         
         this.observers = [];
-        this.data.observeDataSource();
+        this.data.observeDataSource(this.data);
 
     }
 
@@ -358,10 +370,11 @@ const templateTest = () => {
       <span data-key="name" data-modifier="lowercase reverse"></span>
     </h2>
     <p>
-      Address:
+      Address obj :
       <span data-key="address" data-modifier="join"></span><br>
       
       <!-- on nested NOT applied in update method-->
+      Address keys :
       <span data-key="address.street" data-modifier="uppercase"></span>,
       <span data-key="address.city"></span>,
       <span data-key="address.state"></span>
@@ -372,6 +385,7 @@ const templateTest = () => {
      
       <span data-key="hobbies.0" data-modifier="uppercase" ></span><br>
         <span data-key="hobbies.1" data-modifier="lowercase" ></span>
+         <span data-key="hobbies.2" data-modifier="lowercase" ></span>
       </p>
     <p style="text-align: center; margin-top: 10px">
       <span data-key="now" data-modifier="localeTime"></span>
@@ -418,9 +432,20 @@ const testData = [
     }
 ];
 
+const prototype = {
+    name: "",
+    address: {
+        street: "",
+        city: "",
+        state: "",
+    },
+    hobbies: Array.from({ length: 5 }, () => 'test'),
+    now: null,
+    emoji: null,
+};
 
 // model watching all obj
-const dataObject = new DataHandler(testData);
+const dataObject = new DataHandler(testData, prototype);
 // model watching subkey of obj
 const testModifier = new Contemplate(dataObject, templateTest, 'container4', 'template1', modifiers);
 testData[ 0 ].name = 'Lemme see'
@@ -428,12 +453,12 @@ testData[ 0 ].name = 'Lemme see'
 testData[ 2 ].hobbies[ 0 ] = 'debugging 🤬';
 testData[ 2 ].hobbies[ 1 ] = 'motocycling';
 
-testData[ 0 ].hobbies[ 0 ] = 'dreaming';
+testData[ 0 ].hobbies[ 2 ] = 'dreaming';
 
 
 testData[ 0 ].address.street = 'Home'// TODO NOT applied
 //console.log(testData[ 0 ].address.street)// getter is ok.
-testData[ 0 ].address = { street: 'Home', city: 'MyTown' }
+testData[ 0 ].address = { street: 'Another Home', city: 'MyTown' }
 testData[ 0 ].address.street = 'Everywhere'
 // to check updating of only changed on load
 const updateNow = setInterval(tic, 1000);
@@ -463,3 +488,5 @@ testData[ 2 ].name = 'Stupid Girl'
 //testData.shift()// TODO remove listeners for removed cards
 
 //testData.pop()
+
+
