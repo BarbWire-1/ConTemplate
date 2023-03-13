@@ -5,8 +5,9 @@
  */
 
 class ObserveEncapsulatedData {
-    constructor (dataSource) {
+    constructor (dataSource, proto) {
         this.data = dataSource;
+        this.proto = proto ?? this.data[0]
         this.observers = [];
         this.makeReactive()
     }
@@ -15,7 +16,7 @@ class ObserveEncapsulatedData {
     makeReactive() {
         // create prototype object with all getters/setters
         const prototype = Object.create(null);
-        this.defineProp(this.data[ 0 ], prototype, 0);
+        this.defineProp(this.proto, prototype, 0);
 
         // create a copy of the prototype for item 0
         const item0 = Object.create(prototype);
@@ -63,14 +64,23 @@ class ObserveEncapsulatedData {
                     if (parentKey) {
                         // write the new value to the clone obj
                         // then trigger the notify of parentObj with the value of the clone
+                        // change the reference for the included items
                         all[ key ] = value;
                         self.notify(parentKey, parentKey, all, "update", index);
-                     
+
+                        //TODO try to overwrite and re-render all elements
+                        for (let i = 0; i < all.length; i++) {
+                            self.defineProp(obj, prototype, index, key);
+                            self.notify(parentKey, dataKey, all[ i ], "update", index);
+                        }
+
                     }
                 },
             });
         });
     }
+       
+    
    
     //TODO this is UGLY LIKE HELL... change when logic once should run
     // TODO currently slice, splice wrong
@@ -210,8 +220,10 @@ class ObserveEncapsulatedData {
 
 
 class DataHandler {
-    constructor (dataSource) {
-        this.data = new ObserveEncapsulatedData(dataSource);
+    constructor (dataSource, proto = null) {
+        this.proto = proto || dataSource[ 0 ]
+        this.data = new ObserveEncapsulatedData(dataSource, this.proto);
+        
         this.observers = [];
         this.data.observeDataSource();
 
@@ -233,6 +245,7 @@ class DataHandler {
 class Contemplate {
     constructor (dataHandler, template, containerID, className, modifiers = [], show = false) {
         this.data = dataHandler.data;
+        
         this.container = document.getElementById(containerID);
         this.containerID = containerID;
         this.className = className
