@@ -1,4 +1,8 @@
 /*
+ *   Copyright (c) 2023 
+ *   All rights reserved.
+ */
+/*
  *   Copyright (c) 2023 BarbWire-1 aka Barbara Kälin
  *   All rights reserved.
      with MIT license
@@ -13,108 +17,79 @@ class ObserveEncapsulatedData {
         this.observeArray(this.data)
     }
 
-    
-    // init with defining properties on all items of dataSource
     makeReactive() {
         // create prototype object with all getters/setters
-        const prototype = Object.create(null);
-        this.defineProp(this.proto, prototype, 0);
-        //console.log(prototype)// {}
+        const prototype = Object.create(this.proto);
+        Object.getOwnPropertyNames(this.proto).forEach((key) => {
+            this.defineProp(this.proto, prototype, key, this);
+        });
 
         // set prototype for all other items in the data source
         this.data.forEach((item, index) => {
             Object.setPrototypeOf(item, prototype);
-            this.defineProp(item, prototype, index);
-        });
-    }
-    
-    //TODO change makeReactive to take an item as param, then init with forEach in this.data, THEN call for new items in arrayObserver
-    // THIS IS CURRENTLY NOT WORKING
-    // init with defining properties on all items of dataSource
-//     makeReactive() {
-//         // create prototype object with all getters/setters
-//         const prototype = Object.create(this.proto);
-//         Object.getOwnPropertyNames(this.proto).forEach((key) => {
-//             this.defineProp(this.proto, prototype, key, this);
-//         });
-// 
-//         // set prototype for all other items in the data source
-//         this.data.forEach((item, index) => {
-//             Object.setPrototypeOf(item, prototype);
-//             Object.getOwnPropertyNames(prototype).forEach((key) => {
-//                 this.defineProp(item, prototype, key, this);
-//             });
-//         });
-//     }
-
-   
-    // TODO add arrayObserver for nested arrays?
-    // TODO test level of nested possible
-    defineProp(currentObj, prototype, index, parentKey = null) {
-        let self = this;
-        //clone to keep values of a parentObj
-        const all = JSON.parse(JSON.stringify(currentObj));
-
-        Object.keys(currentObj).forEach(key => {
-            let value = currentObj[ key ];
-            // TODO chaine this for deeper nested structures?
-            // dataKey is used to notify and update tags with corresponding data-key
-            let dataKey = parentKey ? `${parentKey}.${key}` : key;
-            // recursively notify and update nested arrays
-            if (Array.isArray(value)) {
-                //console.log(value)
-                //self.notify(value, dataKey, value, "update", index);
-                self.observeArray(self);
-            }
-            // Recursively define properties for nested objects or arrays
-            // and pass current key as parentKey
-            if (typeof value === "object" && value !== null) {
-                self.defineProp(value, prototype, index, key);
-            }
-
-            Object.defineProperty(currentObj, key, {
-
-                enumerable: true,
-                get() {
-                    //console.log(value)
-                    return value;
-                },
-                set(newValue) {
-                   
-                    value = newValue;
-                    self.notify(currentObj, dataKey, value, "update", index);
-                    
-                    // update all items when parentobj has changed
-                    //TODO hmmm. need to remove single subs with now no value!
-                    if (typeof value === "object" && value !== null) {
-
-                        Object.keys(value).forEach(key => {
-                            let subKey = dataKey + `.${key}`
-                            self.notify(key, subKey, value[ key ], "update", index);
-                        })
-                    }
-                    // update parent object if single item changed
-                    if (parentKey) {
-                        // write the new value to the clone obj
-                        // then trigger the notify of parentObj with the value of the clone
-                        all[ key ] = value;
-                        self.notify(parentKey, parentKey, all, "update", index);
-                        
-                    }
-                },
+            Object.getOwnPropertyNames(prototype).forEach((key) => {
+                this.defineProp(item, prototype, key, this);
             });
         });
     }
 
+    defineProp(currentObj, prototype, key, parentKey = null) {
+        let self = this;
+        let value = currentObj[ key ];
+        // TODO chaine this for deeper nested structures?
+        // dataKey is used to notify and update tags with corresponding data-key
+        let dataKey = parentKey ? `${parentKey}.${key}` : key;
 
-       
-    
-   
+        // Recursively define properties for nested objects or arrays
+        // and pass current key as parentKey
+        if (typeof value === "object" && value !== null) {
+            self.defineProp(value, prototype, key);
+        }
+
+        Object.defineProperty(currentObj, key, {
+            enumerable: true,
+            get() {
+                return value;
+            },
+            set(newValue) {
+                value = newValue;
+                self.notify(currentObj, dataKey, value, "update", index);
+
+                // update all items when parentobj has changed
+                //TODO hmmm. need to remove single subs with now no value!
+                if (typeof value === "object" && value !== null) {
+                    Object.keys(value).forEach((key) => {
+                        let subKey = dataKey + `.${key}`;
+                        self.notify(currentObj, subKey, value[ key ], "update", index);
+                    });
+                }
+                // update parent object if single item changed
+                if (parentKey) {
+                    // write the new value to the clone obj
+                    // then trigger the notify of parentObj with the value of the clone
+                    const all = JSON.parse(JSON.stringify(currentObj));
+                    all[ key ] = value;
+                    self.notify(currentObj, parentKey, all, "update", index);
+
+                    // recursively notify and update nested arrays
+                    if (Array.isArray(value)) {
+                        self.notify(currentObj, dataKey, value, "update", index);
+                        self.observeArray(value, dataKey, index);
+                    }
+                }
+            },
+        });
+    }
+
+
+
+
+
     //TODO this is UGLY LIKE HELL... change when logic once should run
     // TODO currently slice, splice wrong
     observeArray(array) {
         const self = this;
-        const methods = [ "push", "pop", "shift", "unshift", "splice", "slice" ];
+
         function updateIndices() {
             for (let i = 0; i < self.data.length; i++) {
                 for (const key in self.data[ i ]) {
@@ -124,103 +99,71 @@ class ObserveEncapsulatedData {
             }
         }
 
-        function addCard(obj, index) {
+        function addObjectToData(obj, index) {
             for (const key in obj) {
-                // TODO makeReactive her => as kind of prototype
                 self.defineProp(obj, key, index);
             }
             self.notify(obj, null, null, "add", index);
         }
 
-        function removeCard(index) {
+        function removeObjectFromData(index) {
             self.notify(null, null, null, "delete", index);
         }
-        methods.forEach((method) => {
-            const originalMethod = Array.prototype[ method ];
-            
-            Object.defineProperty(array, method, {
-                value: function (...newObj) {
-                    let result = originalMethod.apply(this, newObj);
-                    let newLength = self.data.length
-                    switch (method) {
-                        case "push":
-                            newObj.forEach((obj, index) => {
-                                addCard(obj, newLength - newObj.length + index);
-                            });
-                            break;
 
-                        case "unshift":
-                            newObj.forEach((obj, index) => {
-                                addCard(obj, index);
-                            });
-                            updateIndices();
-                            break;
+        switch (method) {
+            case "push":
+                newObj.forEach((obj, index) => {
+                    addObjectToData(obj, newLength - newObj.length + index);
+                });
+                break;
 
-                        case "pop":
-                            removeCard(newLength);
-                            break;
+            case "unshift":
+                newObj.forEach((obj, index) => {
+                    addObjectToData(obj, index);
+                });
+                updateIndices();
+                break;
 
-                        case "shift":
-                            removeCard(0);
-                            updateIndices();
-                            break;
+            case "pop":
+                removeObjectFromData(newLength);
+                break;
 
-                        case "splice":
-                            const index = newObj[ 0 ];
-                            const deleteCount = newObj[ 1 ];
-                            const itemsToAdd = newObj.slice(2);
+            case "shift":
+                removeObjectFromData(0);
+                updateIndices();
+                break;
 
-                            if (itemsToAdd.length > 0) {
-                                itemsToAdd.forEach((obj, i) => {
-                                    addCard(obj, index + i);
-                                });
-                            }
+            case "splice":
+                const index = newObj[ 0 ];
+                const deleteCount = newObj[ 1 ];
+                const itemsToAdd = newObj.slice(2);
 
-                            if (deleteCount > 0) {
-                                for (let i = 0; i < deleteCount; i++) {
-                                    removeCard(index);
-                                }
-                            }
-                            updateIndices();
-                            break;
+                if (itemsToAdd.length > 0) {
+                    itemsToAdd.forEach((obj, i) => {
+                        addObjectToData(obj, index + i);
+                    });
+                }
 
-                        case "slice":
-                            // handle slice case
-                            break;
+                if (deleteCount > 0) {
+                    for (let i = 0; i < deleteCount; i++) {
+                        removeObjectFromData(index);
                     }
-                    //return result;
-                },
-                writable: true,
-                enumerable: true,
-                configurable: true,
-            })
-        })
-    }
-    addObserver(observer) {
-        this.observers.push(observer);
-    }
+                }
+                updateIndices();
+                break;
 
-    removeObserver(observer) {
-        const index = this.observers.indexOf(observer);
-        if (index !== -1) {
-            this.observers.splice(index, 1);
+            case "slice":
+                // handle slice case
+                break;
         }
     }
-
-    notify(...args) {
-        this.observers.forEach((observer) =>
-            observer.update(...args)
-        );
-    }
-    
 }
-
 
 class DataHandler {
     constructor (dataSource, proto = null) {
         this.proto = proto || dataSource[ 0 ]
         this.data = new ObserveEncapsulatedData(dataSource, this.proto);
-        
+
         this.observers = [];
         this.data.observeArray(this.data);
 
@@ -242,7 +185,7 @@ class DataHandler {
 class Contemplate {
     constructor (dataHandler, template, containerID, className, modifiers = [], show = false) {
         this.data = dataHandler.data;
-        
+
         this.container = document.getElementById(containerID);
         this.containerID = containerID;
         this.className = className
@@ -283,10 +226,10 @@ class Contemplate {
                 } else {
                     this.write2Card(item, fullKey, value, card);
                 }
-             }
+            }
         };
         write2CardRecursive(item, '', card);
-        
+
 
         return card;
     };
@@ -294,10 +237,10 @@ class Contemplate {
     // TODO check here for how to update parent[item] if parent
     // instead of oberwriting it!
     write2Card(_, key, value, card) {
-    
+
         const tags2Update = card.querySelectorAll(`[data-key="${key}"]`);
-        
-        
+
+
         tags2Update.forEach((tag) => {
             const modifiers = tag.dataset.modifier?.split(" ") ?? [];
 
@@ -309,15 +252,15 @@ class Contemplate {
                     }
                 });
             }
-            
-                tag.textContent = value;
-          
+
+            tag.textContent = value;
+
         });
     }
 
     //TODO check the notify for needed params after changes made here
     update(item, key, value, operation, index) {
-       
+
         if (operation === "add") {
             const card = this.createCard(item);
             const nextSibling = this.container.children[ index ];
