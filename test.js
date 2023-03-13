@@ -162,7 +162,7 @@ class ObserveEncapsulatedData {
 class DataHandler {
     constructor (dataSource, proto = null) {
         this.proto = proto || dataSource[ 0 ]
-        this.data = new ObserveEncapsulatedData(dataSource, this.proto);
+        this.data = new DataObserver(dataSource, this.proto);
 
         this.observers = [];
         this.data.observeArray(this.data);

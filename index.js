@@ -3,8 +3,12 @@
  *   All rights reserved.
      with MIT license
  */
+//TODO change makeReactive to take an item as param, then init with forEach in this.data, THEN call for new items in arrayObserver
+// in order to get the prototype-thingy working!
 
-class ObserveEncapsulatedData {
+// TODO still not deleting items from nested objects when entire object overwritten
+// TODO differentiate in arrayObserver as different actions needed for outer/inner array
+class DataObserver {
     constructor (dataSource, proto) {
         this.data = dataSource;
         this.proto = proto ?? this.data[ 0 ]
@@ -27,26 +31,7 @@ class ObserveEncapsulatedData {
             this.defineProp(item, prototype, index);
         });
     }
-    
-    //TODO change makeReactive to take an item as param, then init with forEach in this.data, THEN call for new items in arrayObserver
-    // THIS IS CURRENTLY NOT WORKING
-    // init with defining properties on all items of dataSource
-//     makeReactive() {
-//         // create prototype object with all getters/setters
-//         const prototype = Object.create(this.proto);
-//         Object.getOwnPropertyNames(this.proto).forEach((key) => {
-//             this.defineProp(this.proto, prototype, key, this);
-//         });
-// 
-//         // set prototype for all other items in the data source
-//         this.data.forEach((item, index) => {
-//             Object.setPrototypeOf(item, prototype);
-//             Object.getOwnPropertyNames(prototype).forEach((key) => {
-//                 this.defineProp(item, prototype, key, this);
-//             });
-//         });
-//     }
-
+ 
    
     // TODO add arrayObserver for nested arrays?
     // TODO test level of nested possible
@@ -125,8 +110,12 @@ class ObserveEncapsulatedData {
         }
 
         function addCard(obj, index) {
-            for (const key in obj) {
-                // TODO makeReactive her => as kind of prototype
+            //TODO creates a cord of type proto, but does not add values of 
+            // Object.setPrototypeOf(obj, prototype);
+            // self.defineProp(obj, prototype, index);
+            
+            
+            for (const key in obj) {   
                 self.defineProp(obj, key, index);
             }
             self.notify(obj, null, null, "add", index);
@@ -141,12 +130,10 @@ class ObserveEncapsulatedData {
             Object.defineProperty(array, method, {
                 value: function (...newObj) {
                     let result = originalMethod.apply(this, newObj);
-                    let newLength = self.data.length
+                    let newLength = result;
                     switch (method) {
                         case "push":
-                            newObj.forEach((obj, index) => {
-                                addCard(obj, newLength - newObj.length + index);
-                            });
+                            addCard(newObj, newLength  -1);
                             break;
 
                         case "unshift":
@@ -188,7 +175,7 @@ class ObserveEncapsulatedData {
                             // handle slice case
                             break;
                     }
-                    //return result;
+                    return result;
                 },
                 writable: true,
                 enumerable: true,
@@ -219,7 +206,7 @@ class ObserveEncapsulatedData {
 class DataHandler {
     constructor (dataSource, proto = null) {
         this.proto = proto || dataSource[ 0 ]
-        this.data = new ObserveEncapsulatedData(dataSource, this.proto);
+        this.data = new DataObserver(dataSource, this.proto);
         
         this.observers = [];
         this.data.observeArray(this.data);
@@ -441,7 +428,7 @@ testData[ 0 ].name = 'Lemme see'
 testData[ 2 ].hobbies[ 0 ] = 'debugging 🤬';
 testData[ 2 ].hobbies[ 1 ] = 'motocycling';
 
-testData[ 0 ].hobbies[ 2 ] = 'dreaming';
+testData[ 2 ].hobbies[ 2 ] = 'dreaming';
 
 
 testData[ 0 ].address.street = 'Home'// TODO NOT applied
