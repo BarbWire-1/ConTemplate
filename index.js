@@ -60,19 +60,16 @@ class ObserveEncapsulatedData {
                 set(newValue) {
                     value = newValue;
                     self.notify(obj, dataKey, value, "update", index);
+                    
+                    // TODO if value === object notify ALL children!!!
+                    console.log(value)
                     // update parent object
                     if (parentKey) {
                         // write the new value to the clone obj
                         // then trigger the notify of parentObj with the value of the clone
-                        // change the reference for the included items
                         all[ key ] = value;
                         self.notify(parentKey, parentKey, all, "update", index);
 
-                        //TODO try to overwrite and re-render all elements
-                        for (let i = 0; i < all.length; i++) {
-                            self.defineProp(obj, prototype, index, key);
-                            self.notify(parentKey, dataKey, all[ i ], "update", index);
-                        }
 
                     }
                 },
@@ -436,7 +433,7 @@ testData[ 0 ].hobbies[ 0 ] = 'dreaming';
 
 testData[ 0 ].address.street = 'Home'// TODO NOT applied
 //console.log(testData[ 0 ].address.street)// getter is ok.
-//testData[ 0 ].address = { street: 'Home', city: 'MyTown' }
+testData[ 0 ].address = { street: 'Home', city: 'MyTown' }
 testData[ 0 ].address.street = 'Everywhere'
 // to check updating of only changed on load
 const updateNow = setInterval(tic, 1000);
