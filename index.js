@@ -19,7 +19,7 @@ class DataObserver {
 
     
     // init with defining properties on all items of dataSource
-    makeReactive(item) {
+    makeReactive() {
         // create prototype object with all getters/setters
         const prototype = Object.create(null);
         this.defineProp(this.proto, prototype, 0);
@@ -27,30 +27,11 @@ class DataObserver {
 
         // set prototype for all other items in the data source
         this.data.forEach((item, index) => {
-            Object.setPrototypeOf(item, prototype);
+            //Object.setPrototypeOf(item, prototype);
             this.defineProp(item, prototype, index);
         });
     }
-    
-    
-    // THIS IS CURRENTLY NOT WORKING
-    // init with defining properties on all items of dataSource
-//     makeReactive() {
-//         // create prototype object with all getters/setters
-//         const prototype = Object.create(this.proto);
-//         Object.getOwnPropertyNames(this.proto).forEach((key) => {
-//             this.defineProp(this.proto, prototype, key, this);
-//         });
-// 
-//         // set prototype for all other items in the data source
-//         this.data.forEach((item, index) => {
-//             Object.setPrototypeOf(item, prototype);
-//             Object.getOwnPropertyNames(prototype).forEach((key) => {
-//                 this.defineProp(item, prototype, key, this);
-//             });
-//         });
-//     }
-
+  
    
     // TODO add arrayObserver for nested arrays?
     // TODO test level of nested possible
@@ -122,21 +103,17 @@ class DataObserver {
         
 
         function addCard(obj, index) {
-            for (const key in obj) {
-                self.defineProp(obj, key, index);
-            }
+            //self.defineProp(obj, prototype, index);
             self.notify(obj, null, null, "add", index);
         }
 
         function removeCard(index) {
             self.notify(null, null, null, "delete", index);
         }
-        
+        // TODO add a param here to only notify for new cards?
         function updateIndices() {
             for (let i = 0; i < self.data.length; i++) {
-                for (const key in self.data[ i ]) {
-                    self.defineProp(self.data[ i ], key, i);
-                }
+                self.defineProp(self.data[ i ], prototype, i);
                 self.notify(self.data[ i ], null, null, "update", i);
             }
         }
