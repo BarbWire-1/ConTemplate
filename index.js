@@ -11,31 +11,31 @@
 class DataObserver {
     constructor (dataSource, proto) {
         this.data = dataSource;
-        this.proto = proto ?? this.data[ 0 ]
+        //this.proto = proto ?? this.data[ 0 ]
+        this.proto = () => {
+            // create prototype object with all getters/setters
+            const prototype = Object.create(null);
+            this.defineProp(proto ?? this.data[0], prototype, 0);
+            console.log(prototype)// {}
+        }
         this.observers = [];
-        this.makeReactive()
+        this.init()
         this.observeArray(this.data)
     }
 
     
     // init with defining properties on all items of dataSource
-    makeReactive() {
-        // create prototype object with all getters/setters
-        const prototype = Object.create(null);
-        this.defineProp(this.proto, prototype, 0);
-        //console.log(prototype)// {}
-
-        // set prototype for all other items in the data source
+    init() {
         this.data.forEach((item, index) => {
-            //Object.setPrototypeOf(item, prototype);
-            this.defineProp(item, prototype, index);
+            
+            this.defineProp(item,  index);
         });
     }
   
    
     // TODO add arrayObserver for nested arrays?
     // TODO test level of nested possible
-    defineProp(currentObj, prototype, index, parentKey = null) {
+    defineProp(currentObj,  index, parentKey = null) {
         let self = this;
         //clone to keep values of a parentObj
         const parentData = JSON.parse(JSON.stringify(currentObj));
@@ -54,7 +54,7 @@ class DataObserver {
             // Recursively define properties for nested objects or arrays
             // and pass current key as parentKey
             if (typeof value === "object" && value !== null) {
-                self.defineProp(value, prototype, index, key);
+                self.defineProp(value, index, key);
             }
 
             Object.defineProperty(currentObj, key, {
@@ -101,19 +101,19 @@ class DataObserver {
         const self = this;
         const methods = [ "push", "pop", "shift", "unshift", "splice", "slice" ];
         
-
-        function addCard(obj, index) {
+        // add an empty card
+        function addCard(_ , index) {
             //self.defineProp(obj, prototype, index);
-            self.notify(obj, null, null, "add", index);
+            self.notify(_ , null, null, "add", index);
         }
 
         function removeCard(index) {
             self.notify(null, null, null, "delete", index);
         }
-        // TODO add a param here to only notify for new cards?
+        // update data to match shifted/unshifted index
         function updateIndices() {
             for (let i = 0; i < self.data.length; i++) {
-                self.defineProp(self.data[ i ], prototype, i);
+                self.defineProp(self.data[ i ], i);
                 self.notify(self.data[ i ], null, null, "update", i);
             }
         }
@@ -127,6 +127,7 @@ class DataObserver {
                     let newLength = result
                     switch (method) {
                         case "push":
+                            //addCard(newObj, newLength - 1);// why would this not show items of nested?
                             newObj.forEach((obj, index) => {
                                 addCard(obj, newLength - newObj.length + index);
                             });
@@ -472,5 +473,8 @@ testData[ 0 ].name = 'Unshifted Card'
 testData[ 1 ].name = 'I was at index 0'
 //testData.shift()
 //testData.pop()
+testData[ 4 ].address = 'homeless'// this would NOT remove the previous single keys from display
+testData[ 4 ].address.street = 'downhills'
+
 
 
