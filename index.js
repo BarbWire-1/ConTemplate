@@ -19,7 +19,7 @@ class DataObserver {
 
     
     // init with defining properties on all items of dataSource
-    makeReactive() {
+    makeReactive(item) {
         // create prototype object with all getters/setters
         const prototype = Object.create(null);
         this.defineProp(this.proto, prototype, 0);
@@ -119,20 +119,10 @@ class DataObserver {
     observeArray(array) {
         const self = this;
         const methods = [ "push", "pop", "shift", "unshift", "splice", "slice" ];
-        function updateIndices() {
-            for (let i = 0; i < self.data.length; i++) {
-                for (const key in self.data[ i ]) {
-                    self.defineProp(self.data[ i ], key, i);
-                }
-                self.notify(self.data[ i ], null, null, "update", i);
-            }
-        }
+        
 
         function addCard(obj, index) {
             for (const key in obj) {
-                // TODO makeReactive her => as kind of prototype
-                // Object.setPrototypeOf(item, prototype);
-                // this.defineProp(item, prototype, index);        
                 self.defineProp(obj, key, index);
             }
             self.notify(obj, null, null, "add", index);
@@ -141,6 +131,16 @@ class DataObserver {
         function removeCard(index) {
             self.notify(null, null, null, "delete", index);
         }
+        
+        function updateIndices() {
+            for (let i = 0; i < self.data.length; i++) {
+                for (const key in self.data[ i ]) {
+                    self.defineProp(self.data[ i ], key, i);
+                }
+                self.notify(self.data[ i ], null, null, "update", i);
+            }
+        }
+        
         methods.forEach((method) => {
             const originalMethod = Array.prototype[ method ];
             
@@ -478,9 +478,22 @@ testData.push({
     now: new Date(),
     emoji: undefined
 })
-testData[ 2 ].name = 'Stupid Girl'
+testData[ 3].name = 'Stupid Girl'
 //testData.shift()// TODO remove listeners for removed cards
-
+testData.unshift({
+    name: '',
+    address: {
+        street: '007 Oneway',
+        city: 'Anothertown',
+        state: 'Spheres',
+    },
+    hobbies: [ 'coding', 'playing cello', `playing devil's advocat` ],
+    now: new Date(),
+    emoji: undefined
+})
+testData[ 0 ].name = 'Unshifted Card'
+testData[ 1 ].name = 'I was at index 0'
+//testData.shift()
 //testData.pop()
 
 
