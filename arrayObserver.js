@@ -10,6 +10,7 @@ class ObservableArray extends Array {
 
     push(...args) {
         const result = super.push(...args);
+        console.log({ method: "push", args }, JSON.stringify(args[ 0 ]))
         this.notify({ method: "push", args });
         return result;
     }
@@ -50,3 +51,7 @@ class ObservableArray extends Array {
         this.observers.delete(observer);
     }
 }
+let data = new ObservableArray(testData)
+data.push({ idiot: true })
+
+

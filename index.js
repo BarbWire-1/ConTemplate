@@ -14,9 +14,10 @@ class DataObserver {
         //this.proto = proto ?? this.data[ 0 ]
         this.proto = () => {
             // create prototype object with all getters/setters
+            const innerProto = proto ?? this.data[ 0 ];
             const prototype = Object.create(null);
-            this.defineProp(proto ?? this.data[0], prototype, 0);
-            console.log(prototype)// {}
+            this.defineProp(innerProto, prototype, 0);
+            //console.log(prototype)// {}
         }
         this.observers = [];
         this.init()
@@ -27,7 +28,6 @@ class DataObserver {
     // init with defining properties on all items of dataSource
     init() {
         this.data.forEach((item, index) => {
-            
             this.defineProp(item,  index);
         });
     }
@@ -100,34 +100,31 @@ class DataObserver {
     observeArray(array) {
         const self = this;
         const methods = [ "push", "pop", "shift", "unshift", "splice", "slice" ];
-        
-        // add an empty card
-        function addCard(_ , index) {
-            //self.defineProp(obj, prototype, index);
-            self.notify(_ , null, null, "add", index);
+
+        function addCard(obj, index) {
+            self.notify(obj, null, null, "add", index);
         }
 
         function removeCard(index) {
             self.notify(null, null, null, "delete", index);
         }
-        // update data to match shifted/unshifted index
+
         function updateIndices() {
             for (let i = 0; i < self.data.length; i++) {
                 self.defineProp(self.data[ i ], i);
                 self.notify(self.data[ i ], null, null, "update", i);
             }
         }
-        
+
         methods.forEach((method) => {
             const originalMethod = Array.prototype[ method ];
-            
+
             Object.defineProperty(array, method, {
                 value: function (...newObj) {
                     let result = originalMethod.apply(this, newObj);
-                    let newLength = result
+                    let newLength = array.length;
                     switch (method) {
                         case "push":
-                            //addCard(newObj, newLength - 1);// why would this not show items of nested?
                             newObj.forEach((obj, index) => {
                                 addCard(obj, newLength - newObj.length + index);
                             });
@@ -155,9 +152,9 @@ class DataObserver {
                             const itemsToAdd = newObj.slice(2);
 
                             if (itemsToAdd.length > 0) {
-                                itemsToAdd.forEach((obj, i) => {
-                                    addCard(obj, index + i);
-                                });
+                                for (let i = 0; i < itemsToAdd.length; i++) {
+                                    addCard(itemsToAdd[ i ], index + i);
+                                }
                             }
 
                             if (deleteCount > 0) {
@@ -165,21 +162,41 @@ class DataObserver {
                                     removeCard(index);
                                 }
                             }
+
                             updateIndices();
                             break;
-
+                            //TODO hahahahahahaha
+                            // remove ALL of self data and create entire new for newArray
                         case "slice":
-                            // handle slice case
+                            const start = newObj[ 0 ];
+                            const end = newObj[ 1 ];
+                            const newArray = originalMethod.apply(this, newObj);
+                            console.log(JSON.stringify(newArray))
+
+                            // Remove cards not in the range
+                            for (let i = 0; i < newLength; i++) {
+                                removeCard(i);
+                            }
+                            
+
+                            return newArray;
+
+
+
+
+                        default:
                             break;
                     }
+
                     return result;
                 },
                 writable: true,
                 enumerable: true,
                 configurable: true,
-            })
-        })
+            });
+        });
     }
+
     addObserver(observer) {
         this.observers.push(observer);
     }
@@ -452,7 +469,7 @@ testData.push({
         city: 'Anothertown',
         state: 'Spheres',
     },
-    hobbies: [ 'coding', 'playing cello', `playing devil's advocat` ],
+    hobbies: [ 'pushing', 'disappearing' ],
     now: new Date(),
     emoji: undefined
 })
@@ -469,12 +486,42 @@ testData.unshift({
     now: new Date(),
     emoji: undefined
 })
-testData[ 0 ].name = 'Unshifted Card'
+ testData[ 0 ].name = 'Unshifted Card'
 testData[ 1 ].name = 'I was at index 0'
+ 
+//testData.slice(1)
+console.log(JSON.stringify({ testData }))
 //testData.shift()
 //testData.pop()
-testData[ 4 ].address = 'homeless'// this would NOT remove the previous single keys from display
-testData[ 4 ].address.street = 'downhills'
+//testData[ 4 ].address = 'homeless'// this would NOT remove the previous single keys from display
+//testData[ 4 ].address.street = 'downhills'
+//testData.slice(-1)
+//testData.slice(1)
+
+const animals = [ 'ant', 'bison', 'camel', 'duck', 'elephant' ];
+
+console.log(animals.slice(2));
+// Expected output: Array ["camel", "duck", "elephant"]
+
+console.log(animals.slice(2, 4));
+// Expected output: Array ["camel", "duck"]
+
+console.log(animals.slice(1, 5));
+// Expected output: Array ["bison", "camel", "duck", "elephant"]
+
+console.log(animals.slice(-2));
+// Expected output: Array ["duck", "elephant"]
+
+console.log(animals.slice(1, -1));
+// Expected output: Array ["camel", "duck"]
+
+console.log(animals.slice());
+// Expected output: Array ["ant", "bison", "camel", "duck", "elephant"]
 
 
+console.log(JSON.stringify({ testData }))
+//HÄÄÄÄÄH????
+//testData[4].name = 'I was at index 0'
 
+
+    
