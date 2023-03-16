@@ -12,13 +12,13 @@ class DataObserver {
     constructor (dataSource, proto) {
         this.data = dataSource;
         //this.proto = proto ?? this.data[ 0 ]
-        this.proto = () => {
-            // create prototype object with all getters/setters
-            const innerProto = proto ?? this.data[ 0 ];
-            const prototype = Object.create(null);
-            this.defineProp(innerProto, prototype, 0);
-            //console.log(prototype)// {}
-        }
+        // this.proto = () => {
+        //     // create prototype object with all getters/setters
+        //     const innerProto = proto ?? this.data[ 0 ];
+        //     const prototype = Object.create(null);
+        //     this.defineProp(innerProto, prototype, 0);
+        //     console.log(innerProto)// {}
+        // }
         this.observers = [];
         this.init()
         this.observeArray(this.data)
@@ -27,6 +27,10 @@ class DataObserver {
     
     // init with defining properties on all items of dataSource
     init() {
+        // const innerProto = this.proto ?? this.data[ 0 ];
+        // const prototype = Object.create(null);
+        // this.defineProp(innerProto, prototype, 0);
+        
         this.data.forEach((item, index) => {
             this.defineProp(item,  index);
         });
@@ -42,14 +46,14 @@ class DataObserver {
 
         Object.keys(currentObj).forEach(key => {
             let value = currentObj[ key ];
-            
             // dataKey is used to notify and update tags with corresponding data-key
-            let dataKey = parentKey ? `${parentKey}.${key}` : key;
+            const dataKey = parentKey ? `${parentKey}.${key}` : key;
             // recursively notify and update nested arrays
             if (Array.isArray(value)) {
-                //console.log(value)
-                //self.notify(value, dataKey, value, "update", index);
-                self.observeArray(self);
+                for (let i = 0; i < 5; i++){
+                    currentObj[key][i] = value[i] || ''
+                }
+        
             }
             // Recursively define properties for nested objects or arrays
             // and pass current key as parentKey
@@ -69,23 +73,39 @@ class DataObserver {
                     value = newValue;
                     self.notify(currentObj, dataKey, value, "update", index);
                     
-                    // update all items when parentobj has changed
-                    //TODO hmmm. need to remove single subs with now no value!
-                    if (typeof value === "object" && value !== null) {
-
-                        Object.keys(value).forEach(key => {
-                            let subKey = dataKey + `.${key}`
-                            self.notify(key, subKey, value[ key ], "update", index);
-                        })
-                    }
                     // update parent object if single item changed
                     if (parentKey) {
                         // write the new value to the clone obj
                         // then trigger the notify of parentObj with the value of the clone
+                        //parentData[key] = {}
                         parentData[ key ] = value;
                         self.notify(parentKey, parentKey, parentData, "update", index);
-                        
+
                     }
+                    
+                    // update all items when parentobj has changed
+                    //TODO hmmm. need to remove single subs with now no value!
+                    if (typeof value === "object" && value !== null) {
+                        // update parent object if single item changed
+                       
+                        
+
+                        Object.keys(value).forEach(key => {
+                            let subKey = dataKey + `.${key}`
+                            //TODO test how to delete overwritten values
+                            self.notify(key, subKey, value[ key ], "update", index);
+                        })
+    
+                    }
+                    // // update parent object if single item changed
+                    // if (parentKey) {
+                    //     // write the new value to the clone obj
+                    //     // then trigger the notify of parentObj with the value of the clone
+                    //     //parentData[key] = {}
+                    //     parentData[ key ] = value;
+                    //     self.notify(parentKey, parentKey, parentData, "update", index);
+                    //     
+                    // }
                 },
             });
         });
@@ -311,7 +331,7 @@ class Contemplate {
                 });
             }
             
-                tag.textContent = value;
+            tag.textContent = value;
           
         });
     }
@@ -375,6 +395,7 @@ const templateTest = () => {
       <span data-key="hobbies.0" data-modifier="uppercase" ></span><br>
         <span data-key="hobbies.1" data-modifier="lowercase" ></span>
          <span data-key="hobbies.2" data-modifier="lowercase" ></span>
+         <span data-key="hobbies.3" data-modifier="lowercase" ></span>
       </p>
     <p style="text-align: center; margin-top: 10px">
       <span data-key="now" data-modifier="localeTime"></span>
@@ -421,6 +442,7 @@ const testData = [
     }
 ];
 
+
 const prototype = {
     name: "",
     address: {
@@ -434,7 +456,7 @@ const prototype = {
 };
 
 // model watching all obj
-const dataObject = new DataHandler(testData, prototype);
+const dataObject = new DataHandler(testData/*, prototype*/);
 // model watching subkey of obj
 const testModifier = new Contemplate(dataObject, templateTest, 'container4', 'template1', modifiers);
 testData[ 0 ].name = 'Lemme see'
@@ -447,7 +469,7 @@ testData[ 2 ].hobbies[ 2 ] = 'dreaming';
 
 testData[ 0 ].address.street = 'Home'// TODO NOT applied
 //console.log(testData[ 0 ].address.street)// getter is ok.
-//testData[ 0 ].address = { street: 'Another Home', city: 'MyTown' }
+testData[ 0 ].address = { street: 'Another Home', city: 'MyTown' }
 testData[ 0 ].address.street = 'Everywhere'
 // to check updating of only changed on load
 const updateNow = setInterval(tic, 1000);
@@ -488,40 +510,44 @@ testData.unshift({
 })
  testData[ 0 ].name = 'Unshifted Card'
 testData[ 1 ].name = 'I was at index 0'
- 
-//testData.slice(1)
-console.log(JSON.stringify({ testData }))
-//testData.shift()
-//testData.pop()
-//testData[ 4 ].address = 'homeless'// this would NOT remove the previous single keys from display
-//testData[ 4 ].address.street = 'downhills'
-//testData.slice(-1)
-//testData.slice(1)
 
-const animals = [ 'ant', 'bison', 'camel', 'duck', 'elephant' ];
+testData[ 0 ].hobbies[ 2 ] = 'another hobby'
+testData[ 0 ].hobbies[ 3 ] = 'another hobby'
 
-console.log(animals.slice(2));
-// Expected output: Array ["camel", "duck", "elephant"]
-
-console.log(animals.slice(2, 4));
-// Expected output: Array ["camel", "duck"]
-
-console.log(animals.slice(1, 5));
-// Expected output: Array ["bison", "camel", "duck", "elephant"]
-
-console.log(animals.slice(-2));
-// Expected output: Array ["duck", "elephant"]
-
-console.log(animals.slice(1, -1));
-// Expected output: Array ["camel", "duck"]
-
-console.log(animals.slice());
-// Expected output: Array ["ant", "bison", "camel", "duck", "elephant"]
-
-
-console.log(JSON.stringify({ testData }))
-//HÄÄÄÄÄH????
-//testData[4].name = 'I was at index 0'
-
-
-    
+//  
+// //testData.slice(1)
+// console.log(JSON.stringify({ testData }))
+// //testData.shift()
+// //testData.pop()
+// //testData[ 4 ].address = 'homeless'// this would NOT remove the previous single keys from display
+// //testData[ 4 ].address.street = 'downhills'
+// //testData.slice(-1)
+// //testData.slice(1)
+// 
+// const animals = [ 'ant', 'bison', 'camel', 'duck', 'elephant' ];
+// 
+// console.log(animals.slice(2));
+// // Expected output: Array ["camel", "duck", "elephant"]
+// 
+// console.log(animals.slice(2, 4));
+// // Expected output: Array ["camel", "duck"]
+// 
+// console.log(animals.slice(1, 5));
+// // Expected output: Array ["bison", "camel", "duck", "elephant"]
+// 
+// console.log(animals.slice(-2));
+// // Expected output: Array ["duck", "elephant"]
+// 
+// console.log(animals.slice(1, -1));
+// // Expected output: Array ["camel", "duck"]
+// 
+// console.log(animals.slice());
+// // Expected output: Array ["ant", "bison", "camel", "duck", "elephant"]
+// 
+// 
+// console.log(JSON.stringify({ testData }))
+// //HÄÄÄÄÄH????
+// //testData[4].name = 'I was at index 0'
+// 
+// 
+//     
