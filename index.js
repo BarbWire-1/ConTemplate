@@ -3,6 +3,7 @@
  *   All rights reserved.
      with MIT license
  */
+console.clear()
 //TODO change makeReactive to take an item as param, then init with forEach in this.data, THEN call for new items in arrayObserver
 // in order to get the prototype-thingy working!
 
@@ -11,104 +12,111 @@
 class DataObserver {
     constructor (dataSource, proto) {
         this.data = dataSource;
-        //this.proto = proto ?? this.data[ 0 ]
-        // this.proto = () => {
-        //     // create prototype object with all getters/setters
-        //     const innerProto = proto ?? this.data[ 0 ];
-        //     const prototype = Object.create(null);
-        //     this.defineProp(innerProto, prototype, 0);
-        //     console.log(innerProto)// {}
-        // }
+        this.proto = proto;
         this.observers = [];
         this.init()
         this.observeArray(this.data)
     }
-
-    
+  
     // init with defining properties on all items of dataSource
     init() {
-        // const innerProto = this.proto ?? this.data[ 0 ];
-        // const prototype = Object.create(null);
-        // this.defineProp(innerProto, prototype, 0);
-        
-        this.data.forEach((item, index) => {
-            this.defineProp(item,  index);
-        });
-    }
+        const innerProto = this.proto ?? this.data[ 0 ];
+        const prototype = Object.create(null);
+        this.defineProp(innerProto, prototype, 0);
+            
+            this.data.forEach((item, index) => {
+                this.defineProp(item,  index);
+            });
+        return prototype;
+        }
   
    
     // TODO add arrayObserver for nested arrays?
     // TODO test level of nested possible
-    defineProp(currentObj,  index, parentKey = null) {
-        let self = this;
-        //clone to keep values of a parentObj
-        const parentData = JSON.parse(JSON.stringify(currentObj));
+    
+    defineProp(currentObj, index, parentKey = null) {
+        for (const keys in this.proto) {
+            let self = this;
+            //clone to keep values of a parentObj
+            const parentData = JSON.parse(JSON.stringify(currentObj));
 
-        Object.keys(currentObj).forEach(key => {
-            let value = currentObj[ key ];
-            // dataKey is used to notify and update tags with corresponding data-key
-            const dataKey = parentKey ? `${parentKey}.${key}` : key;
-            // recursively notify and update nested arrays
-            if (Array.isArray(value)) {
-                for (let i = 0; i < 5; i++){
-                    currentObj[key][i] = value[i] || ''
-                }
-        
-            }
-            // Recursively define properties for nested objects or arrays
-            // and pass current key as parentKey
-            if (typeof value === "object" && value !== null) {
-                self.defineProp(value, index, key);
-            }
-
-            Object.defineProperty(currentObj, key, {
-
-                enumerable: true,
-                get() {
+            Object.keys(currentObj).forEach(key => {
+            
+                let value = currentObj[ key ];
+                // dataKey is used to notify and update tags with corresponding data-key
+                const dataKey = parentKey ? `${parentKey}.${key}` : key;
+                //console.log(this.proto[key])
+                //if (Object.keys(this.proto).includes(key)) {
+                
+                //console.log(key)
+                // fill up array to create getters/setters for wanted no. of items
+                // TODO this is now also in addCard, which is ugly!!!
+                if (Array.isArray(value)) {
                     //console.log(value)
-                    return value;
-                },
-                set(newValue) {
-                   
-                    value = newValue;
-                    self.notify(currentObj, dataKey, value, "update", index);
-                    
-                    // update parent object if single item changed
-                    if (parentKey) {
-                        // write the new value to the clone obj
-                        // then trigger the notify of parentObj with the value of the clone
-                        //parentData[key] = {}
-                        parentData[ key ] = value;
-                        self.notify(parentKey, parentKey, parentData, "update", index);
-
+                    for (let i = 0; i < this.proto[ key ]?.length; i++) {
+                        currentObj[ key ][ i ] = value[ i ] || this.proto[ key ][ i ];
+                        //self.notify(parentKey, parentKey, parentData, "update", index);
+                        
                     }
+        
+                }
+                // Recursively define properties for nested objects or arrays
+                // and pass current key as parentKey
+                if (typeof value === "object" && value !== null) {
+                    self.defineProp(value, index, key);
+                }
+
+                Object.defineProperty(currentObj, key, {
+
+                    enumerable: true,
+                    get() {
+                        //console.log(value)
+                        return value;
+                    },
+                    set(newValue) {
+                   
+                        value = newValue;
+                        self.notify(currentObj, dataKey, value, "update", index);
                     
-                    // update all items when parentobj has changed
-                    //TODO hmmm. need to remove single subs with now no value!
-                    if (typeof value === "object" && value !== null) {
                         // update parent object if single item changed
+                        if (parentKey) {
+                            // write the new value to the clone obj
+                            // then trigger the notify of parentObj with the value of the clone
+                            // TODO update single items to and remove such no longer in value
+                            parentData[ key ] = value;
+                            self.notify(parentKey, parentKey, parentData, "update", index);
+
+                        }
+                    
+                        // update all items when parentobj has changed
+                        //TODO hmmm. need to remove single subs with now no value!
+                        if (typeof value === "object" && value !== null) {
+                            // update parent object if single item changed
                        
                         
 
-                        Object.keys(value).forEach(key => {
-                            let subKey = dataKey + `.${key}`
-                            //TODO test how to delete overwritten values
-                            self.notify(key, subKey, value[ key ], "update", index);
-                        })
+                            Object.keys(value).forEach(key => {
+                                let subKey = dataKey + `.${key}`
+                                //console.log([ key ])// those keys used in overwriting obj
+                                //TODO test how to delete overwritten values
+                                self.notify(key, subKey, value[ key ], "update", index);
+                            })
     
-                    }
-                    // // update parent object if single item changed
-                    // if (parentKey) {
-                    //     // write the new value to the clone obj
-                    //     // then trigger the notify of parentObj with the value of the clone
-                    //     //parentData[key] = {}
-                    //     parentData[ key ] = value;
-                    //     self.notify(parentKey, parentKey, parentData, "update", index);
-                    //     
-                    // }
-                },
+                        }
+                        // // update parent object if single item changed
+                        // if (parentKey) {
+                        //     // write the new value to the clone obj
+                        //     // then trigger the notify of parentObj with the value of the clone
+                        //     //parentData[key] = {}
+                        //     parentData[ key ] = value;
+                        //     self.notify(parentKey, parentKey, parentData, "update", index);
+                        //     
+                        // }
+                    },
+                });
+                //}
             });
-        });
+        }
     }
 
 
@@ -122,6 +130,17 @@ class DataObserver {
         const methods = [ "push", "pop", "shift", "unshift", "splice", "slice" ];
 
         function addCard(obj, index) {
+            console.log(obj)
+            Object.keys(self.proto).forEach(key => {
+            if (Array.isArray(obj[key])) {
+                console.log(key)
+                for (let i = 0; i < self.proto[ key ]?.length; i++) {
+                    obj[ key ][ i ] = obj[key][ i ] || self.proto[key][i];
+                }
+
+            }
+            
+            })
             self.notify(obj, null, null, "add", index);
         }
 
@@ -444,19 +463,19 @@ const testData = [
 
 
 const prototype = {
-    name: "",
+    name: "name",
     address: {
-        street: "",
-        city: "",
-        state: "",
+        street: "street",
+        city: "city",
+        state: "state",
     },
-    hobbies: Array.from({ length: 5 }, () => 'test'),
-    now: null,
-    emoji: null,
+    //hobbies: Array.from({ length: 5 }, () => 'proto'),
+    now: new Date(),
+    emoji: 'emoji',
 };
 
 // model watching all obj
-const dataObject = new DataHandler(testData/*, prototype*/);
+const dataObject = new DataHandler(testData, prototype);
 // model watching subkey of obj
 const testModifier = new Contemplate(dataObject, templateTest, 'container4', 'template1', modifiers);
 testData[ 0 ].name = 'Lemme see'
@@ -493,10 +512,10 @@ testData.push({
     },
     hobbies: [ 'pushing', 'disappearing' ],
     now: new Date(),
-    emoji: undefined
+    emoji: 'emoji'
 })
 testData[ 3].name = 'Stupid Girl'
-//testData.shift()// TODO remove listeners for removed cards
+testData.shift()// TODO remove listeners for removed cards
 testData.unshift({
     name: '',
     address: {
@@ -512,7 +531,7 @@ testData.unshift({
 testData[ 1 ].name = 'I was at index 0'
 
 testData[ 0 ].hobbies[ 2 ] = 'another hobby'
-testData[ 0 ].hobbies[ 3 ] = 'another hobby'
+testData[ 0].hobbies[ 3 ] = 'another hobby'
 
 //  
 // //testData.slice(1)
