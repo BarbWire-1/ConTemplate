@@ -35,13 +35,13 @@ class DataObserver {
     // TODO test level of nested possible
     
     defineProp(currentObj, index, parentKey = null) {
-        for (const keys in this.proto) {
+        
             let self = this;
             //clone to keep values of a parentObj
             const parentData = JSON.parse(JSON.stringify(currentObj));
-
-            Object.keys(currentObj).forEach(key => {
             
+            Object.keys(currentObj).forEach(key => {
+                
                 let value = currentObj[ key ];
                 // dataKey is used to notify and update tags with corresponding data-key
                 const dataKey = parentKey ? `${parentKey}.${key}` : key;
@@ -116,7 +116,7 @@ class DataObserver {
                 });
                 //}
             });
-        }
+        
     }
 
 
@@ -139,7 +139,6 @@ class DataObserver {
                 }
 
             }
-            
             })
             self.notify(obj, null, null, "add", index);
         }
@@ -415,6 +414,7 @@ const templateTest = () => {
         <span data-key="hobbies.1" data-modifier="lowercase" ></span>
          <span data-key="hobbies.2" data-modifier="lowercase" ></span>
          <span data-key="hobbies.3" data-modifier="lowercase" ></span>
+         <span data-key="hobbies.4" data-modifier="lowercase" ></span>
       </p>
     <p style="text-align: center; margin-top: 10px">
       <span data-key="now" data-modifier="localeTime"></span>
@@ -462,7 +462,7 @@ const testData = [
 ];
 
 
-const prototype = {
+const structure = {
     name: "name",
     address: {
         street: "street",
@@ -475,7 +475,7 @@ const prototype = {
 };
 
 // model watching all obj
-const dataObject = new DataHandler(testData, prototype);
+const dataObject = new DataHandler(testData, structure);
 // model watching subkey of obj
 const testModifier = new Contemplate(dataObject, templateTest, 'container4', 'template1', modifiers);
 testData[ 0 ].name = 'Lemme see'
@@ -512,10 +512,10 @@ testData.push({
     },
     hobbies: [ 'pushing', 'disappearing' ],
     now: new Date(),
-    emoji: 'emoji'
+    emoji: undefined
 })
 testData[ 3].name = 'Stupid Girl'
-testData.shift()// TODO remove listeners for removed cards
+//testData.shift()// TODO remove listeners for removed cards
 testData.unshift({
     name: '',
     address: {
@@ -527,11 +527,12 @@ testData.unshift({
     now: new Date(),
     emoji: undefined
 })
- testData[ 0 ].name = 'Unshifted Card'
+testData[ 0 ].name = 'Unshifted Card'
 testData[ 1 ].name = 'I was at index 0'
 
 testData[ 0 ].hobbies[ 2 ] = 'another hobby'
-testData[ 0].hobbies[ 3 ] = 'another hobby'
+testData[ 4 ].hobbies[ 3 ] = 'another hobby'
+testData[4].emoji = 'emoji'
 
 //  
 // //testData.slice(1)
