@@ -72,11 +72,10 @@ class DataObserver {
                             // write the new value to the clone obj
                             // then trigger the notify of parentObj with the value of the clone
                             // TODO update single items to and remove such no longer in value
+                            console.log(parentData)
                             parentData[ key ] = value;
                             self.notify(parentKey, parentKey, parentData, "update", index);
-                            Object.keys(parentData).map(key=> {
-                                console.log(key)
-                            })
+                            
 
                         }
                     
@@ -85,7 +84,9 @@ class DataObserver {
                         if (typeof value === "object" && value !== null) {
                             // update parent object if single item changed
                        
-                        
+                            Object.keys(currentObj[key]).map(key => {
+                                console.log(key)
+                            })
 
                             Object.keys(value).forEach(key => {
                                 let subKey = dataKey + `.${key}`
@@ -114,10 +115,10 @@ class DataObserver {
         const methods = [ "push", "pop", "shift", "unshift", "splice", "slice" ];
 
         function addCard(obj, index) {
-            console.log(obj)
+            //console.log(obj)
             Object.keys(self.proto).forEach(key => {
             if (Array.isArray(obj[key])) {
-                console.log(key)
+                //console.log(key)
                 for (let i = 0; i < self.proto[ key ]?.length; i++) {
                     obj[ key ][ i ] = obj[key][ i ] || self.proto[key][i];
                 }
@@ -148,7 +149,7 @@ class DataObserver {
                     switch (method) {
                         case "push":
                             newObj.forEach((obj, index) => {
-                                console.log(obj)
+                                //console.log(obj)
                                 // const { name, address, ...rest } = obj;
                                 // addCard(rest, newLength - newObj.length + index);
                                 addCard(obj, newLength - newObj.length + index);
@@ -498,7 +499,7 @@ testData[ 0 ].address.street = 'Home'
 
 
 // TODO 1.1 changing the entire obj messes up everything, but WHY????
-//testData[ 0 ].address = { street: 'Another Home', city: 'MyTown', state: '' }
+testData[ 0 ].address = { street: 'Another Home', city: 'MyTown', state: '' }
 testData[ 0 ].address.street = 'Everywhere'
 // to check updating of only changed on load
 const updateNow = setInterval(tic, 1000);
