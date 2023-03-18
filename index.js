@@ -13,7 +13,8 @@ console.clear()
 
 class DataObserver {
     constructor (dataSource, proto) {
-        this.data = dataSource.map(({ name, address, ...rest }) => rest)
+        //this.data = dataSource.map(({ name, address, ...rest }) => rest)
+        this.data = dataSource;
         this.proto = proto;
         this.observers = [];
         this.init()
@@ -148,15 +149,18 @@ class DataObserver {
                         case "push":
                             newObj.forEach((obj, index) => {
                                 console.log(obj)
-                                const { name, address, ...rest } = obj;
-                                addCard(rest, newLength - newObj.length + index);
+                                // const { name, address, ...rest } = obj;
+                                // addCard(rest, newLength - newObj.length + index);
+                                addCard(obj, newLength - newObj.length + index);
+                               
                             });
                             break;
 
                         case "unshift":
                             newObj.forEach((obj, index) => {
-                                const { name, address, ...rest } = obj;
-                                addCard(rest, index);
+                                // const { name, address, ...rest } = obj;
+                                // addCard(rest, index);
+                                addCard(obj, index)
                             });
                             updateIndices();
                             break;
@@ -494,7 +498,7 @@ testData[ 0 ].address.street = 'Home'
 
 
 // TODO 1.1 changing the entire obj messes up everything, but WHY????
-//testData[ 0 ].address = { street: 'Another Home', city: 'MyTown' }
+//testData[ 0 ].address = { street: 'Another Home', city: 'MyTown', state: '' }
 testData[ 0 ].address.street = 'Everywhere'
 // to check updating of only changed on load
 const updateNow = setInterval(tic, 1000);
@@ -582,27 +586,30 @@ testData[ 4 ].hobbies[ 0 ] = 'debugging 🤬';
 //     
 
 
-    const emp = {
-        name: 'Rohit',
-    id: 1211,
-    designation: 'Software Engineer',
-    address: {
-        city: 'Bangalore',
-    pincode: '560004'
-		}
-	};
+class DataObserver3 {
+    constructor (dataSource, proto, { excludeProperties = [] } = {}) {
+        this.data = dataSource.map(obj => this.filterObj(obj, excludeProperties));
+        this.data = dataSource
+        this.proto = proto;
+        this.observers = [];
+    }
 
-    // Nested object address is destructured
-    // to access address.pincode
-    function getDetails({name,
-    id, address: {pincode} }) {
+    filterObj(obj, excludeProperties) {
+        const filteredObj = {};
+        for (const key in obj) {
+            if (!excludeProperties.includes(key)) {
+                filteredObj[ key ] = obj[ key ];
+            }
+        }
+        return filteredObj;
+    }
+}
 
-        console.log(
-            `Employee Name: ${name},
-			ID: ${id},
-			Address -> Pincode: ${pincode}`
-        );
-	}
-
-    getDetails(emp);
-
+// Example usage
+const dataSource = [
+    { name: 'John', address: '123 Main St', age: 30 },
+    { name: 'Jane', address: '456 Elm St', age: 25 },
+    { name: 'Bob', address: '789 Oak St', age: 40 },
+];
+const observer = new DataObserver3(dataSource, {}, { excludeProperties: [ 'name', 'address' ] });
+console.log(observer.data);
