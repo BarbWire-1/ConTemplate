@@ -20,43 +20,29 @@ class DataObserver {
   
     // init with defining properties on all items of dataSource
     init() {
-        const innerProto = this.proto ?? this.data[ 0 ];
-        const prototype = Object.create(null);
-        this.defineProp(innerProto, prototype, 0);
-            
-            this.data.forEach((item, index) => {
-                this.defineProp(item,  index);
-            });
-        return prototype;
-        }
+        this.data.forEach((item, index) => {
+            this.defineProp(item,  index);
+        });
+    }
   
-   
-    // TODO add arrayObserver for nested arrays?
-    // TODO test level of nested possible
-    
     defineProp(currentObj, index, parentKey = null) {
         
             let self = this;
             //clone to keep values of a parentObj
-            const parentData = JSON.parse(JSON.stringify(currentObj));
+            const parentData = { ...currentObj }
             
             Object.keys(currentObj).forEach(key => {
                 
                 let value = currentObj[ key ];
                 // dataKey is used to notify and update tags with corresponding data-key
                 const dataKey = parentKey ? `${parentKey}.${key}` : key;
-                //console.log(this.proto[key])
-                //if (Object.keys(this.proto).includes(key)) {
                 
-                //console.log(key)
                 // fill up array to create getters/setters for wanted no. of items
                 // TODO this is now also in addCard, which is ugly!!!
                 if (Array.isArray(value)) {
-                    //console.log(value)
-                    for (let i = 0; i < this.proto[ key ]?.length; i++) {
-                        currentObj[ key ][ i ] = value[ i ] || this.proto[ key ][ i ];
-                        //self.notify(parentKey, parentKey, parentData, "update", index);
-                        
+                    
+                    for (let i = 0; i < this.proto[ key ]?.length; i++) {  
+                        currentObj[ key ][ i ] = value[ i ] || this.proto[ key ][ i ];   
                     }
         
                 }
@@ -85,6 +71,9 @@ class DataObserver {
                             // TODO update single items to and remove such no longer in value
                             parentData[ key ] = value;
                             self.notify(parentKey, parentKey, parentData, "update", index);
+                            Object.keys(parentData).map(key=> {
+                                console.log(key)
+                            })
 
                         }
                     
@@ -103,18 +92,10 @@ class DataObserver {
                             })
     
                         }
-                        // // update parent object if single item changed
-                        // if (parentKey) {
-                        //     // write the new value to the clone obj
-                        //     // then trigger the notify of parentObj with the value of the clone
-                        //     //parentData[key] = {}
-                        //     parentData[ key ] = value;
-                        //     self.notify(parentKey, parentKey, parentData, "update", index);
-                        //     
-                        // }
+                        
                     },
                 });
-                //}
+                
             });
         
     }
@@ -462,33 +443,54 @@ const testData = [
 ];
 
 
-const structure = {
-    name: "name",
-    address: {
-        street: "street",
-        city: "city",
-        state: "state",
-    },
-    //hobbies: Array.from({ length: 5 }, () => 'proto'),
-    now: new Date(),
-    emoji: 'emoji',
+const filter = {
+    // name: "name",
+    // address: {
+    //     street: "street",
+    //     city: "city",
+    //     state: "state",
+    // },
+    hobbies: Array.from({ length: 5 }, () => `{{hobby}}`),
+    // now: new Date(),
+    // emoji: 'emoji',
 };
 
+
+// this doesn't reflect mutations on testdataLENGTH!!!!
+let array = []
+for (let i = 0; i < testData.length; i++) {
+
+    const { name, address, ...rest } = { ...testData[ i ] };
+    array.push(rest)
+    console.log(array[ i ] === rest)
+    console.log({ array });
+};
+
+testData[ 0 ].hobbies[ 0 ] = 'testing'
+console.log(array[ 0 ].hobbies[ 0 ])//'testing'
+console.log({ array });
+
+
+
+
 // model watching all obj
-const dataObject = new DataHandler(testData, structure);
+const dataObject = new DataHandler(testData, filter);
 // model watching subkey of obj
 const testModifier = new Contemplate(dataObject, templateTest, 'container4', 'template1', modifiers);
 testData[ 0 ].name = 'Lemme see'
 
-testData[ 2 ].hobbies[ 0 ] = 'debugging 🤬';
+testData[ 0 ].hobbies[ 0 ] = 'debugging 🤬';
 testData[ 2 ].hobbies[ 1 ] = 'motocycling';
 
 testData[ 2 ].hobbies[ 2 ] = 'dreaming';
 
 
-testData[ 0 ].address.street = 'Home'// TODO NOT applied
+testData[ 0 ].address.street = 'Home'
 //console.log(testData[ 0 ].address.street)// getter is ok.
-testData[ 0 ].address = { street: 'Another Home', city: 'MyTown' }
+
+
+// TODO 1.1 changing the entire obj messes up everything, but WHY????
+//testData[ 0 ].address = { street: 'Another Home', city: 'MyTown' }
 testData[ 0 ].address.street = 'Everywhere'
 // to check updating of only changed on load
 const updateNow = setInterval(tic, 1000);
@@ -532,7 +534,10 @@ testData[ 1 ].name = 'I was at index 0'
 
 testData[ 0 ].hobbies[ 2 ] = 'another hobby'
 testData[ 4 ].hobbies[ 3 ] = 'another hobby'
-testData[4].emoji = 'emoji'
+testData[ 4 ].emoji = 'emoji'
+
+testData[ 0 ].hobbies[ 0 ] = 'debugging 🤬';
+testData[ 4 ].hobbies[ 0 ] = 'debugging 🤬';
 
 //  
 // //testData.slice(1)
@@ -571,3 +576,4 @@ testData[4].emoji = 'emoji'
 // 
 // 
 //     
+
