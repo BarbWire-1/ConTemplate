@@ -72,7 +72,7 @@ class DataObserver {
                             // write the new value to the clone obj
                             // then trigger the notify of parentObj with the value of the clone
                             // TODO update single items to and remove such no longer in value
-                            console.log(parentData)
+                            //console.log(parentData)
                             parentData[ key ] = value;
                             self.notify(parentKey, parentKey, parentData, "update", index);
                             
@@ -112,7 +112,7 @@ class DataObserver {
     // TODO currently slice, splice wrong
     observeArray(array) {
         const self = this;
-        const methods = [ "push", "pop", "shift", "unshift", "splice", "slice" ];
+        const methods = [ "push", "pop", "shift", "unshift", "splice", "reverse"];
 
         function addCard(obj, index) {
             //console.log(obj)
@@ -168,10 +168,12 @@ class DataObserver {
 
                         case "pop":
                             removeCard(newLength);
+                            //self.data.pop()
                             break;
 
                         case "shift":
                             removeCard(0);
+                            //self.data.shift()
                             updateIndices();
                             break;
 
@@ -194,21 +196,19 @@ class DataObserver {
 
                             updateIndices();
                             break;
-                            //TODO hahahahahahaha
-                            // remove ALL of self data and create entire new for newArray
-                        case "slice":
-                            const start = newObj[ 0 ];
-                            const end = newObj[ 1 ];
-                            const newArray = originalMethod.apply(this, newObj);
-                            console.log(JSON.stringify(newArray))
-
-                            // Remove cards not in the range
-                            for (let i = 0; i < newLength; i++) {
-                                removeCard(i);
-                            }
+                        case "reverse":
+                            console.log(JSON.stringify(self.data))
+                            // 
+                            // self.data.forEach((item, index) => {
+                            //     self.defineProp(item, index);
+                            //     for (const key in item) {
+                            //         self.notify(key, null, self.data[ index ][key], "update", index);
+                            //     }
+                            //            
+                                    
+                                // });
                             
-
-                            return newArray;
+                            break;
 
 
 
@@ -525,7 +525,7 @@ testData.push({
     now: new Date(),
     emoji: undefined
 })
-testData[ 3].name = 'Stupid Girl'
+testData[ 2 ].name = 'Stupid Girl';
 //testData.shift()// TODO remove listeners for removed cards
 testData.unshift({
     name: '',
@@ -547,6 +547,7 @@ testData[ 4 ].emoji = 'emoji'
 
 testData[ 0 ].hobbies[ 0 ] = 'debugging 🤬';
 testData[ 4 ].hobbies[ 0 ] = 'debugging 🤬';
+//testData.reverse();
 
 //  
 // //testData.slice(1)
