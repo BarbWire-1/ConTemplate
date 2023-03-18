@@ -9,13 +9,15 @@ console.clear()
 
 // TODO still not deleting items from nested objects when entire object overwritten
 // TODO differentiate in arrayObserver as different actions needed for outer/inner array
+
+
 class DataObserver {
     constructor (dataSource, proto) {
-        this.data = dataSource;
+        this.data = dataSource.map(({ name, address, ...rest }) => rest)
         this.proto = proto;
         this.observers = [];
         this.init()
-        this.observeArray(this.data)
+        this.observeArray(dataSource)
     }
   
     // init with defining properties on all items of dataSource
@@ -145,13 +147,16 @@ class DataObserver {
                     switch (method) {
                         case "push":
                             newObj.forEach((obj, index) => {
-                                addCard(obj, newLength - newObj.length + index);
+                                console.log(obj)
+                                const { name, address, ...rest } = obj;
+                                addCard(rest, newLength - newObj.length + index);
                             });
                             break;
 
                         case "unshift":
                             newObj.forEach((obj, index) => {
-                                addCard(obj, index);
+                                const { name, address, ...rest } = obj;
+                                addCard(rest, index);
                             });
                             updateIndices();
                             break;
@@ -462,14 +467,13 @@ for (let i = 0; i < testData.length; i++) {
 
     const { name, address, ...rest } = { ...testData[ i ] };
     array.push(rest)
-    console.log(array[ i ] === rest)
-    console.log({ array });
+    
 };
 
 testData[ 0 ].hobbies[ 0 ] = 'testing'
-console.log(array[ 0 ].hobbies[ 0 ])//'testing'
-console.log({ array });
 
+let array1 = testData.map(({ name, address, ...rest }) => rest);
+console.log(array1[0].hobbies[0])// 'testing'
 
 
 
@@ -576,4 +580,29 @@ testData[ 4 ].hobbies[ 0 ] = 'debugging 🤬';
 // 
 // 
 //     
+
+
+    const emp = {
+        name: 'Rohit',
+    id: 1211,
+    designation: 'Software Engineer',
+    address: {
+        city: 'Bangalore',
+    pincode: '560004'
+		}
+	};
+
+    // Nested object address is destructured
+    // to access address.pincode
+    function getDetails({name,
+    id, address: {pincode} }) {
+
+        console.log(
+            `Employee Name: ${name},
+			ID: ${id},
+			Address -> Pincode: ${pincode}`
+        );
+	}
+
+    getDetails(emp);
 
