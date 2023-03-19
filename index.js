@@ -131,11 +131,13 @@ class DataObserver {
         function removeCard(index) {
             self.notify(null, null, null, "delete", index);
         }
-
+        // TODO CHECK THIS!!!!!!!!!!
         function updateIndices() {
             for (let i = 0; i < self.data.length; i++) {
                 self.defineProp(self.data[ i ], i);
-                self.notify(self.data[ i ], null, null, "update", i);
+                for (const key in self.data[ i ]) {
+                    self.notify(key, null, self.data[i][key], "update", i);
+                }
             }
         }
 
@@ -198,15 +200,14 @@ class DataObserver {
                             break;
                         case "reverse":
                             console.log(JSON.stringify(self.data))
-                            // 
-                            // self.data.forEach((item, index) => {
-                            //     self.defineProp(item, index);
-                            //     for (const key in item) {
-                            //         self.notify(key, null, self.data[ index ][key], "update", index);
-                            //     }
-                            //            
+                            //updateIndices()
+                            self.data.forEach((item, index) => {
+                                
+                                //addCard(item, index);
+                                //updateIndices()
+                                       
                                     
-                                // });
+                                });
                             
                             break;
 
@@ -547,7 +548,7 @@ testData[ 4 ].emoji = 'emoji'
 
 testData[ 0 ].hobbies[ 0 ] = 'debugging 🤬';
 testData[ 4 ].hobbies[ 0 ] = 'debugging 🤬';
-//testData.reverse();
+testData.reverse();
 
 //  
 // //testData.slice(1)
@@ -588,10 +589,9 @@ testData[ 4 ].hobbies[ 0 ] = 'debugging 🤬';
 //     
 
 
-class DataObserver3 {
-    constructor (dataSource, proto, { excludeProperties = [] } = {}) {
+class DataObserver1 {
+    constructor (dataSource, proto, excludeProperties = []) {
         this.data = dataSource.map(obj => this.filterObj(obj, excludeProperties));
-        this.data = dataSource
         this.proto = proto;
         this.observers = [];
     }
@@ -599,19 +599,57 @@ class DataObserver3 {
     filterObj(obj, excludeProperties) {
         const filteredObj = {};
         for (const key in obj) {
+            const value = obj[ key ];
+
+            
             if (!excludeProperties.includes(key)) {
-                filteredObj[ key ] = obj[ key ];
+                console.log(key)
+                if (typeof value === "object" && value !== null || Array.isArray(value)) {
+                    const nestedFilteredObj = this.filterObj(
+                        value,
+                        excludeProperties.map((prop) =>
+                            prop.startsWith(key + ".") ? prop.slice(key.length + 1) : prop
+                        )
+                    );
+                    Object.assign(filteredObj, { [ key ]: nestedFilteredObj });
+                    
+                } else if(Array.isArray(value)) {
+                    console.log(value)
+                    console.log(key)
+
+                    Object.assign(filteredObj, { [ key ]: value });
+                    filteredObj[ key ] = value.map((item) =>
+                        typeof item !== 'string' &&
+                        this.filterObj(item, excludeProperties)
+                    );
+
+                
+                } else {
+                    filteredObj[ key ] = value;
+                }
             }
+
         }
+        console.log(filteredObj)
         return filteredObj;
     }
+
+
+
+
 }
 
-// Example usage
+// Usage
 const dataSource = [
-    { name: 'John', address: '123 Main St', age: 30 },
-    { name: 'Jane', address: '456 Elm St', age: 25 },
-    { name: 'Bob', address: '789 Oak St', age: 40 },
+    { name: 'John', address: { street: '123 Main St', city: 'Anywhere' }, hobbies: [ { name: 'Fishing', category: 'Outdoor' } ], age: 30 },
+    { name: 'Jane', address: '456 Elm St', hobbies: [ { name: 'Reading', category: 'Indoor' } ], age: 25 },
+    { name: 'Bob', address: '789 Oak St', hobbies: [ { name: 'Running', category: 'Outdoor' }, 'another Hobby' ], age: 40 },
 ];
-const observer = new DataObserver3(dataSource, {}, { excludeProperties: [ 'name', 'address' ] });
+// exclude works for nested objects and array items but not for entire arrays
+const exclude = [ 'address.street', 'hobbies' ];
+const observer = new DataObserver1(dataSource, {}, exclude);
 console.log(observer.data);
+
+
+
+//console.log(observer.data);
