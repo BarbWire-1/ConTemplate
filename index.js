@@ -376,7 +376,7 @@ const modifiers = {
     reverse: (v) => v.split("").reverse().join(""),
     localeTime: () => new Date().toLocaleTimeString(),
     // prevent splitting strings into chars
-    join: (v) => typeof v !== 'string' ? Object.values(v).join(', ') : v,
+    join: (v) => (typeof v !== 'string' ) ? Object.values(v).filter(Boolean).join(', ') : v,
 
 };
 
@@ -461,7 +461,7 @@ const filter = {
     //     city: "city",
     //     state: "state",
     // },
-    hobbies: Array.from({ length: 5 }, () => `{{hobby}}`),
+    hobbies: Array.from({ length: 5 }, () => ''),
     // now: new Date(),
     // emoji: 'emoji',
 };
@@ -500,7 +500,7 @@ testData[ 0 ].address.street = 'Home'
 
 
 // TODO 1.1 changing the entire obj messes up everything, but WHY????
-testData[ 0 ].address = { street: 'Another Home', city: 'MyTown', state: '' }
+//testData[ 0 ].address = { street: 'Another Home', city: 'MyTown', state: '' }
 testData[ 0 ].address.street = 'Everywhere'
 // to check updating of only changed on load
 const updateNow = setInterval(tic, 1000);
