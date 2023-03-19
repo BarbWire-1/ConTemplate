@@ -591,51 +591,58 @@ testData.reverse();
 
 class DataObserver1 {
     constructor (dataSource, proto, exclude = []) {
-        this.data = dataSource.map(obj => this.filterObj(obj, exclude));
+        this.data = dataSource.map((obj) =>
+            this.filterObj(obj, exclude, Object.getPrototypeOf(proto))
+        );
         this.proto = proto;
         this.observers = [];
     }
 
-    filterObj(obj, excludeProperties) {
+    filterObj(obj, excludeProperties, prototype) {
         const filteredObj = {};
         for (const key in obj) {
             const value = obj[ key ];
 
-            
             if (!excludeProperties.includes(key)) {
-                console.log(key)
-                if (typeof value === "object" && value !== null || Array.isArray(value)) {
+                if (typeof value === "object" && value !== null) {
                     const nestedFilteredObj = this.filterObj(
                         value,
                         excludeProperties.map((prop) =>
                             prop.startsWith(key + ".") ? prop.slice(key.length + 1) : prop
-                        )
+                        ),
+                        prototype
                     );
                     Object.assign(filteredObj, { [ key ]: nestedFilteredObj });
-                    
-                } else if(Array.isArray(value)) {
-                    
-                    Object.assign(filteredObj, { [ key ]: value });
-                    filteredObj[ key ] = value.map((item) =>
-                        typeof item !== 'string' &&
-                        this.filterObj(item, excludeProperties)
-                    );
-
-                
+                } else if (Array.isArray(value)) {
+                    const arr = [];
+                    for (let i = 0; i < value.length; i++) {
+                        const item = value[ i ];
+                        if (typeof item !== "string") {
+                            const filteredItem = this.filterObj(
+                                item,
+                                excludeProperties,
+                                prototype
+                            );
+                            arr.push(filteredItem);
+                        } else {
+                            arr.push(item);
+                        }
+                    }
+                    Object.assign(filteredObj, { [ key ]: arr });
                 } else {
                     filteredObj[ key ] = value;
                 }
             }
-
         }
-        console.log(filteredObj)
-        return filteredObj;
+
+        const objWithProto = Object.create(prototype, {
+            ...Object.getOwnPropertyDescriptors(filteredObj),
+            __originalObj: { value: obj },
+        });
+        return objWithProto;
     }
-
-
-
-
 }
+
 
 // Usage
 const data = [
@@ -644,9 +651,15 @@ const data = [
     { name: 'Bob', address: '789 Oak St', hobbies: [ { name: 'Running', category: 'Outdoor' }, 'another Hobby' ], age: 40 },
 ];
 
-const doNotNeed = [ 'address.street', 'hobbies' ];
+const doNotNeed = [ 'address', 'hobbies.0' ];
 const observer = new DataObserver1(
     dataSource = data,
     proto = {},
     exclude = doNotNeed);
-console.log(observer.data);
+    
+console.log(observer.data[ 0 ].name === data[ 0 ].name);
+data[ 0 ].name = 'TWEET'
+console.log(observer.data[ 0 ].name)
+console.log(observer.data[ 0 ].name === data[ 0 ].name);
+
+console.log(observer.data)
