@@ -598,6 +598,8 @@ class DataObserver1 {
         this.observers = [];
     }
 
+    // Filter the dataSource by excluding the NOT wanted
+    // and create a prototype for that structure 
     filterObj(obj, excludeProperties, prototype) {
         const filteredObj = {};
         for (const key in obj) {
@@ -613,6 +615,7 @@ class DataObserver1 {
                         prototype
                     );
                     Object.assign(filteredObj, { [ key ]: nestedFilteredObj });
+                    
                 } else if (Array.isArray(value)) {
                     const arr = [];
                     for (let i = 0; i < value.length; i++) {
@@ -634,7 +637,8 @@ class DataObserver1 {
                 }
             }
         }
-
+        // Create the prototype with the structure of filteredObj
+        // with a reference to the initial Object
         const objWithProto = Object.create(prototype, {
             ...Object.getOwnPropertyDescriptors(filteredObj),
             __originalObj: { value: obj },
@@ -657,9 +661,9 @@ const observer = new DataObserver1(
     proto = {},
     exclude = doNotNeed);
     
-console.log(observer.data[ 0 ].name === data[ 0 ].name);
+console.log(observer.data[ 0 ].name === data[ 0 ].name);// true
 data[ 0 ].name = 'TWEET'
-console.log(observer.data[ 0 ].name)
-console.log(observer.data[ 0 ].name === data[ 0 ].name);
+console.log(observer.data[ 0 ].name)// as no getters yet => John
+console.log(observer.data[ 0 ].name === data[ 0 ].name);// false
 
 console.log(observer.data)
