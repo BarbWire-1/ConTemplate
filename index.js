@@ -589,23 +589,41 @@ testData.reverse();
 //     
 
 
+// Define a class called DataObserver1
 class DataObserver1 {
+
+    // Define a constructor function that takes three arguments: dataSource, proto, and exclude
     constructor (dataSource, proto, exclude = []) {
+
+        // Map over the dataSource array to create a new array of filtered objects
         this.data = dataSource.map((obj) =>
-            this.filterObj(obj, exclude, Object.getPrototypeOf(proto))
+
+            // Call the filterObj method defined below on each object in dataSource
+            // filterObj takes three arguments: the current object, an array of properties to exclude, and a prototype object
+            this.filterObj(obj, exclude, Object.getPrototypeOf({}))
         );
+
+        // Set the 'proto' and 'observers' properties on the new DataObserver1 instance
         this.proto = proto;
         this.observers = [];
     }
 
-    // Filter the dataSource by excluding the NOT wanted
-    // and create a prototype for that structure 
+    // Define a helper method called filterObj that takes three arguments: obj, excludeProperties, and prototype
     filterObj(obj, excludeProperties, prototype) {
+
+        // Define an empty object called 'filteredObj'
         const filteredObj = {};
+
+        // Loop over each property in obj
         for (const key in obj) {
+
+            // Get the value of the current property
             const value = obj[ key ];
 
+            // Check if the current property should be excluded based on the excludeProperties array
             if (!excludeProperties.includes(key)) {
+
+                // If the value of the current property is an object (and not null), recursively call filterObj on it
                 if (typeof value === "object" && value !== null) {
                     const nestedFilteredObj = this.filterObj(
                         value,
@@ -615,11 +633,14 @@ class DataObserver1 {
                         prototype
                     );
                     Object.assign(filteredObj, { [ key ]: nestedFilteredObj });
-                    
+
+                    // If the value of the current property is an array, loop over each item in the array
                 } else if (Array.isArray(value)) {
                     const arr = [];
                     for (let i = 0; i < value.length; i++) {
                         const item = value[ i ];
+
+                        // If the item is an object (and not a string), recursively call filterObj on it
                         if (typeof item !== "string") {
                             const filteredItem = this.filterObj(
                                 item,
@@ -627,17 +648,24 @@ class DataObserver1 {
                                 prototype
                             );
                             arr.push(filteredItem);
+
+                            // If the item is a string, add it to the new array without modification
                         } else {
                             arr.push(item);
                         }
                     }
                     Object.assign(filteredObj, { [ key ]: arr });
+
+                    // If the value of the current property is neither an object nor an array, add it to filteredObj as is
                 } else {
                     filteredObj[ key ] = value;
                 }
             }
         }
-        // Create the prototype with the structure of filteredObj
+
+        // Create a new object with 'filteredObj' as its prototype and add a '__
+
+        // Create a new object with 'filteredObj' as its prototype
         // with a reference to the initial Object
         const objWithProto = Object.create(prototype, {
             ...Object.getOwnPropertyDescriptors(filteredObj),
