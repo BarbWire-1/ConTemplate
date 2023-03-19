@@ -590,8 +590,8 @@ testData.reverse();
 
 
 class DataObserver1 {
-    constructor (dataSource, proto, excludeProperties = []) {
-        this.data = dataSource.map(obj => this.filterObj(obj, excludeProperties));
+    constructor (dataSource, proto, exclude = []) {
+        this.data = dataSource.map(obj => this.filterObj(obj, exclude));
         this.proto = proto;
         this.observers = [];
     }
@@ -614,9 +614,7 @@ class DataObserver1 {
                     Object.assign(filteredObj, { [ key ]: nestedFilteredObj });
                     
                 } else if(Array.isArray(value)) {
-                    console.log(value)
-                    console.log(key)
-
+                    
                     Object.assign(filteredObj, { [ key ]: value });
                     filteredObj[ key ] = value.map((item) =>
                         typeof item !== 'string' &&
@@ -640,16 +638,15 @@ class DataObserver1 {
 }
 
 // Usage
-const dataSource = [
+const data = [
     { name: 'John', address: { street: '123 Main St', city: 'Anywhere' }, hobbies: [ { name: 'Fishing', category: 'Outdoor' } ], age: 30 },
     { name: 'Jane', address: '456 Elm St', hobbies: [ { name: 'Reading', category: 'Indoor' } ], age: 25 },
     { name: 'Bob', address: '789 Oak St', hobbies: [ { name: 'Running', category: 'Outdoor' }, 'another Hobby' ], age: 40 },
 ];
-// exclude works for nested objects and array items but not for entire arrays
-const exclude = [ 'address.street', 'hobbies' ];
-const observer = new DataObserver1(dataSource, {}, exclude);
+
+const doNotNeed = [ 'address.street', 'hobbies' ];
+const observer = new DataObserver1(
+    dataSource = data,
+    proto = {},
+    exclude = doNotNeed);
 console.log(observer.data);
-
-
-
-//console.log(observer.data);
