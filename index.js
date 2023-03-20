@@ -486,7 +486,6 @@ testData[ 2 ].hobbies[ 2 ] = 'dreaming';
 
 testData[ 0 ].address.street = 'Home'
 //console.log(testData[ 0 ].address.street)// getter is ok.
-testData[0].hobbies[3]= '4th'
 
 // TODO 1.1 changing the entire obj messes up everything, but WHY????
 //testData[ 0 ].address = { street: 'Another Home', city: 'MyTown', state: '' }
@@ -559,3 +558,9 @@ testData.splice(1, 0, {
 })
 testData[ 0 ].name = 'set on 0 after splice'
 testData[ 3 ].name = 'set on 3 after splice'
+
+// array length got applied to have additional getters/setters defined
+testData[ 0 ].hobbies[ 2 ] = '3rd'
+testData[ 0 ].hobbies[ 3 ] = '4th'
+testData[ 0 ].hobbies[ 3 ] = '5th'
+
