@@ -21,7 +21,7 @@ class DataObserver {
         this.observeArray(dataSource)
     }
   
-    // init with defining properties on all items of dataSource
+    //init with defining properties on all items of dataSource
     init() {
         this.data.forEach((item, index) => {
             this.defineProp(item,  index);
@@ -50,8 +50,8 @@ class DataObserver {
         
                 }
                 // Recursively define properties for nested objects or arrays
-                // and pass current key as parentKey
                 if (typeof value === "object" && value !== null) {
+                    console.log(key)
                     self.defineProp(value, index, key);
                 }
 
@@ -62,33 +62,17 @@ class DataObserver {
                         return value;
                     },
                     set(newValue) {
-                   
                         value = newValue;
                         self.notify(currentObj, dataKey, value, "update", index);
                     
                         // update parent object if single item changed
                         if (parentKey) {
-                            
                             parentData[ key ] = value;
                             self.notify(parentKey, parentKey, parentData, "update", index);
                             
 
                         }
-                        // update parent object if single item changed
-                        // update all items when parentobj has changed
-                        if (typeof value === "object" && value !== null) {
-                            
-                            Object.keys(currentObj[key]).map(key => {
-                                console.log(key)
-                            })
-
-                            Object.keys(value).forEach(key => {
-                                let subKey = dataKey + `.${key}`
-                                self.notify(key, subKey, value[ key ], "update", index);
-                            })
-    
-                        }
-                        
+                      
                     },
                 });
                 
@@ -443,8 +427,8 @@ const filter = {
     //     state: "state",
     // },
     hobbies: Array.from({ length: 5 }, () => ''),
-    // now: new Date(),
-    // emoji: 'emoji',
+     //now: new Date(),
+     //emoji: 'emoji',
 };
 
 
@@ -480,7 +464,7 @@ testData[ 0 ].address.street = 'Home'
 //console.log(testData[ 0 ].address.street)// getter is ok.
 
 // TODO 1.1 changing the entire obj messes up everything, but WHY????
-//testData[ 0 ].address = { street: 'Another Home', city: 'MyTown', state: '' }
+testData[ 0 ].address = { street: 'Another Home', city: 'MyTown', state: 'SunnyState' }
 testData[ 0 ].address.street = 'Everywhere'
 // to check updating of only changed on load
 const updateNow = setInterval(tic, 1000);
