@@ -151,9 +151,6 @@ class DataObserver {
                     switch (method) {
                         case "push":
                             newObj.forEach((obj, index) => {
-                                //console.log(obj)
-                                // const { name, address, ...rest } = obj;
-                                // addCard(rest, newLength - newObj.length + index);
                                 addCard(obj, newLength - newObj.length + index);
                                
                             });
@@ -161,8 +158,6 @@ class DataObserver {
 
                         case "unshift":
                             newObj.forEach((obj, index) => {
-                                // const { name, address, ...rest } = obj;
-                                // addCard(rest, index);
                                 addCard(obj, index)
                             });
                             updateIndices();
@@ -170,12 +165,10 @@ class DataObserver {
 
                         case "pop":
                             removeCard(newLength);
-                            //self.data.pop()
                             break;
 
                         case "shift":
                             removeCard(0);
-                            //self.data.shift()
                             updateIndices();
                             break;
 
@@ -187,17 +180,19 @@ class DataObserver {
                             if (itemsToAdd.length > 0) {
                                 for (let i = 0; i < itemsToAdd.length; i++) {
                                     addCard(itemsToAdd[ i ], index + i);
+                                    
                                 }
                             }
 
                             if (deleteCount > 0) {
                                 for (let i = 0; i < deleteCount; i++) {
-                                    removeCard(index+1);
+                                    removeCard(index + 1);
+                                   
                                 }
                             }
-
                             updateIndices();
                             break;
+                        
                         case "reverse":
                            
                             self.data.forEach((item, index) => {
@@ -207,10 +202,7 @@ class DataObserver {
                             updateIndices()
                             
                             break;
-
-
-
-
+                        
                         default:
                             break;
                     }
@@ -494,7 +486,7 @@ testData[ 2 ].hobbies[ 2 ] = 'dreaming';
 
 testData[ 0 ].address.street = 'Home'
 //console.log(testData[ 0 ].address.street)// getter is ok.
-
+testData[0].hobbies[3]= '4th'
 
 // TODO 1.1 changing the entire obj messes up everything, but WHY????
 //testData[ 0 ].address = { street: 'Another Home', city: 'MyTown', state: '' }
@@ -565,3 +557,5 @@ testData.splice(1, 0, {
     now: new Date(),
     emoji: '👻'
 })
+testData[ 0 ].name = 'set on 0 after splice'
+testData[ 3 ].name = 'set on 3 after splice'
