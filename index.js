@@ -192,20 +192,17 @@ class DataObserver {
 
                             if (deleteCount > 0) {
                                 for (let i = 0; i < deleteCount; i++) {
-                                    removeCard(index);
+                                    removeCard(index+1);
                                 }
                             }
 
                             updateIndices();
                             break;
                         case "reverse":
-                            console.log(JSON.stringify(self.data))
-                            //updateIndices()
+                           
                             self.data.forEach((item, index) => {
-                                
                                 addCard(item, index);   
-                                removeCard(self.data.length) 
-                                
+                                removeCard(self.data.length)  
                             });
                             updateIndices()
                             
@@ -548,4 +545,23 @@ testData[ 4 ].emoji = 'emoji'
 testData.reverse();
 testData[ 0 ].hobbies[ 0 ] = 'reversing';
 testData[ 4 ].hobbies[ 0 ] = 'going to the end';
-
+testData.splice(1, 0, {
+    name: 'BarbWire',
+    address: {
+        street: '007 Oneway',
+        city: 'Anothertown',
+        state: 'Spheres',
+    },
+    hobbies: [ 'coding', 'playing cello', `playing devil's advocat` ],
+    now: new Date(),
+    emoji: '👻'
+}, {name: 'BarbWire',
+    address: {
+    street: '007 Oneway',
+    city: 'Anothertown',
+    state: 'Spheres',
+},
+    hobbies: [ 'coding', 'playing cello', `playing devil's advocat` ],
+    now: new Date(),
+    emoji: '👻'
+})
