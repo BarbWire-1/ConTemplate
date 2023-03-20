@@ -59,7 +59,6 @@ class DataObserver {
 
                     enumerable: true,
                     get() {
-                        //console.log(value)
                         return value;
                     },
                     set(newValue) {
@@ -69,29 +68,22 @@ class DataObserver {
                     
                         // update parent object if single item changed
                         if (parentKey) {
-                            // write the new value to the clone obj
-                            // then trigger the notify of parentObj with the value of the clone
-                            // TODO update single items to and remove such no longer in value
-                            //console.log(parentData)
+                            
                             parentData[ key ] = value;
                             self.notify(parentKey, parentKey, parentData, "update", index);
                             
 
                         }
-                    
+                        // update parent object if single item changed
                         // update all items when parentobj has changed
-                        //TODO hmmm. need to remove single subs with now no value!
                         if (typeof value === "object" && value !== null) {
-                            // update parent object if single item changed
-                       
+                            
                             Object.keys(currentObj[key]).map(key => {
                                 console.log(key)
                             })
 
                             Object.keys(value).forEach(key => {
                                 let subKey = dataKey + `.${key}`
-                                //console.log([ key ])// those keys used in overwriting obj
-                                //TODO test how to delete overwritten values
                                 self.notify(key, subKey, value[ key ], "update", index);
                             })
     
