@@ -53,6 +53,7 @@ class DataObserver {
                 if (typeof value === "object" && value !== null) {
                     console.log(key)
                     self.defineProp(value, index, key);
+                    
                 }
 
                 Object.defineProperty(currentObj, key, {
@@ -63,10 +64,12 @@ class DataObserver {
                     },
                     set(newValue) {
                         value = newValue;
+                        console.log(currentObj)
                         self.notify(currentObj, dataKey, value, "update", index);
                     
                         // update parent object if single item changed
                         if (parentKey) {
+                            console.log(parentKey)
                             parentData[ key ] = value;
                             self.notify(parentKey, parentKey, parentData, "update", index);
                             
@@ -454,7 +457,11 @@ function tic() {
 function stopIt() {
     clearInterval(updateNow);
 }
-testData[ 1 ].name = 'Tired Girl'
+testData[ 0 ].name = 'Test';
+testData[ 0 ].address = { street: 'test', city: 'city', state: 'state' }
+testData[ 0 ].address.street = 'STREET TEST';
+testData[ 0].hobbies[ 0 ] = 'testing';
+testData[ 0 ].hobbies[ 3 ] = 'testing 3';
 
 
 testData.push({
