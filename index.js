@@ -20,14 +20,14 @@ class DataObserver {
         this.init()
         this.observeArray(dataSource)
     }
-  
+
     //init with defining properties on all items of dataSource
     init() {
         this.data.forEach((item, index) => {
-            this.defineProp(item,  index);
+            this.defineProp(item, index);
         });
     }
-  
+
     defineProp(currentObj, index, parentKey = null) {
 
         let self = this;
@@ -35,24 +35,20 @@ class DataObserver {
         const parentData = { ...currentObj }
 
         Object.keys(currentObj).forEach(key => {
-
             let value = currentObj[ key ];
-            // dataKey is used to notify and update tags with corresponding data-key
-            const dataKey = parentKey ? `${parentKey}.${key}` : key;
-
-            // fill up array to create getters/setters for wanted no. of items
-            // TODO this is now also in addCard, which is ugly!!!
+            const dataKey = parentKey ? `${parentKey}.${key}` : key;// path for data-keys
+            const isObject = typeof value === "object" && value !== null;
+            
             if (Array.isArray(value)) {
-
                 for (let i = 0; i < this.proto[ key ]?.length; i++) {
                     currentObj[ key ][ i ] = value[ i ] || this.proto[ key ][ i ];
                 }
-
             }
-            // Recursively define properties for nested objects or arrays
-            // and pass current key as parentKey
-            if (typeof value === "object" && value !== null) {
+            // Recursively define properties
+            if (isObject) {
+                console.log(key)
                 self.defineProp(value, index, key);
+
             }
 
             Object.defineProperty(currentObj, key, {
@@ -62,32 +58,25 @@ class DataObserver {
                     return value;
                 },
                 set(newValue) {
-
                     value = newValue;
                     self.notify(currentObj, dataKey, value, "update", index);
 
-                    // update parent object if single item changed
+                    // update parent array if single item changed
                     if (parentKey) {
-
                         parentData[ key ] = value;
                         self.notify(parentKey, parentKey, parentData, "update", index);
-
-
                     }
                     // update parent object if single item changed
-                    // update all items when parentobj has changed
-                    if (typeof value === "object" && value !== null) {
-
-                        Object.keys(currentObj[ key ]).map(key => {
-                            console.log(key)
-                        })
-
+                    if (isObject) {
+                        
                         Object.keys(value).forEach(key => {
+                            
                             let subKey = dataKey + `.${key}`
-                            self.notify(key, subKey, value[ key ], "update", index);
+                            self.notify(currentObj, subKey, value[ key ], "update", index);
                         })
-
+                        
                     }
+
 
                 },
             });
@@ -97,25 +86,25 @@ class DataObserver {
     }
 
 
-       
-    
-   
+
+
+
     //TODO this is UGLY LIKE HELL... change when logic once should run
     // TODO currently slice, splice wrong
     observeArray(array) {
         const self = this;
-        const methods = [ "push", "pop", "shift", "unshift", "splice", "reverse"];
+        const methods = [ "push", "pop", "shift", "unshift", "splice", "reverse" ];
 
         function addCard(obj, index) {
             //console.log(obj)
             Object.keys(self.proto).forEach(key => {
-            if (Array.isArray(obj[key])) {
-                //console.log(key)
-                for (let i = 0; i < self.proto[ key ]?.length; i++) {
-                    obj[ key ][ i ] = obj[key][ i ] || self.proto[key][i];
-                }
+                if (Array.isArray(obj[ key ])) {
+                    //console.log(key)
+                    for (let i = 0; i < self.proto[ key ]?.length; i++) {
+                        obj[ key ][ i ] = obj[ key ][ i ] || self.proto[ key ][ i ];
+                    }
 
-            }
+                }
             })
             self.defineProp(obj, index)
             self.notify(obj, null, null, "add", index);
@@ -129,7 +118,7 @@ class DataObserver {
             for (let i = 0; i < self.data.length; i++) {
                 self.defineProp(self.data[ i ], i);
                 for (const key in self.data[ i ]) {
-                    self.notify(key, null, self.data[i][key], "update", i);
+                    self.notify(key, null, self.data[ i ][ key ], "update", i);
                 }
             }
         }
@@ -145,7 +134,7 @@ class DataObserver {
                         case "push":
                             newObj.forEach((obj, index) => {
                                 addCard(obj, newLength - newObj.length + index);
-                               
+
                             });
                             break;
 
@@ -173,29 +162,29 @@ class DataObserver {
                             if (itemsToAdd.length > 0) {
                                 for (let i = 0; i < itemsToAdd.length; i++) {
                                     addCard(itemsToAdd[ i ], index + i);
-                                    
+
                                 }
                             }
 
                             if (deleteCount > 0) {
                                 for (let i = 0; i < deleteCount; i++) {
                                     removeCard(index + 1);
-                                   
+
                                 }
                             }
                             updateIndices();
                             break;
-                        
+
                         case "reverse":
-                           
+
                             self.data.forEach((item, index) => {
-                                addCard(item, index);   
-                                removeCard(self.data.length)  
+                                addCard(item, index);
+                                removeCard(self.data.length)
                             });
                             updateIndices()
-                            
+
                             break;
-                        
+
                         default:
                             break;
                     }
@@ -225,7 +214,7 @@ class DataObserver {
             observer.update(...args)
         );
     }
-    
+
 }
 
 
@@ -233,7 +222,7 @@ class DataHandler {
     constructor (dataSource, proto = null) {
         this.proto = proto || dataSource[ 0 ]
         this.data = new DataObserver(dataSource, this.proto);
-        
+
         this.observers = [];
         this.data.observeArray(this.data);
 
@@ -255,7 +244,7 @@ class DataHandler {
 class Contemplate {
     constructor (dataHandler, template, containerID, className, modifiers = [], show = false) {
         this.data = dataHandler.data;
-        
+
         this.container = document.getElementById(containerID);
         this.containerID = containerID;
         this.className = className
@@ -296,10 +285,10 @@ class Contemplate {
                 } else {
                     this.write2Card(item, fullKey, value, card);
                 }
-             }
+            }
         };
         write2CardRecursive(item, '', card);
-        
+
 
         return card;
     };
@@ -307,10 +296,10 @@ class Contemplate {
     // TODO check here for how to update parent[item] if parent
     // instead of oberwriting it!
     write2Card(_, key, value, card) {
-    
+
         const tags2Update = card.querySelectorAll(`[data-key="${key}"]`);
-        
-        
+
+
         tags2Update.forEach((tag) => {
             const modifiers = tag.dataset.modifier?.split(" ") ?? [];
 
@@ -322,15 +311,15 @@ class Contemplate {
                     }
                 });
             }
-            
+
             tag.textContent = value;
-          
+
         });
     }
 
     //TODO check the notify for needed params after changes made here
     update(item, key, value, operation, index) {
-       
+
         if (operation === "add") {
             const card = this.createCard(item);
             const nextSibling = this.container.children[ index ];
@@ -358,7 +347,7 @@ const modifiers = {
     reverse: (v) => v.split("").reverse().join(""),
     localeTime: () => new Date().toLocaleTimeString(),
     // prevent splitting strings into chars
-    join: (v) => (typeof v !== 'string' ) ? Object.values(v).filter(Boolean).join(', ') : v,
+    join: (v) => (typeof v !== 'string') ? Object.values(v).filter(Boolean).join(', ') : v,
 
 };
 
@@ -444,8 +433,8 @@ const filter = {
     //     state: "state",
     // },
     hobbies: Array.from({ length: 5 }, () => ''),
-     //now: new Date(),
-     //emoji: 'emoji',
+    //now: new Date(),
+    //emoji: 'emoji',
 };
 
 
@@ -473,7 +462,7 @@ function stopIt() {
 testData[ 0 ].name = 'Test';
 testData[ 0 ].address = { street: 'test', city: 'city', state: 'state' }
 testData[ 0 ].address.street = 'STREET TEST';
-testData[ 0].hobbies[ 0 ] = 'testing';
+testData[ 0 ].hobbies[ 0 ] = 'testing';
 testData[ 0 ].hobbies[ 3 ] = 'testing 3';
 
 
@@ -489,7 +478,7 @@ testData.push({
     emoji: undefined
 })
 testData[ 3 ].name = 'Test';
-testData[ 3 ].address = { street: 'test', city: 'city', state: 'state' }
+//testData[ 3 ].address = { street: 'test', city: 'city', state: 'state' }
 testData[ 3 ].address.street = 'STREET TEST';
 testData[ 3 ].hobbies[ 0 ] = 'testing';
 testData[ 3 ].hobbies[ 3 ] = 'testing 3';
