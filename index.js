@@ -51,14 +51,18 @@ class DataObserver {
             }
             // Recursively define properties for nested objects or arrays
             // and pass current key as parentKey
-            if (typeof value === "object" && value !== null) {
+            if (typeof value === "object" && value !== null ) {
+                console.log(key)
+                console.log(value)
                 self.defineProp(value, index, key);
+                
             }
 
             Object.defineProperty(currentObj, key, {
 
                 enumerable: true,
                 get() {
+                    console.log(`Getting ${JSON.stringify(value)}`)
                     return value;
                 },
                 set(newValue) {
@@ -68,7 +72,7 @@ class DataObserver {
 
                     // update parent object if single item changed
                     if (parentKey) {
-
+                        console.log(parentKey)
                         parentData[ key ] = value;
                         self.notify(parentKey, parentKey, parentData, "update", index);
 
@@ -84,6 +88,7 @@ class DataObserver {
 
                         Object.keys(value).forEach(key => {
                             let subKey = dataKey + `.${key}`
+                            console.log(value[key])
                             self.notify(key, subKey, value[ key ], "update", index);
                         })
 
@@ -117,6 +122,7 @@ class DataObserver {
 
             }
             })
+            self.defineProp(obj, index);
             self.notify(obj, null, null, "add", index);
         }
 
@@ -454,6 +460,14 @@ const dataObject = new DataHandler(testData, filter);
 const testModifier = new Contemplate(dataObject, templateTest, 'container4', 'template1', modifiers);
 
 
+
+
+testData[ 0 ].name = 'Test';
+testData[ 0 ].address = { street: 'test', city: 'city', state: 'state' }
+testData[ 0 ].address.street = 'STREET TEST';
+testData[ 0 ].hobbies[ 0 ] = 'testing';
+testData[ 0 ].hobbies[ 3 ] = 'testing 3';
+
 // TESTING METHODS******************************************* ARRAY METHODS *****
 //TODO: arrays NOT correct applied on reverse()
 // testData.reverse()
@@ -471,7 +485,7 @@ testData.push({
     },
     hobbies: [ '4 Hobby.0', '4 Hobby.1', '4 Hobby.2' ],
     now: new Date(),
-    emoji: '👻'
+    emoji: undefined
 })
 testData[ 3 ].hobbies[ 1 ] = '5th Second'//❌
 testData[ 3 ].name = '5 Pushed'
