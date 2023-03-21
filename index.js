@@ -384,35 +384,35 @@ const templateTest = () => {
 // TEST-DATASOURCE
 const testData = [
     {
-        name: 'John Doe',
+        name: '1 Init',
         address: {
-            street: '123 Main St',
-            city: 'Anytown',
-            state: 'CA',
+            street: '1. St',
+            city: '1. Town',
+            state: '1. State',
         },
-        hobbies: [ 'reading', 'traveling' ],
+        hobbies: [ '1 Hobby.0', '1 Hobby.1' ],
         now: new Date(),
         emoji: undefined
     },
     {
-        name: 'Jane Doe',
+        name: '2 Init',
         address: {
-            street: '456 Main St',
-            city: 'Anytown',
-            state: 'CA',
+            street: '2. St',
+            city: '2. Town',
+            state: '2. State',
         },
-        hobbies: [ 'running', 'painting' ],
+        hobbies: [ '2 Hobby.0', '2 Hobby.1' ],
         now: new Date(),
         emoji: undefined
     },
     {
-        name: 'BarbWire',
+        name: '3 Init',
         address: {
-            street: '007 Oneway',
-            city: 'Anothertown',
-            state: 'Spheres',
+            street: '3. St',
+            city: '3. Town',
+            state: '3. State',
         },
-        hobbies: [ 'coding', 'playing cello', `playing devil's advocat` ],
+        hobbies: [ '3 Hobby.0', '3 Hobby.1', '3 Hobby.2' ],
         now: new Date(),
         emoji: '👻'
     }
@@ -432,40 +432,73 @@ const filter = {
 };
 
 
-// this doesn't reflect mutations on testdataLENGTH!!!!
-let array = []
-for (let i = 0; i < testData.length; i++) {
-
-    const { name, address, ...rest } = { ...testData[ i ] };
-    array.push(rest)
-    
-};
-
-testData[ 0 ].hobbies[ 0 ] = 'testing'
-
-let array1 = testData.map(({ name, address, ...rest }) => rest);
-console.log(array1[0].hobbies[0])// 'testing'
-
-
-
 // model watching all obj
 const dataObject = new DataHandler(testData, filter);
 // model watching subkey of obj
 const testModifier = new Contemplate(dataObject, templateTest, 'container4', 'template1', modifiers);
-testData[ 0 ].name = 'Lemme see'
-
-testData[ 0 ].hobbies[ 0 ] = 'debugging 🤬';
-testData[ 2 ].hobbies[ 1 ] = 'motocycling';
-
-testData[ 2 ].hobbies[ 2 ] = 'dreaming';
 
 
-testData[ 0 ].address.street = 'Home'
-//console.log(testData[ 0 ].address.street)// getter is ok.
+// TESTING METHODS******************************************* ARRAY METHODS *****
+//TODO: arrays NOT correct applied on reverse()
+// testData.reverse()
+// testData[ 0 ].name = 'first after reverse'
+// testData[ 1 ].name = 'second after reverse'
+// testData[2].name = 'third after reverse'
+//*********************************************************** END REVERSE ❌*******/
 
-// TODO 1.1 changing the entire obj messes up everything, but WHY????
-testData[ 0 ].address = { street: 'Another Home', city: 'MyTown', state: 'SunnyState' }
-testData[ 0 ].address.street = 'Everywhere'
+testData.push({
+    name: '4 Push',
+    address: {
+        street: '4. St',
+        city: '4. Town',
+        state: '4. State',
+    },
+    hobbies: [ '4 Hobby.0', '4 Hobby.1', '4 Hobby.2' ],
+    now: new Date(),
+    emoji: '👻'
+})
+testData[ 3 ].hobbies[ 1 ] = '5th Second'//❌
+testData[ 3 ].name = '5 Pushed'
+/************************************************************* END PUSH ✅********** */
+//testData.shift()// TODO remove listeners for removed cards
+// testData.unshift({
+//     name: '',
+//     address: {
+//         street: '007 Oneway',
+//         city: 'Anothertown',
+//         state: 'Spheres',
+//     },
+//     hobbies: [ 'coding', 'playing cello', `playing devil's advocat` ],
+//     now: new Date(),
+//     emoji: undefined
+// })
+
+//testData.reverse();
+
+// testData.splice(1, 0, {
+//     name: 'BarbWire',
+//     address: {
+//         street: '007 Oneway',
+//         city: 'Anothertown',
+//         state: 'Spheres',
+//     },
+//     hobbies: [ 'coding', 'playing cello', `playing devil's advocat` ],
+//     now: new Date(),
+//     emoji: '👻'
+// }, {name: 'BarbWire',
+//     address: {
+//     street: '007 Oneway',
+//     city: 'Anothertown',
+//     state: 'Spheres',
+// },
+//     hobbies: [ 'coding', 'playing cello', `playing devil's advocat` ],
+//     now: new Date(),
+//     emoji: '👻'
+// })
+// testData[ 0 ].name = 'set on 0 after splice'
+// testData[ 3 ].name = 'set on 3 after splice'
+
+
 // to check updating of only changed on load
 const updateNow = setInterval(tic, 1000);
 const stop = setTimeout(stopIt, 10000)
@@ -476,67 +509,6 @@ function tic() {
 function stopIt() {
     clearInterval(updateNow);
 }
-testData[ 1 ].name = 'Tired Girl'
 
 
-testData.push({
-    name: 'Pushed Card',
-    address: {
-        street: '007 Oneway',
-        city: 'Anothertown',
-        state: 'Spheres',
-    },
-    hobbies: [ 'pushing', 'disappearing' ],
-    now: new Date(),
-    emoji: undefined
-})
-testData[ 2 ].name = 'Stupid Girl';
-//testData.shift()// TODO remove listeners for removed cards
-testData.unshift({
-    name: '',
-    address: {
-        street: '007 Oneway',
-        city: 'Anothertown',
-        state: 'Spheres',
-    },
-    hobbies: [ 'coding', 'playing cello', `playing devil's advocat` ],
-    now: new Date(),
-    emoji: undefined
-})
-testData[ 0 ].name = 'Unshifted Card'
-testData[ 1 ].name = 'I was at index 0'
-
-testData[ 0 ].hobbies[ 2 ] = 'another hobby'
-testData[ 4 ].hobbies[ 3 ] = 'another hobby'
-testData[ 4 ].emoji = 'emoji'
-testData.reverse();
-testData[ 0 ].hobbies[ 0 ] = 'reversing';
-testData[ 4 ].hobbies[ 0 ] = 'going to the end';
-testData.splice(1, 0, {
-    name: 'BarbWire',
-    address: {
-        street: '007 Oneway',
-        city: 'Anothertown',
-        state: 'Spheres',
-    },
-    hobbies: [ 'coding', 'playing cello', `playing devil's advocat` ],
-    now: new Date(),
-    emoji: '👻'
-}, {name: 'BarbWire',
-    address: {
-    street: '007 Oneway',
-    city: 'Anothertown',
-    state: 'Spheres',
-},
-    hobbies: [ 'coding', 'playing cello', `playing devil's advocat` ],
-    now: new Date(),
-    emoji: '👻'
-})
-testData[ 0 ].name = 'set on 0 after splice'
-testData[ 3 ].name = 'set on 3 after splice'
-
-// array length got applied to have additional getters/setters defined
-testData[ 0 ].hobbies[ 2 ] = '3rd'
-testData[ 0 ].hobbies[ 3 ] = '4th'
-testData[ 0 ].hobbies[ 3 ] = '5th'
 
