@@ -84,11 +84,7 @@ class DataObserver {
                     // update parent object if single item changed
                     // update all items when parentobj has changed
                     if (typeof value === "object" && value !== null) {
-                        // console.log(value)
-                        // Object.keys(currentObj[ key ]).map(key => {
-                        //     console.log(key)
-                        // })
-
+                        
                         self.defineProp(currentObj, index)
                         Object.keys(value).forEach(key => {
 
@@ -469,10 +465,10 @@ const testModifier = new Contemplate(dataObject, templateTest, 'container4', 'te
 
 
 testData[ 0 ].name = 'Test';
-testData[ 0 ].address = { street: 'test'}// ❌ no ref
+testData[ 0 ].address = { street: 'test'}// ❌ does NOT remove other keys having been there previously
 testData[ 0 ].address.street = 'STREET TEST';
-testData[ 0 ].hobbies = ['testing']; //❌ no
-testData[ 0 ].hobbies[ 0 ] = 'testing 0';
+testData[ 0 ].hobbies = ['testing'];
+testData[ 0 ].hobbies[ 1 ] = 'testing 1';
 testData[ 0 ].hobbies[ 3 ] = 'testing 3';
 
 // TESTING METHODS******************************************* ARRAY METHODS *****
