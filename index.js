@@ -39,6 +39,7 @@ class DataObserver {
             let value = currentObj[ key ];
             // dataKey is used to notify and update tags with corresponding data-key
             const dataKey = parentKey ? `${parentKey}.${key}` : key;
+            console.log(dataKey)
 
             // fill up array to create getters/setters for wanted no. of items
             // TODO this is now also in addCard, which is ugly!!!
@@ -51,11 +52,13 @@ class DataObserver {
             }
             // Recursively define properties for nested objects or arrays
             // and pass current key as parentKey
-            if (typeof value === "object" && value !== null ) {
+            if (typeof value === "object" && value !== null) {
+                console.log(dataKey)
+                console.log(parentData[ key ])
                 console.log(key)
                 console.log(value)
                 self.defineProp(value, index, key);
-                
+
             }
 
             Object.defineProperty(currentObj, key, {
@@ -71,24 +74,26 @@ class DataObserver {
                     self.notify(currentObj, dataKey, value, "update", index);
 
                     // update parent object if single item changed
-                    if (parentKey) {
-                        console.log(parentKey)
-                        parentData[ key ] = value;
-                        self.notify(parentKey, parentKey, parentData, "update", index);
+                    //if (parentKey) {
+                    console.log(parentKey)
+                    parentData[ key ] = value;
+                    self.notify(parentKey, parentKey, parentData, "update", index);
 
 
-                    }
+                    //}
                     // update parent object if single item changed
                     // update all items when parentobj has changed
                     if (typeof value === "object" && value !== null) {
+                        // console.log(value)
+                        // Object.keys(currentObj[ key ]).map(key => {
+                        //     console.log(key)
+                        // })
 
-                        Object.keys(currentObj[ key ]).map(key => {
-                            console.log(key)
-                        })
-
+                        self.defineProp(currentObj, index)
                         Object.keys(value).forEach(key => {
+
                             let subKey = dataKey + `.${key}`
-                            console.log(value[key])
+                            console.log(value[ key ])
                             self.notify(key, subKey, value[ key ], "update", index);
                         })
 
@@ -100,6 +105,7 @@ class DataObserver {
         });
 
     }
+
 
 
        
@@ -238,7 +244,7 @@ class DataHandler {
     constructor (dataSource, proto = null) {
         this.proto = proto || dataSource[ 0 ]
         this.data = new DataObserver(dataSource, this.proto);
-        
+
         this.observers = [];
         this.data.observeArray(this.data);
 
@@ -463,9 +469,10 @@ const testModifier = new Contemplate(dataObject, templateTest, 'container4', 'te
 
 
 testData[ 0 ].name = 'Test';
-testData[ 0 ].address = { street: 'test', city: 'city', state: 'state' }
+testData[ 0 ].address = { street: 'test'}// ❌ no ref
 testData[ 0 ].address.street = 'STREET TEST';
-testData[ 0 ].hobbies[ 0 ] = 'testing';
+testData[ 0 ].hobbies = ['testing']; //❌ no
+testData[ 0 ].hobbies[ 0 ] = 'testing 0';
 testData[ 0 ].hobbies[ 3 ] = 'testing 3';
 
 // TESTING METHODS******************************************* ARRAY METHODS *****
