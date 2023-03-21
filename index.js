@@ -54,11 +54,11 @@ class DataObserver {
             // and pass current key as parentKey
             if (typeof value === "object" && value !== null) {
                 console.log(dataKey)
-                console.log(parentData[ key ])
+                console.log(parentData[key])
                 console.log(key)
                 console.log(value)
                 self.defineProp(value, index, key);
-
+                
             }
 
             Object.defineProperty(currentObj, key, {
@@ -75,21 +75,25 @@ class DataObserver {
 
                     // update parent object if single item changed
                     //if (parentKey) {
-                    console.log(parentKey)
-                    parentData[ key ] = value;
-                    self.notify(parentKey, parentKey, parentData, "update", index);
+                        console.log(parentKey)
+                        parentData[ key ] = value;
+                        self.notify(parentKey, parentKey, parentData, "update", index);
 
 
                     //}
                     // update parent object if single item changed
                     // update all items when parentobj has changed
                     if (typeof value === "object" && value !== null) {
+                        // console.log(value)
+                        // Object.keys(currentObj[ key ]).map(key => {
+                        //     console.log(key)
+                        // })
                         
-                        self.defineProp(currentObj, index)
-                        Object.keys(value).forEach(key => {
 
+                        Object.keys(value).forEach(key => {
+                           
                             let subKey = dataKey + `.${key}`
-                            console.log(value[ key ])
+                            console.log(value[key])
                             self.notify(key, subKey, value[ key ], "update", index);
                         })
 
@@ -101,7 +105,6 @@ class DataObserver {
         });
 
     }
-
 
 
        
@@ -116,7 +119,7 @@ class DataObserver {
         function addCard(obj, index) {
             //console.log(obj)
             Object.keys(self.proto).forEach(key => {
-            if (Array.isArray(obj[key])) {
+            if (Array.isArray(obj[key]) && self.proto[key]) {
                 //console.log(key)
                 for (let i = 0; i < self.proto[ key ]?.length; i++) {
                     obj[ key ][ i ] = obj[key][ i ] || self.proto[key][i];
@@ -133,11 +136,15 @@ class DataObserver {
         }
         // TODO CHECK THIS!!!!!!!!!!
         function updateIndices() {
-            for (let i = 0; i < self.data.length; i++) {
-                self.defineProp(self.data[ i ], i);
-                for (const key in self.data[ i ]) {
-                    self.notify(key, null, self.data[i][key], "update", i);
+            for (let i = 0; i < array.length; i++) {
+                //console.log(array.length)
+                //self.defineProp(array[ i ], i);
+                for (const key in array[ i ]) {
+                    // TODO This should NOT be necessary as being recursive BROKE IT???
+                    self.defineProp(array[i], i);
+                    self.notify(key, null, array[i][key], "update", i);
                 }
+               
             }
         }
 
@@ -152,7 +159,7 @@ class DataObserver {
                         case "push":
                             newObj.forEach((obj, index) => {
                                 addCard(obj, newLength - newObj.length + index);
-                               
+
                             });
                             break;
 
@@ -165,10 +172,12 @@ class DataObserver {
 
                         case "pop":
                             removeCard(newLength);
+                            //self.data.pop()
                             break;
 
                         case "shift":
                             removeCard(0);
+                            //self.data.shift()
                             updateIndices();
                             break;
 
@@ -180,29 +189,30 @@ class DataObserver {
                             if (itemsToAdd.length > 0) {
                                 for (let i = 0; i < itemsToAdd.length; i++) {
                                     addCard(itemsToAdd[ i ], index + i);
-                                    
                                 }
                             }
 
                             if (deleteCount > 0) {
                                 for (let i = 0; i < deleteCount; i++) {
                                     removeCard(index + 1);
-                                   
                                 }
                             }
+
                             updateIndices();
                             break;
-                        
                         case "reverse":
-                           
+
                             self.data.forEach((item, index) => {
-                                addCard(item, index);   
-                                removeCard(self.data.length)  
+                                addCard(item, index);
+                                removeCard(self.data.length)
                             });
                             updateIndices()
-                            
+
                             break;
-                        
+
+
+
+
                         default:
                             break;
                     }
@@ -315,10 +325,10 @@ class Contemplate {
     // instead of oberwriting it!
     write2Card(_, key, value, card) {
     
-        const tags2Update = card.querySelectorAll(`[data-key="${key}"]`);
+        const tags2Update = card?.querySelectorAll(`[data-key="${key}"]`);
         
         
-        tags2Update.forEach((tag) => {
+        tags2Update?.forEach((tag) => {
             const modifiers = tag.dataset.modifier?.split(" ") ?? [];
 
             if (modifiers.length) {
@@ -464,12 +474,13 @@ const testModifier = new Contemplate(dataObject, templateTest, 'container4', 'te
 
 
 
-testData[ 0 ].name = 'Test';
-testData[ 0 ].address = { street: 'test'}// ❌ does NOT remove other keys having been there previously
-testData[ 0 ].address.street = 'STREET TEST';
-testData[ 0 ].hobbies = ['testing'];
-testData[ 0 ].hobbies[ 1 ] = 'testing 1';
-testData[ 0 ].hobbies[ 3 ] = 'testing 3';
+// testData[ 0 ].name = 'Test';
+// // testData[ 0 ].address = { street: 'test' }// ❌ does NOT remove other keys having been there previously
+// // testData[ 0 ].address.city = 'Test Town';// // ❌ does NOT allow to add new keys
+// testData[ 0 ].address.street = 'STREET TEST';
+// testData[ 0 ].hobbies = ['testing'];
+// testData[ 0 ].hobbies[ 1 ] = 'testing 1';
+// testData[ 0 ].hobbies[ 3 ] = 'testing 3';
 
 // TESTING METHODS******************************************* ARRAY METHODS *****
 //TODO: arrays NOT correct applied on reverse()
@@ -480,32 +491,58 @@ testData[ 0 ].hobbies[ 3 ] = 'testing 3';
 //*********************************************************** END REVERSE ❌*******/
 
 testData.push({
-    name: '4 Push',
+    name: '4 push',
     address: {
         street: '4. St',
         city: '4. Town',
         state: '4. State',
     },
-    hobbies: [ '4 Hobby.0', '4 Hobby.1', '4 Hobby.2' ],
+    hobbies: [ '4 Hobby.0', '4 Hobby.1' ],
     now: new Date(),
     emoji: undefined
-})
-testData[ 3 ].hobbies[ 1 ] = '5th Second'//❌
-testData[ 3 ].name = '5 Pushed'
+},)
+// testData[ 3 ].name = 'Test';
+// // testData[ 0 ].address = { street: 'test' }// ❌ does NOT remove other keys having been there previously
+// // testData[ 0 ].address.city = 'Test Town';// // ❌ does NOT allow to add new keys
+// testData[ 3 ].address.street = 'STREET TEST';
+// testData[ 3 ].hobbies = [ 'testing' ];
+// testData[ 3 ].hobbies[ 1 ] = 'testing 1';
+// testData[ 3 ].hobbies[ 3 ] = 'testing 3';
 /************************************************************* END PUSH ✅********** */
 //testData.shift()// TODO remove listeners for removed cards
-// testData.unshift({
-//     name: '',
-//     address: {
-//         street: '007 Oneway',
-//         city: 'Anothertown',
-//         state: 'Spheres',
-//     },
-//     hobbies: [ 'coding', 'playing cello', `playing devil's advocat` ],
-//     now: new Date(),
-//     emoji: undefined
-// })
 
+// testData[ 0 ].name = 'first after shift'
+// testData[ 0 ].hobbies = [ 'testing' ];
+//  testData[ 1 ].hobbies[ 0 ] = 'testing 1';
+//testData[ 2 ].hobbies[ 1 ] = 'testing 3';
+/************************************************************* END SHIFT ✅********** */
+testData.unshift({
+    name: '5 unshift',
+    address: {
+        street: '5. St',
+        city: '5. Town',
+        state: '5. State',
+    },
+    hobbies: [ '5 Hobby.0', '5 Hobby.1' ],
+    now: new Date(),
+    emoji: undefined
+}, {
+    name: '6 unshift',
+    address: {
+        street: '6. St',
+        city: '6. Town',
+        state: '6. State',
+    },
+    hobbies: [ '6 Hobby.0', '6 Hobby.1' ],
+    now: new Date(),
+    emoji: undefined
+},)
+testData[ 0 ].name = 'TEST 0';
+testData[ 1 ].name = 'TEST 1'; 
+testData[ 2 ].name = 'TEST 2'; 
+testData[ 3 ].name = 'TEST 3'; 
+testData[ 4 ].name = 'TEST 4'; 
+testData[ 5 ].name = 'TEST 5'; 
 //testData.reverse();
 
 // testData.splice(1, 0, {
