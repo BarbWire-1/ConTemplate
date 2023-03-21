@@ -29,55 +29,71 @@ class DataObserver {
     }
   
     defineProp(currentObj, index, parentKey = null) {
-        
-            let self = this;
-            //clone to keep values of a parentObj
-            const parentData = { ...currentObj }
-            
-            Object.keys(currentObj).forEach(key => {
-                
-                let value = currentObj[ key ];
-                // dataKey is used to notify and update tags with corresponding data-key
-                const dataKey = parentKey ? `${parentKey}.${key}` : key;
-                
-                // fill up array to create getters/setters for wanted no. of items
-                // TODO this is now also in addCard, which is ugly!!!
-                if (Array.isArray(value)) {
-                    
-                    for (let i = 0; i < this.proto[ key ]?.length; i++) {  
-                        currentObj[ key ][ i ] = value[ i ] || this.proto[ key ][ i ];   
+
+        let self = this;
+        //clone to keep values of a parentObj
+        const parentData = { ...currentObj }
+
+        Object.keys(currentObj).forEach(key => {
+
+            let value = currentObj[ key ];
+            // dataKey is used to notify and update tags with corresponding data-key
+            const dataKey = parentKey ? `${parentKey}.${key}` : key;
+
+            // fill up array to create getters/setters for wanted no. of items
+            // TODO this is now also in addCard, which is ugly!!!
+            if (Array.isArray(value)) {
+
+                for (let i = 0; i < this.proto[ key ]?.length; i++) {
+                    currentObj[ key ][ i ] = value[ i ] || this.proto[ key ][ i ];
+                }
+
+            }
+            // Recursively define properties for nested objects or arrays
+            // and pass current key as parentKey
+            if (typeof value === "object" && value !== null) {
+                self.defineProp(value, index, key);
+            }
+
+            Object.defineProperty(currentObj, key, {
+
+                enumerable: true,
+                get() {
+                    return value;
+                },
+                set(newValue) {
+
+                    value = newValue;
+                    self.notify(currentObj, dataKey, value, "update", index);
+
+                    // update parent object if single item changed
+                    if (parentKey) {
+
+                        parentData[ key ] = value;
+                        self.notify(parentKey, parentKey, parentData, "update", index);
+
+
                     }
-        
-                }
-                // Recursively define properties for nested objects or arrays
-                if (typeof value === "object" && value !== null) {
-                    console.log(key)
-                    self.defineProp(value, index, key);
-                }
+                    // update parent object if single item changed
+                    // update all items when parentobj has changed
+                    if (typeof value === "object" && value !== null) {
 
-                Object.defineProperty(currentObj, key, {
+                        Object.keys(currentObj[ key ]).map(key => {
+                            console.log(key)
+                        })
 
-                    enumerable: true,
-                    get() {
-                        return value;
-                    },
-                    set(newValue) {
-                        value = newValue;
-                        self.notify(currentObj, dataKey, value, "update", index);
-                    
-                        // update parent object if single item changed
-                        if (parentKey) {
-                            parentData[ key ] = value;
-                            self.notify(parentKey, parentKey, parentData, "update", index);
-                            
+                        Object.keys(value).forEach(key => {
+                            let subKey = dataKey + `.${key}`
+                            self.notify(key, subKey, value[ key ], "update", index);
+                        })
 
-                        }
-                      
-                    },
-                });
-                
+                    }
+
+                },
             });
-        
+
+        });
+
     }
 
 
