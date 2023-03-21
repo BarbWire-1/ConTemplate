@@ -101,6 +101,7 @@ class DataObserver {
 
             }
             })
+            self.defineProp(obj, index)
             self.notify(obj, null, null, "add", index);
         }
 
@@ -432,19 +433,9 @@ const filter = {
 };
 
 
-// this doesn't reflect mutations on testdataLENGTH!!!!
-let array = []
-for (let i = 0; i < testData.length; i++) {
 
-    const { name, address, ...rest } = { ...testData[ i ] };
-    array.push(rest)
-    
-};
 
-testData[ 0 ].hobbies[ 0 ] = 'testing'
 
-let array1 = testData.map(({ name, address, ...rest }) => rest);
-console.log(array1[0].hobbies[0])// 'testing'
 
 
 
@@ -452,20 +443,7 @@ console.log(array1[0].hobbies[0])// 'testing'
 const dataObject = new DataHandler(testData, filter);
 // model watching subkey of obj
 const testModifier = new Contemplate(dataObject, templateTest, 'container4', 'template1', modifiers);
-testData[ 0 ].name = 'Lemme see'
 
-testData[ 0 ].hobbies[ 0 ] = 'debugging 🤬';
-testData[ 2 ].hobbies[ 1 ] = 'motocycling';
-
-testData[ 2 ].hobbies[ 2 ] = 'dreaming';
-
-
-testData[ 0 ].address.street = 'Home'
-//console.log(testData[ 0 ].address.street)// getter is ok.
-
-// TODO 1.1 changing the entire obj messes up everything, but WHY????
-testData[ 0 ].address = { street: 'Another Home', city: 'MyTown', state: 'SunnyState' }
-testData[ 0 ].address.street = 'Everywhere'
 // to check updating of only changed on load
 const updateNow = setInterval(tic, 1000);
 const stop = setTimeout(stopIt, 10000)
@@ -490,53 +468,14 @@ testData.push({
     now: new Date(),
     emoji: undefined
 })
-testData[ 2 ].name = 'Stupid Girl';
+testData[ 3 ].name = 'Test';
+testData[ 3 ].address = { street: 'test', city: 'city', state: 'state' }
+testData[ 3 ].address.street = 'STREET TEST';
+testData[ 3 ].hobbies[ 0 ] = 'testing';
+testData[ 3 ].hobbies[ 3 ] = 'testing 3';
 //testData.shift()// TODO remove listeners for removed cards
-testData.unshift({
-    name: '',
-    address: {
-        street: '007 Oneway',
-        city: 'Anothertown',
-        state: 'Spheres',
-    },
-    hobbies: [ 'coding', 'playing cello', `playing devil's advocat` ],
-    now: new Date(),
-    emoji: undefined
-})
-testData[ 0 ].name = 'Unshifted Card'
-testData[ 1 ].name = 'I was at index 0'
 
-testData[ 0 ].hobbies[ 2 ] = 'another hobby'
-testData[ 4 ].hobbies[ 3 ] = 'another hobby'
-testData[ 4 ].emoji = 'emoji'
-testData.reverse();
-testData[ 0 ].hobbies[ 0 ] = 'reversing';
-testData[ 4 ].hobbies[ 0 ] = 'going to the end';
-testData.splice(1, 0, {
-    name: 'BarbWire',
-    address: {
-        street: '007 Oneway',
-        city: 'Anothertown',
-        state: 'Spheres',
-    },
-    hobbies: [ 'coding', 'playing cello', `playing devil's advocat` ],
-    now: new Date(),
-    emoji: '👻'
-}, {name: 'BarbWire',
-    address: {
-    street: '007 Oneway',
-    city: 'Anothertown',
-    state: 'Spheres',
-},
-    hobbies: [ 'coding', 'playing cello', `playing devil's advocat` ],
-    now: new Date(),
-    emoji: '👻'
-})
-testData[ 0 ].name = 'set on 0 after splice'
-testData[ 3 ].name = 'set on 3 after splice'
 
-// array length got applied to have additional getters/setters defined
-testData[ 0 ].hobbies[ 2 ] = '3rd'
-testData[ 0 ].hobbies[ 3 ] = '4th'
-testData[ 0 ].hobbies[ 3 ] = '5th'
+//testData.reverse();
+
 
