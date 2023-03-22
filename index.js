@@ -112,7 +112,7 @@ class DataObserver {
 
                 }
             })
-            self.defineProp(obj, index)
+           
             self.notify(obj, null, null, "add", index);
         }
 
@@ -126,8 +126,9 @@ class DataObserver {
                 for (const key in self.data[ i ]) {
                     if(typeof key === 'object')
                     self.defineProp(key, i, self.data[i]);
-                    self.notify(key, null, self.data[ i ][ key ], "update", i);
+                    
                 }
+                self.notify(key, null, self.data[ i ][ key ], "update", i);
             }
             
         }
@@ -151,7 +152,7 @@ class DataObserver {
                             newObj.forEach((obj, index) => {
                                 addCard(obj, index)
                             });
-                            updateIndices();
+                            //updateIndices();
                             break;
 
                         case "pop":
@@ -510,6 +511,7 @@ testData.push({
 // testData[ 0 ].hobbies[ 3 ] = 'testing 3';
 /******************************************************************** End shift  ***/
 //TODO unshift messes with the assigned ARRAYS!!!
+// updating multiple times - and finally the first card gets array values at index 0!!
  testData.unshift(
     {
         name: '4 unshift',
@@ -534,8 +536,8 @@ testData.push({
         emoji: undefined
     }
 );
-// // testData[ 0 ].name = 'Test';
-//  testData[ 1 ].address = { street: 'test', city: 'city', state: 'state' }
+testData[ 5 ].name = 'Test';
+  testData[ 1 ].address = { street: 'test', city: 'city', state: 'state' }
 //  testData[ 1 ].address.street = 'STREET TEST';
 // testData[ 3 ].hobbies = ['testing'];
 // testData[ 4 ].hobbies[ 0 ] = 'testing';
