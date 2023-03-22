@@ -160,7 +160,14 @@ class DataObserver {
                             const index = newObj[ 0 ];
                             const deleteCount = newObj[ 1 ];
                             const itemsToAdd = newObj.slice(2);
+                            
+                            if (deleteCount > 0) {
+                                for (let i = 0; i < deleteCount; i++) {
+                                    removeCard(index + 1);
 
+                                }
+
+                            }
                             if (itemsToAdd.length > 0) {
                                 for (let i = 0; i < itemsToAdd.length; i++) {
                                     addCard(itemsToAdd[ i ], index + i);
@@ -169,15 +176,7 @@ class DataObserver {
                                 
                             }
 
-                            if (deleteCount > 0) {
-                                for (let i = 0; i < deleteCount; i++) {
-                                    removeCard(index + 1);
-                                    //TODO index +1 to update?
-                                    // why array is correct, while all others are not?
-
-                                }
-                                
-                            }
+                            
                             updateIndices();
                             break;
 
@@ -430,7 +429,7 @@ const testData = [ {
     }
 ];
 
-
+// TODO make this a prototype to inherit structure?
 const filter = {
     // name: "name",
     // address: {
@@ -573,11 +572,11 @@ testData.splice(4,1,
     }
 );
 //testData[ 2 ].name = 'Test';//TODO splice delete doesn't work correct
-testData[ 1 ].address = { street: 'test', city: 'city', state: 'state' }
-testData[ 1 ].address.street = 'STREET TEST';
- testData[ 2 ].hobbies = [ 'testing array' ];
+// testData[ 1 ].address = { street: 'test', city: 'city', state: 'state' }
+// testData[ 1 ].address.street = 'STREET TEST';
+// testData[ 2 ].hobbies = [ 'testing array' ];
 // testData[ 4 ].hobbies[ 1 ] = 'testing';
-// testData[ 4 ].hobbies[ 3 ] = 'testing 3';
+// testData[ 5 ].hobbies[ 3 ] = 'testing 3';
 console.timeEnd()
 
 function multiplier(factor) {
