@@ -114,6 +114,7 @@ class DataObserver {
             })
            
             self.notify(obj, null, null, "add", index);
+            updateIndices()
         }
 
         function removeCard(index) {
@@ -123,11 +124,10 @@ class DataObserver {
         function updateIndices() {
             for (let i = 0; i < self.data.length; i++) {
                 self.defineProp(self.data[ i ], i);
-                
                 for (const key in self.data[ i ]) {
                     if(typeof key === 'object')
                         self.defineProp(key, i, self.data[ i ]);
-                        self.notify(key, null, self.data[ i ][ key ], "update", i);
+                        self.notify(self.data[i], null, self.data[ i ][ key ], "update", i);
                     
                 }
                 
@@ -198,7 +198,7 @@ class DataObserver {
                                 removeCard(self.data.length)
                             });
                             
-                            updateIndices()
+                            //updateIndices()
 
                             break;
 
@@ -550,16 +550,12 @@ testData.push({
 //  testData[ 4 ].hobbies[ 3 ] = 'testing 3';
 
 /******************************************************************** End unshift  ***/
-//TODO entire obj/array redefining probs broken in reverse
- testData.reverse();
-testData[ 5 ].name = 'Test';
- 
-// ONLY WHEN UPDATING ANY OBJECT, ALL GET ASSIGN THE CORRECT VALUES!!!
-// SEEMS LIKE A NOTIFY MISSING
-// testData[ 0 ].address = { street: 'test', city: 'city', state: 'state' }//❌
+// testData.reverse();
+// testData[ 5 ].name = 'Test';
+// testData[ 0 ].address = { street: 'test', city: 'city', state: 'state' }
 // testData[ 0 ].address.street = 'STREET TEST';
-testData[ 1 ].hobbies = [ 'testing array' ];//❌
- testData[ 1 ].hobbies[ 1 ] = 'testing';
-testData[ 5 ].hobbies[ 3 ] = 'testing 3';
+// testData[ 1 ].hobbies = [ 'testing array' ];
+// testData[ 1 ].hobbies[ 1 ] = 'testing';
+// testData[ 4 ].hobbies[ 3 ] = 'testing 3';
 /******************************************************************** End reverse  ***/
 
