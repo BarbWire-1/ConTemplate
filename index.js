@@ -471,17 +471,17 @@ function stopIt() {
 /*********************************************************** TESTING ARRAY METHODS  ***/
 //testData.pop();
 /******************************************************************** End Pop  ***/
-testData.push({
-    name: '3 push',
-    address: {
-        street: '3 St',
-        city: '3 Town',
-        state: '3 State',
-    },
-    hobbies: [ '3 hobbies.0', '3 hobbies.1' ],
-    now: new Date(),
-    emoji: undefined
-})
+// testData.push({
+//     name: '3 push',
+//     address: {
+//         street: '3 St',
+//         city: '3 Town',
+//         state: '3 State',
+//     },
+//     hobbies: [ '3 hobbies.0', '3 hobbies.1' ],
+//     now: new Date(),
+//     emoji: undefined
+// })
 // testData[ 3 ].name = 'Test';
 //testData[ 3 ].address = { street: 'test', city: 'city', state: 'state' }
 // testData[ 3 ].address.street = 'STREET TEST';
