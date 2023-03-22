@@ -484,20 +484,20 @@ function stopIt() {
 /*********************************************************** TESTING ARRAY METHODS  ***/
 //testData.pop();
 /******************************************************************** End Pop  ***/
-testData.push({
-    name: '3 push',
-    address: {
-        street: '3 St',
-        city: '3 Town',
-        state: '3 State',
-    },
-    hobbies: [ '3 hobbies.0', '3 hobbies.1' ],
-    now: new Date(),
-    emoji: undefined
-})
-// testData[ 3 ].name = 'Test';
- testData[ 3 ].address = { street: 'test', city: 'city', state: 'state' }
- testData[ 3 ].address.street = 'STREET TEST';
+// testData.push({
+//     name: '3 push',
+//     address: {
+//         street: '3 St',
+//         city: '3 Town',
+//         state: '3 State',
+//     },
+//     hobbies: [ '3 hobbies.0', '3 hobbies.1' ],
+//     now: new Date(),
+//     emoji: undefined
+// })
+// // testData[ 3 ].name = 'Test';
+//  testData[ 3 ].address = { street: 'test', city: 'city', state: 'state' }
+//  testData[ 3 ].address.street = 'STREET TEST';
 // testData[ 3 ].hobbies = ['testing array'];
 // testData[ 3 ].hobbies[ 1 ] = 'testing';
 // testData[ 3 ].hobbies[ 2 ] = 'testing 3';
@@ -513,34 +513,34 @@ testData.push({
 /******************************************************************** End shift  ***/
 //TODO unshift messes with the assigned ARRAYS!!!
 // arrays receive values of prev items at index!!
- testData.unshift(
-    {
-        name: '4 unshift',
-        address: {
-            street: '4 St',
-            city: '4 Town',
-            state: '4 State',
-        },
-        hobbies: [ '4 hobbies.0', '4 hobbies.1' ],
-        now: new Date(),
-        emoji: undefined
-    },
-    {
-        name: '5 unshift',
-        address: {
-            street: '5 St',
-            city: '5 Town',
-            state: '5 State',
-        },
-        hobbies: [ '5 hobbies.0', '5 hobbies.1' ],
-        now: new Date(),
-        emoji: undefined
-    }
-);
+//  testData.unshift(
+//     {
+//         name: '4 unshift',
+//         address: {
+//             street: '4 St',
+//             city: '4 Town',
+//             state: '4 State',
+//         },
+//         hobbies: [ '4 hobbies.0', '4 hobbies.1' ],
+//         now: new Date(),
+//         emoji: undefined
+//     },
+//     {
+//         name: '5 unshift',
+//         address: {
+//             street: '5 St',
+//             city: '5 Town',
+//             state: '5 State',
+//         },
+//         hobbies: [ '5 hobbies.0', '5 hobbies.1' ],
+//         now: new Date(),
+//         emoji: undefined
+//     }
+// );
 // testData[ 0].name = 'Test';
 // testData[ 1 ].address = { street: 'test', city: 'city', state: 'state' }
 // testData[ 1 ].address.street = 'STREET TEST';
-//testData[ 0].hobbies = ['testing'];
+//  testData[ 0].hobbies = ['testing'];
 // testData[ 4 ].hobbies[ 0 ] = 'testing';
 // testData[ 5 ].hobbies[ 3 ] = 'testing 3';
 
