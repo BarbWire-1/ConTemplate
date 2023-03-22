@@ -32,6 +32,7 @@ class DataObserver {
 
         let self = this;
         //clone to keep values of a parentObj
+        // for sync if single item changed
         const parentData = { ...currentObj }
 
         Object.keys(currentObj).forEach(key => {
@@ -39,21 +40,21 @@ class DataObserver {
             const dataKey = parentKey ? `${parentKey}.${key}` : key;// path for data-keys
             const isObject = typeof value === "object" && value !== null;
             
+            // define array.length++ in proto
             if (Array.isArray(value)) {
                 for (let i = 0; i < this.proto[ key ]?.length; i++) {
                     currentObj[ key ][ i ] = value[ i ] || this.proto[ key ][ i ];
-                }
+                    
+                } 
             }
             // Recursively define properties
             if (isObject) {
-                console.log(key)
                 self.defineProp(value, index, key, currentObj);
-
             }
 
             Object.defineProperty(currentObj, key, {
-
                 enumerable: true,
+                
                 get() {
                     return value;
                 },
@@ -68,7 +69,6 @@ class DataObserver {
                     }
                     // update parent object if single item changed
                     if (isObject) {
-                        
                         Object.keys(value).forEach(key => {
                             let subKey = dataKey + `.${key}`
                             
@@ -104,7 +104,8 @@ class DataObserver {
                 if (Array.isArray(obj[ key ])) {
                     //console.log(key)
                     for (let i = 0; i < self.proto[ key ]?.length; i++) {
-                        obj[ key ][ i ] = obj[ key ][ i ] || self.proto[ key ][ i ];
+                        const item = key[i]
+                        obj[item] = obj[item] || self.proto[item];
                     }
 
                 }
@@ -332,8 +333,8 @@ class Contemplate {
             this.container.children[ index ].remove();
 
         } else if (operation === "update") {
-            // console.log(index)
             const card = this.container.children[ index ];
+            
             if(card)// throws if card got removed. WHY so? It shouldn't call an update
             this.write2Card(item, key, value, card)
 
@@ -371,7 +372,8 @@ const templateTest = () => {
       Address keys :
       <span data-key="address.street" data-modifier="uppercase"></span>,
       <span data-key="address.city"></span>,
-      <span data-key="address.state"></span>
+      <span data-key="address.state"></span>,
+      <span data-key="address.planet"></span>
     </p>
     <p>
       Hobbies:
@@ -435,7 +437,7 @@ const filter = {
     //     city: "city",
     //     state: "state",
     // },
-    hobbies: Array.from({ length: 5 }, () => ''),
+    hobbies: Array.from({ length: 1 }, () => ''),
     //now: new Date(),
     //emoji: 'emoji',
 };
@@ -465,11 +467,11 @@ function stopIt() {
 
 /*********************************************************** TESTING REACTIVITY  ***/
 // testData[ 0 ].name = 'Test';
-testData[ 0 ].address = { street: 'test', city: 'city', state: 'state' }
-testData[ 0 ].address.street = 'STREET TEST';
-testData[ 0 ].hobbies = ['testing'];
-testData[ 0 ].hobbies[ 0 ] = 'testing';
-testData[ 0 ].hobbies[ 3 ] = 'testing 3';
+ testData[ 0 ].address = { street: 'test', city: 'city', state: 'state', planet: 'venus' }
+// testData[ 0 ].address.street = 'STREET TEST';
+// testData[ 0 ].hobbies = ['testing'];
+// testData[ 0 ].hobbies[ 0 ] = 'testing';
+// testData[ 0 ].hobbies[ 3 ] = 'testing 3';
 
 /*********************************************************** TESTING ARRAY METHODS  ***/
 //testData.pop();
@@ -486,26 +488,26 @@ testData.push({
     emoji: undefined
 })
 // testData[ 3 ].name = 'Test';
-// //testData[ 3 ].address = { street: 'test', city: 'city', state: 'state' }// ❌
+// testData[ 3 ].address = { street: 'test', city: 'city', state: 'state' }
 // testData[ 3 ].address.street = 'STREET TEST';
-// //testData[ 3 ].hobbies = ['testing'];// ❌
-// testData[ 3 ].hobbies[ 0 ] = 'testing';
-// testData[ 3 ].hobbies[ 3 ] = 'testing 3';
+// testData[ 3 ].hobbies = ['testing array'];
+// testData[ 3 ].hobbies[ 1 ] = 'testing';
+// testData[ 3 ].hobbies[ 2 ] = 'testing 3';
 /******************************************************************** End Push  ***/
 // testData.shift()
 // 
 // testData[ 0 ].name = 'Test';
-// //testData[ 0 ].address = { street: 'test', city: 'city', state: 'state' }// ❌
+// //testData[ 0 ].address = { street: 'test', city: 'city', state: 'state' }
 // testData[ 0 ].address.street = 'STREET TEST';
-// //testData[ 0 ].hobbies = ['testing'];// ❌
+// //testData[ 0 ].hobbies = ['testing'];
 // testData[ 0 ].hobbies[ 0 ] = 'testing';
 // testData[ 0 ].hobbies[ 3 ] = 'testing 3';
 /******************************************************************** End shift  ***/
 testData.reverse();
 //  testData[ 2 ].name = 'Test';
-// testData[ 0 ].address = { street: 'test', city: 'city', state: 'state' }// ❌
+// testData[ 0 ].address = { street: 'test', city: 'city', state: 'state' }
 //  testData[ 0 ].address.street = 'STREET TEST';
-// //testData[ 0 ].hobbies = ['testing'];// ❌
+// //testData[ 0 ].hobbies = ['testing'];
 //  testData[ 3 ].hobbies[ 0 ] = 'testing';
 //  testData[ 2 ].hobbies[ 3 ] = 'testing 3';
 /******************************************************************** End reverse  ***/
