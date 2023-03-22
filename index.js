@@ -5,7 +5,7 @@
  */
 console.clear()
 
-
+// supports and reflects the array-methods "push", "pop", "shift", "unshift", "splice", "reverse" on the dataSource
 console.time()
 class DataObserver {
     constructor (dataSource, proto) {
@@ -33,16 +33,13 @@ class DataObserver {
 
         Object.keys(currentObj).forEach(key => {
             let value = currentObj[ key ];
-             //typeof parentKey !== 'number' && console.log({parentKey})// oh index?? => key => subs BUT parentKey 7 ???     
-        //console.log({key})//oh array AND indices are logged here
             const dataKey = parentKey ? `${parentKey}.${key}` : key;// path for data-keys
             const isObject = typeof value === "object" && value !== null;
             
             // define array.length++ in proto
             if (Array.isArray(value)) {
-               
+                
                 for (let i = 0; i < this.proto[ key ]?.length; i++) {
-                    console.log( value[i] )
                     currentObj[ key ][ i ] = value[ i ] || this.proto[ key ][ i ];
                 } 
                
@@ -68,7 +65,7 @@ class DataObserver {
                         parentData[ key ] = value;
                         self.notify(parentKey, parentKey, parentData, "update", index);
                     }
-                    // re-define and update keys if entire object changed
+                    // re-define and update keys if entire nested object changed
                     if (isObject && !self.data.includes(value)) {
                         console.log(currentObj )
                         self.defineProp(currentObj, index)
@@ -107,11 +104,15 @@ class DataObserver {
         function removeCard(index) {
             self.notify(null, null, null, "delete", index);
         }
-        // TODO CHECK THIS!!!!!!!!!!
+       
         function updateIndices() {
+            // redefine on the new index if sequence has changed
+            // probably expensive but necessary for array-methods
             for (let i = 0; i < self.data.length; i++) {
+                
                 self.defineProp(self.data[ i ], i);
                 for (const key in self.data[ i ]) {
+                    // nesteds
                     if(typeof key === 'object')
                         self.defineProp(key, i, self.data[ i ]);
                         self.notify(self.data[i], null, self.data[ i ][ key ], "update", i);
@@ -127,8 +128,10 @@ class DataObserver {
 
             Object.defineProperty(array, method, {
                 value: function (...newObj) {
+                    // get the args of the originalMethod
                     let result = originalMethod.apply(this, newObj);
                     let newLength = array.length;
+                    
                     switch (method) {
                         case "push":
                             addCard(newObj[0], newLength);
@@ -137,12 +140,10 @@ class DataObserver {
                         case "unshift":
                             
                             newObj.forEach((obj, index) => {
-                                updateIndices();
+                                updateIndices();// this is a bit ugly to call for each, but seems necessary
                                 addCard(obj, index)
                                 return index;
                             });
-                            
-                            //updateIndices();
                             break;
 
                         case "pop":
@@ -163,15 +164,19 @@ class DataObserver {
                             if (itemsToAdd.length > 0) {
                                 for (let i = 0; i < itemsToAdd.length; i++) {
                                     addCard(itemsToAdd[ i ], index + i);
-
+                                    
                                 }
+                                
                             }
 
                             if (deleteCount > 0) {
                                 for (let i = 0; i < deleteCount; i++) {
                                     removeCard(index + 1);
+                                    //TODO index +1 to update?
+                                    // why array is correct, while all others are not?
 
                                 }
+                                
                             }
                             updateIndices();
                             break;
@@ -543,7 +548,7 @@ testData.push({
 // testData[ 1 ].hobbies[ 1 ] = 'testing';
 // testData[ 4 ].hobbies[ 3 ] = 'testing 3';
 /******************************************************************** End reverse  ***/
-testData.splice(4,0,
+testData.splice(4,1,
     {
         name: '6 spliced',
         address: {
@@ -574,3 +579,9 @@ testData[ 1 ].address.street = 'STREET TEST';
 // testData[ 4 ].hobbies[ 1 ] = 'testing';
 // testData[ 4 ].hobbies[ 3 ] = 'testing 3';
 console.timeEnd()
+
+function multiplier(factor) {
+    return number => number * factor;
+}
+usd2eur = multiplier(1.08)
+usd2eur(400); // 432
