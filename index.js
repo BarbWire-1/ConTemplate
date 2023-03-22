@@ -64,14 +64,15 @@ class DataObserver {
 
                     // update parent array if single item changed
                     if (parentKey) {
+                        console.log(parentKey)
                         parentData[ key ] = value;
                         self.notify(parentKey, parentKey, parentData, "update", index);
                     }
                     // re-define and update keys if entire object changed
-                    if (isObject) {
-                        
+                    if (isObject && !self.data.includes(value)) {
+                        console.log(currentObj )
+                        self.defineProp(currentObj, index)
                         Object.keys(value).forEach(key => {
-                            self.defineProp(currentObj, index, key)
                             
                             let subKey = dataKey + `.${key}`
                             self.notify(currentObj, subKey, value[ key ], "update", index);
@@ -450,6 +451,8 @@ const dataObject = new DataHandler(testData, filter);
 const testModifier = new Contemplate(dataObject, templateTest, 'container4', 'template1', modifiers);
 
 // to check updating of only changed on load
+// THIS OF COUSE ALWAYS TICS THE ACTUAL 2
+// HMMMMM
 const updateNow = setInterval(tic, 1000);
 const stop = setTimeout(stopIt, 10000)
 function tic() {
@@ -463,82 +466,111 @@ function stopIt() {
 /*********************************************************** TESTING REACTIVITY  ***/
 // testData[ 0 ].name = 'Test';
 //  testData[ 0 ].address = { street: 'test', city: 'city', state: 'state', planet: 'venus' }
-//  testData[ 0 ].address.street = 'STREET TEST';
-  testData[ 0 ].hobbies = ['testing array'];// ok here
-// testData[ 0 ].hobbies[ 0 ] = 'testing';
- testData[ 0 ].hobbies[ 3 ] = 'testing 3';
+//   testData[ 0 ].address.street = 'STREET TEST';
+//   testData[ 0 ].hobbies = ['testing array'];// ok here
+// // testData[ 0 ].hobbies[ 0 ] = 'testing';
+//  testData[ 0 ].hobbies[ 3 ] = 'testing 3';
 
 /*********************************************************** TESTING ARRAY METHODS  ***/
 //testData.pop();
 /******************************************************************** End Pop  ***/
-// testData.push({
-//     name: '3 push',
-//     address: {
-//         street: '3 St',
-//         city: '3 Town',
-//         state: '3 State',
-//     },
-//     hobbies: [ '3 hobbies.0', '3 hobbies.1' ],
-//     now: new Date(),
-//     emoji: undefined
-// })
+testData.push({
+    name: '3 push',
+    address: {
+        street: '3 St',
+        city: '3 Town',
+        state: '3 State',
+    },
+    hobbies: [ '3 hobbies.0', '3 hobbies.1' ],
+    now: new Date(),
+    emoji: undefined
+})
 // testData[ 3 ].name = 'Test';
-//testData[ 3 ].address = { street: 'test', city: 'city', state: 'state' }
-// testData[ 3 ].address.street = 'STREET TEST';
-// TODO how to remove the items NOT in new array? - working for init 
-testData[ 1 ].hobbies = [ 'testing array' ];// NOT OK FROM HERE so have a look at addCard
-console.log(testData[0].hobbies.length)// 5
-testData[ 1 ].hobbies[2] = 'testing';
- testData[ 3 ].hobbies[ 4 ] = 'testing 3';
+// testData[ 3 ].address = { street: 'test', city: 'city', state: 'state' }
+//  testData[ 3 ].address.street = 'STREET TEST';
+// // TODO how to remove the items NOT in new array? - working for init 
+// testData[ 2 ].hobbies = [ 'testing array' ];// NOT OK FROM HERE so have a look at addCard
+// console.log(testData[0].hobbies.length)// 5
+// testData[ 2 ].hobbies[2] = 'testing';
+//  testData[ 3 ].hobbies[ 4 ] = 'testing 3';
 /******************************************************************** End Push  ***/
-// testData.shift()
+ //testData.shift()
 // 
-// testData[ 0 ].name = 'Test';
-// //testData[ 0 ].address = { street: 'test', city: 'city', state: 'state' }
+//  testData[ 0 ].name = 'Test';
+// testData[ 0 ].address = { street: 'test', city: 'city', state: 'state' }
 // testData[ 0 ].address.street = 'STREET TEST';
-// //testData[ 0 ].hobbies = ['testing']; // not deleting other items
-// testData[ 0 ].hobbies[ 0 ] = 'testing';
+// testData[ 0 ].hobbies = ['testing']; // not deleting other items
+// testData[ 0 ].hobbies[ 1 ] = 'testing';
 // testData[ 0 ].hobbies[ 3 ] = 'testing 3';
 /******************************************************************** End shift  ***/
-//  testData.unshift(
-//     {
-//         name: '4 unshift',
-//         address: {
-//             street: '4 St',
-//             city: '4 Town',
-//             state: '4 State',
-//         },
-//         hobbies: [ '4 hobbies.0', '4 hobbies.1' ],
-//         now: new Date(),
-//         emoji: undefined
-//     },
-//     {
-//         name: '5 unshift',
-//         address: {
-//             street: '5 St',
-//             city: '5 Town',
-//             state: '5 State',
-//         },
-//         hobbies: [ '5 hobbies.0', '5 hobbies.1' ],
-//         now: new Date(),
-//         emoji: undefined
-//     }
-// );
+ testData.unshift(
+    {
+        name: '4 unshift',
+        address: {
+            street: '4 St',
+            city: '4 Town',
+            state: '4 State',
+        },
+        hobbies: [ '4 hobbies.0', '4 hobbies.1' ],
+        now: new Date(),
+        emoji: undefined
+    },
+    {
+        name: '5 unshift',
+        address: {
+            street: '5 St',
+            city: '5 Town',
+            state: '5 State',
+        },
+        hobbies: [ '5 hobbies.0', '5 hobbies.1' ],
+        now: new Date(),
+        emoji: undefined
+    }
+);
 // testData[ 0].name = 'Test';
-//  testData[ 1 ].address = { street: 'test', city: 'city', state: 'state' }
-//  testData[ 1 ].address.street = 'STREET TEST';
-// testData[ 0].hobbies = ['testing array'];//TODO  NOT DELETING OTHER IN SINGLE ITEMS
-//  testData[ 4 ].hobbies[ 1 ] = 'testing';
+//  testData[ 5 ].address = { street: 'test', city: 'city', state: 'state' }
+//  testData[ 5 ].address.street = 'STREET TEST';
+// testData[ 5].hobbies = ['testing array'];//TODO  NOT DELETING OTHER IN SINGLE ITEMS
+//  testData[ 5 ].hobbies[ 1 ] = 'testing';
 //  testData[ 4 ].hobbies[ 3 ] = 'testing 3';
 
 /******************************************************************** End unshift  ***/
- //testData.reverse();
+// testData.reverse();
 // testData[ 5 ].name = 'Test';
 // testData[ 0 ].address = { street: 'test', city: 'city', state: 'state' }
 // testData[ 0 ].address.street = 'STREET TEST';
-//testData[ 1 ].hobbies = [ 'testing array' ];
+// testData[ 1 ].hobbies = [ 'testing array' ];
 // testData[ 1 ].hobbies[ 1 ] = 'testing';
 // testData[ 4 ].hobbies[ 3 ] = 'testing 3';
 /******************************************************************** End reverse  ***/
-
+testData.splice(4,0,
+    {
+        name: '6 spliced',
+        address: {
+            street: '6 St',
+            city: '6 Town',
+            state: '6 State',
+        },
+        hobbies: [ '6 hobbies.0', '6 hobbies.1' ],
+        now: new Date(),
+        emoji: undefined
+    },
+    {
+        name: '7 spliced',
+        address: {
+            street: '7 St',
+            city: '7 Town',
+            state: '7 State',
+        },
+        hobbies: [ '7 hobbies.0', '7 hobbies.1' ],
+        now: new Date(),
+        emoji: undefined
+    }
+);
+//testData[ 2 ].name = 'Test';//TODO splice delete doesn't work correct
+testData[ 1 ].address = { street: 'test', city: 'city', state: 'state' }
+testData[ 1 ].address.street = 'STREET TEST';
+ testData[ 2 ].hobbies = [ 'testing array' ];
+// testData[ 4 ].hobbies[ 1 ] = 'testing';
+// testData[ 4 ].hobbies[ 3 ] = 'testing 3';
 console.timeEnd()
