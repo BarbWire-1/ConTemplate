@@ -122,6 +122,8 @@ class DataObserver {
             for (let i = 0; i < self.data.length; i++) {
                 self.defineProp(self.data[ i ], i);
                 for (const key in self.data[ i ]) {
+                    if(typeof key === 'object')
+                    self.defineProp(key, i, self.data[i]);
                     self.notify(key, null, self.data[ i ][ key ], "update", i);
                 }
             }
@@ -437,7 +439,7 @@ const filter = {
     //     city: "city",
     //     state: "state",
     // },
-    hobbies: Array.from({ length: 1 }, () => ''),
+    hobbies: Array.from({ length: 5 }, () => ''),
     //now: new Date(),
     //emoji: 'emoji',
 };
@@ -467,7 +469,7 @@ function stopIt() {
 
 /*********************************************************** TESTING REACTIVITY  ***/
 // testData[ 0 ].name = 'Test';
- testData[ 0 ].address = { street: 'test', city: 'city', state: 'state', planet: 'venus' }
+// testData[ 0 ].address = { street: 'test', city: 'city', state: 'state', planet: 'venus' }
 // testData[ 0 ].address.street = 'STREET TEST';
 // testData[ 0 ].hobbies = ['testing'];
 // testData[ 0 ].hobbies[ 0 ] = 'testing';
@@ -503,12 +505,45 @@ testData.push({
 // testData[ 0 ].hobbies[ 0 ] = 'testing';
 // testData[ 0 ].hobbies[ 3 ] = 'testing 3';
 /******************************************************************** End shift  ***/
+testData.unshift(
+    {
+        name: '4 unshift',
+        address: {
+            street: '4 St',
+            city: '4 Town',
+            state: '4 State',
+        },
+        hobbies: [ '4 hobbies.0', '4 hobbies.1' ],
+        now: new Date(),
+        emoji: undefined
+    },
+    {
+        name: '5 unshift',
+        address: {
+            street: '5 St',
+            city: '5 Town',
+            state: '5 State',
+        },
+        hobbies: [ '5 hobbies.0', '5 hobbies.1' ],
+        now: new Date(),
+        emoji: undefined
+    }
+);
+// testData[ 0 ].name = 'Test';
+// testData[ 1 ].address = { street: 'test', city: 'city', state: 'state' }
+// testData[ 1 ].address.street = 'STREET TEST';
+// testData[ 3 ].hobbies = ['testing'];
+// testData[ 4 ].hobbies[ 0 ] = 'testing';
+// testData[ 5 ].hobbies[ 3 ] = 'testing 3';
+
+/******************************************************************** End unshift  ***/
+//TODO entire obj/array redefining probs broken in reverse
 testData.reverse();
-//  testData[ 2 ].name = 'Test';
-// testData[ 0 ].address = { street: 'test', city: 'city', state: 'state' }
-//  testData[ 0 ].address.street = 'STREET TEST';
-// //testData[ 0 ].hobbies = ['testing'];
-//  testData[ 3 ].hobbies[ 0 ] = 'testing';
-//  testData[ 2 ].hobbies[ 3 ] = 'testing 3';
+testData[ 2 ].name = 'Test';
+//testData[ 3 ].address = { street: 'test', city: 'city', state: 'state' }//❌
+testData[ 3 ].address.street = 'STREET TEST';
+//testData[ 1 ].hobbies = [ 'testing array' ];//❌
+testData[ 1 ].hobbies[ 1 ] = 'testing';
+testData[ 0 ].hobbies[ 3 ] = 'testing 3';
 /******************************************************************** End reverse  ***/
 
