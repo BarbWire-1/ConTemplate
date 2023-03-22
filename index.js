@@ -540,10 +540,10 @@ testData.unshift(
 //TODO entire obj/array redefining probs broken in reverse
 testData.reverse();
 testData[ 2 ].name = 'Test';
-//testData[ 3 ].address = { street: 'test', city: 'city', state: 'state' }//❌
-testData[ 3 ].address.street = 'STREET TEST';
+//testData[ 0 ].address = { street: 'test', city: 'city', state: 'state' }//❌
+testData[ 0 ].address.street = 'STREET TEST';
 //testData[ 1 ].hobbies = [ 'testing array' ];//❌
 testData[ 1 ].hobbies[ 1 ] = 'testing';
-testData[ 0 ].hobbies[ 3 ] = 'testing 3';
+testData[ 5 ].hobbies[ 3 ] = 'testing 3';
 /******************************************************************** End reverse  ***/
 
