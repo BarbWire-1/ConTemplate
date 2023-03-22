@@ -123,6 +123,7 @@ class DataObserver {
         function updateIndices() {
             for (let i = 0; i < self.data.length; i++) {
                 self.defineProp(self.data[ i ], i);
+                
                 for (const key in self.data[ i ]) {
                     if(typeof key === 'object')
                         self.defineProp(key, i, self.data[ i ]);
@@ -488,17 +489,17 @@ function stopIt() {
 /*********************************************************** TESTING ARRAY METHODS  ***/
 //testData.pop();
 /******************************************************************** End Pop  ***/
-// testData.push({
-//     name: '3 push',
-//     address: {
-//         street: '3 St',
-//         city: '3 Town',
-//         state: '3 State',
-//     },
-//     hobbies: [ '3 hobbies.0', '3 hobbies.1' ],
-//     now: new Date(),
-//     emoji: undefined
-// })
+testData.push({
+    name: '3 push',
+    address: {
+        street: '3 St',
+        city: '3 Town',
+        state: '3 State',
+    },
+    hobbies: [ '3 hobbies.0', '3 hobbies.1' ],
+    now: new Date(),
+    emoji: undefined
+})
 // // testData[ 3 ].name = 'Test';
 //  testData[ 3 ].address = { street: 'test', city: 'city', state: 'state' }
 //  testData[ 3 ].address.street = 'STREET TEST';
@@ -541,21 +542,24 @@ function stopIt() {
         emoji: undefined
     }
 );
-// testData[ 0].name = 'Test';
-// testData[ 1 ].address = { street: 'test', city: 'city', state: 'state' }
-// testData[ 1 ].address.street = 'STREET TEST';
-//  testData[ 0].hobbies = ['testing'];
-// testData[ 4 ].hobbies[ 0 ] = 'testing';
-// testData[ 5 ].hobbies[ 3 ] = 'testing 3';
+//  testData[ 0].name = 'Test';
+//  testData[ 1 ].address = { street: 'test', city: 'city', state: 'state' }
+//  testData[ 1 ].address.street = 'STREET TEST';
+//   testData[ 4].hobbies = ['testing array'];
+//  testData[ 4 ].hobbies[ 1 ] = 'testing';
+//  testData[ 4 ].hobbies[ 3 ] = 'testing 3';
 
 /******************************************************************** End unshift  ***/
 //TODO entire obj/array redefining probs broken in reverse
-// testData.reverse();
-// testData[ 2 ].name = 'Test';
-// //testData[ 0 ].address = { street: 'test', city: 'city', state: 'state' }//❌
-// //testData[ 0 ].address.street = 'STREET TEST';
-// //testData[ 1 ].hobbies = [ 'testing array' ];//❌
-// testData[ 1 ].hobbies[ 1 ] = 'testing';
-// testData[ 5 ].hobbies[ 3 ] = 'testing 3';
+ testData.reverse();
+testData[ 5 ].name = 'Test';
+ 
+// ONLY WHEN UPDATING ANY OBJECT, ALL GET ASSIGN THE CORRECT VALUES!!!
+// SEEMS LIKE A NOTIFY MISSING
+// testData[ 0 ].address = { street: 'test', city: 'city', state: 'state' }//❌
+// testData[ 0 ].address.street = 'STREET TEST';
+testData[ 1 ].hobbies = [ 'testing array' ];//❌
+ testData[ 1 ].hobbies[ 1 ] = 'testing';
+testData[ 5 ].hobbies[ 3 ] = 'testing 3';
 /******************************************************************** End reverse  ***/
 
