@@ -49,12 +49,15 @@ class DataObserver {
             }
             // Recursively define properties
             if (isObject) {
-                self.defineProp(value, index, key, currentObj);
+                //self.defineProp(self.data[index ], index);
+                
+                self.defineProp(value, index, key);
+
             }
 
             Object.defineProperty(currentObj, key, {
+
                 enumerable: true,
-                
                 get() {
                     return value;
                 },
@@ -67,14 +70,13 @@ class DataObserver {
                         parentData[ key ] = value;
                         self.notify(parentKey, parentKey, parentData, "update", index);
                     }
-                    // update parent object if single item changed
+                    // re-define and update keys if entire object changed
                     if (isObject) {
+                        
                         Object.keys(value).forEach(key => {
+                            self.defineProp(currentObj, index, key)
+                            
                             let subKey = dataKey + `.${key}`
-                            
-                            if(typeof currentObj[key] === 'object')
-                                self.defineProp(currentObj[ key ], index, value[ key ]);
-                            
                             self.notify(currentObj, subKey, value[ key ], "update", index);
                         })
                         
@@ -127,6 +129,7 @@ class DataObserver {
                     self.notify(key, null, self.data[ i ][ key ], "update", i);
                 }
             }
+            
         }
 
         methods.forEach((method) => {
@@ -182,11 +185,12 @@ class DataObserver {
                             break;
 
                         case "reverse":
-
+                           
                             self.data.forEach((item, index) => {
                                 addCard(item, index);
                                 removeCard(self.data.length)
                             });
+                            
                             updateIndices()
 
                             break;
@@ -469,8 +473,8 @@ function stopIt() {
 
 /*********************************************************** TESTING REACTIVITY  ***/
 // testData[ 0 ].name = 'Test';
-// testData[ 0 ].address = { street: 'test', city: 'city', state: 'state', planet: 'venus' }
-// testData[ 0 ].address.street = 'STREET TEST';
+ testData[ 0 ].address = { street: 'test', city: 'city', state: 'state', planet: 'venus' }
+ testData[ 0 ].address.street = 'STREET TEST';
 // testData[ 0 ].hobbies = ['testing'];
 // testData[ 0 ].hobbies[ 0 ] = 'testing';
 // testData[ 0 ].hobbies[ 3 ] = 'testing 3';
@@ -490,8 +494,8 @@ testData.push({
     emoji: undefined
 })
 // testData[ 3 ].name = 'Test';
-// testData[ 3 ].address = { street: 'test', city: 'city', state: 'state' }
-// testData[ 3 ].address.street = 'STREET TEST';
+ testData[ 3 ].address = { street: 'test', city: 'city', state: 'state' }
+ testData[ 3 ].address.street = 'STREET TEST';
 // testData[ 3 ].hobbies = ['testing array'];
 // testData[ 3 ].hobbies[ 1 ] = 'testing';
 // testData[ 3 ].hobbies[ 2 ] = 'testing 3';
@@ -505,45 +509,45 @@ testData.push({
 // testData[ 0 ].hobbies[ 0 ] = 'testing';
 // testData[ 0 ].hobbies[ 3 ] = 'testing 3';
 /******************************************************************** End shift  ***/
-testData.unshift(
-    {
-        name: '4 unshift',
-        address: {
-            street: '4 St',
-            city: '4 Town',
-            state: '4 State',
-        },
-        hobbies: [ '4 hobbies.0', '4 hobbies.1' ],
-        now: new Date(),
-        emoji: undefined
-    },
-    {
-        name: '5 unshift',
-        address: {
-            street: '5 St',
-            city: '5 Town',
-            state: '5 State',
-        },
-        hobbies: [ '5 hobbies.0', '5 hobbies.1' ],
-        now: new Date(),
-        emoji: undefined
-    }
-);
-// testData[ 0 ].name = 'Test';
-// testData[ 1 ].address = { street: 'test', city: 'city', state: 'state' }
-// testData[ 1 ].address.street = 'STREET TEST';
+// testData.unshift(
+//     {
+//         name: '4 unshift',
+//         address: {
+//             street: '4 St',
+//             city: '4 Town',
+//             state: '4 State',
+//         },
+//         hobbies: [ '4 hobbies.0', '4 hobbies.1' ],
+//         now: new Date(),
+//         emoji: undefined
+//     },
+//     {
+//         name: '5 unshift',
+//         address: {
+//             street: '5 St',
+//             city: '5 Town',
+//             state: '5 State',
+//         },
+//         hobbies: [ '5 hobbies.0', '5 hobbies.1' ],
+//         now: new Date(),
+//         emoji: undefined
+//     }
+// );
+// // testData[ 0 ].name = 'Test';
+//  testData[ 1 ].address = { street: 'test', city: 'city', state: 'state' }
+//  testData[ 1 ].address.street = 'STREET TEST';
 // testData[ 3 ].hobbies = ['testing'];
 // testData[ 4 ].hobbies[ 0 ] = 'testing';
 // testData[ 5 ].hobbies[ 3 ] = 'testing 3';
 
 /******************************************************************** End unshift  ***/
 //TODO entire obj/array redefining probs broken in reverse
-testData.reverse();
-testData[ 2 ].name = 'Test';
-//testData[ 0 ].address = { street: 'test', city: 'city', state: 'state' }//❌
-testData[ 0 ].address.street = 'STREET TEST';
-//testData[ 1 ].hobbies = [ 'testing array' ];//❌
-testData[ 1 ].hobbies[ 1 ] = 'testing';
-testData[ 5 ].hobbies[ 3 ] = 'testing 3';
+// testData.reverse();
+// testData[ 2 ].name = 'Test';
+// //testData[ 0 ].address = { street: 'test', city: 'city', state: 'state' }//❌
+// //testData[ 0 ].address.street = 'STREET TEST';
+// //testData[ 1 ].hobbies = [ 'testing array' ];//❌
+// testData[ 1 ].hobbies[ 1 ] = 'testing';
+// testData[ 5 ].hobbies[ 3 ] = 'testing 3';
 /******************************************************************** End reverse  ***/
 
