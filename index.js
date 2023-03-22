@@ -4,16 +4,12 @@
      with MIT license
  */
 console.clear()
-//TODO change makeReactive to take an item as param, then init with forEach in this.data, THEN call for new items in arrayObserver
-// in order to get the prototype-thingy working!
-
-// TODO still not deleting items from nested objects when entire object overwritten
-// TODO differentiate in arrayObserver as different actions needed for outer/inner array
 
 
+console.time()
 class DataObserver {
     constructor (dataSource, proto) {
-        //this.data = dataSource.map(({ name, address, ...rest }) => rest)
+       
         this.data = dataSource;
         this.proto = proto;
         this.observers = [];
@@ -37,22 +33,23 @@ class DataObserver {
 
         Object.keys(currentObj).forEach(key => {
             let value = currentObj[ key ];
+             //typeof parentKey !== 'number' && console.log({parentKey})// oh index?? => key => subs BUT parentKey 7 ???     
+        //console.log({key})//oh array AND indices are logged here
             const dataKey = parentKey ? `${parentKey}.${key}` : key;// path for data-keys
             const isObject = typeof value === "object" && value !== null;
             
             // define array.length++ in proto
             if (Array.isArray(value)) {
+               
                 for (let i = 0; i < this.proto[ key ]?.length; i++) {
+                    console.log( value[i] )
                     currentObj[ key ][ i ] = value[ i ] || this.proto[ key ][ i ];
-                    
                 } 
+               
             }
             // Recursively define properties
             if (isObject) {
-                //self.defineProp(self.data[index ], index);
-                
                 self.defineProp(value, index, key);
-
             }
 
             Object.defineProperty(currentObj, key, {
@@ -101,18 +98,7 @@ class DataObserver {
         const methods = [ "push", "pop", "shift", "unshift", "splice", "reverse" ];
 
         function addCard(obj, index) {
-            //console.log(obj)
-            Object.keys(self.proto).forEach(key => {
-                if (Array.isArray(obj[ key ])) {
-                    //console.log(key)
-                    for (let i = 0; i < self.proto[ key ]?.length; i++) {
-                        const item = key[i]
-                        obj[item] = obj[item] || self.proto[item];
-                    }
-
-                }
-            })
-           
+ 
             self.notify(obj, null, null, "add", index);
             updateIndices()
         }
@@ -144,10 +130,7 @@ class DataObserver {
                     let newLength = array.length;
                     switch (method) {
                         case "push":
-                            newObj.forEach((obj, index) => {
-                                addCard(obj, newLength - newObj.length + index);
-
-                            });
+                            addCard(newObj[0], newLength);
                             break;
 
                         case "unshift":
@@ -169,7 +152,8 @@ class DataObserver {
                             removeCard(0);
                             updateIndices();
                             break;
-
+                        
+                        // TODO NOT tested yet in new formation
                         case "splice":
                             const index = newObj[ 0 ];
                             const deleteCount = newObj[ 1 ];
@@ -198,7 +182,6 @@ class DataObserver {
                                 removeCard(self.data.length)
                             });
                             
-                            //updateIndices()
 
                             break;
 
@@ -284,7 +267,7 @@ class Contemplate {
     }
 
 
-    createCard = (item) => {
+    createCard(item){
         const card = document.createElement("div");
         card.className = this.className;
         const template = this.template(item);
@@ -310,8 +293,6 @@ class Contemplate {
         return card;
     };
 
-    // TODO check here for how to update parent[item] if parent
-    // instead of oberwriting it!
     write2Card(_, key, value, card) {
 
         const tags2Update = card.querySelectorAll(`[data-key="${key}"]`);
@@ -482,9 +463,9 @@ function stopIt() {
 // testData[ 0 ].name = 'Test';
 //  testData[ 0 ].address = { street: 'test', city: 'city', state: 'state', planet: 'venus' }
 //  testData[ 0 ].address.street = 'STREET TEST';
-//  testData[ 0 ].hobbies = ['testing array'];// ok here
+  testData[ 0 ].hobbies = ['testing array'];// ok here
 // testData[ 0 ].hobbies[ 0 ] = 'testing';
-// testData[ 0 ].hobbies[ 3 ] = 'testing 3';
+ testData[ 0 ].hobbies[ 3 ] = 'testing 3';
 
 /*********************************************************** TESTING ARRAY METHODS  ***/
 //testData.pop();
@@ -500,60 +481,63 @@ testData.push({
     now: new Date(),
     emoji: undefined
 })
-// // testData[ 3 ].name = 'Test';
-//  testData[ 3 ].address = { street: 'test', city: 'city', state: 'state' }
-//  testData[ 3 ].address.street = 'STREET TEST';
-// testData[ 3 ].hobbies = ['testing array'];// ok here
-// testData[ 3 ].hobbies[ 1 ] = 'testing';
-// testData[ 3 ].hobbies[ 2 ] = 'testing 3';
+// testData[ 3 ].name = 'Test';
+//testData[ 3 ].address = { street: 'test', city: 'city', state: 'state' }
+// testData[ 3 ].address.street = 'STREET TEST';
+// TODO how to remove the items NOT in new array? - working for init 
+testData[ 1 ].hobbies = [ 'testing array' ];// NOT OK FROM HERE so have a look at addCard
+console.log(testData[0].hobbies.length)// 5
+testData[ 1 ].hobbies[2] = 'testing';
+ testData[ 3 ].hobbies[ 4 ] = 'testing 3';
 /******************************************************************** End Push  ***/
 // testData.shift()
 // 
 // testData[ 0 ].name = 'Test';
 // //testData[ 0 ].address = { street: 'test', city: 'city', state: 'state' }
 // testData[ 0 ].address.street = 'STREET TEST';
-// //testData[ 0 ].hobbies = ['testing'];
+// //testData[ 0 ].hobbies = ['testing']; // not deleting other items
 // testData[ 0 ].hobbies[ 0 ] = 'testing';
 // testData[ 0 ].hobbies[ 3 ] = 'testing 3';
 /******************************************************************** End shift  ***/
- testData.unshift(
-    {
-        name: '4 unshift',
-        address: {
-            street: '4 St',
-            city: '4 Town',
-            state: '4 State',
-        },
-        hobbies: [ '4 hobbies.0', '4 hobbies.1' ],
-        now: new Date(),
-        emoji: undefined
-    },
-    {
-        name: '5 unshift',
-        address: {
-            street: '5 St',
-            city: '5 Town',
-            state: '5 State',
-        },
-        hobbies: [ '5 hobbies.0', '5 hobbies.1' ],
-        now: new Date(),
-        emoji: undefined
-    }
-);
+//  testData.unshift(
+//     {
+//         name: '4 unshift',
+//         address: {
+//             street: '4 St',
+//             city: '4 Town',
+//             state: '4 State',
+//         },
+//         hobbies: [ '4 hobbies.0', '4 hobbies.1' ],
+//         now: new Date(),
+//         emoji: undefined
+//     },
+//     {
+//         name: '5 unshift',
+//         address: {
+//             street: '5 St',
+//             city: '5 Town',
+//             state: '5 State',
+//         },
+//         hobbies: [ '5 hobbies.0', '5 hobbies.1' ],
+//         now: new Date(),
+//         emoji: undefined
+//     }
+// );
 // testData[ 0].name = 'Test';
 //  testData[ 1 ].address = { street: 'test', city: 'city', state: 'state' }
 //  testData[ 1 ].address.street = 'STREET TEST';
-//  testData[ 0].hobbies = ['testing array'];//TODO  NOT DELETING OTHER IN SINGLE ITEMS
+// testData[ 0].hobbies = ['testing array'];//TODO  NOT DELETING OTHER IN SINGLE ITEMS
 //  testData[ 4 ].hobbies[ 1 ] = 'testing';
 //  testData[ 4 ].hobbies[ 3 ] = 'testing 3';
 
 /******************************************************************** End unshift  ***/
-// testData.reverse();
+ //testData.reverse();
 // testData[ 5 ].name = 'Test';
 // testData[ 0 ].address = { street: 'test', city: 'city', state: 'state' }
 // testData[ 0 ].address.street = 'STREET TEST';
-// testData[ 1 ].hobbies = [ 'testing array' ];
+//testData[ 1 ].hobbies = [ 'testing array' ];
 // testData[ 1 ].hobbies[ 1 ] = 'testing';
 // testData[ 4 ].hobbies[ 3 ] = 'testing 3';
 /******************************************************************** End reverse  ***/
 
+console.timeEnd()
