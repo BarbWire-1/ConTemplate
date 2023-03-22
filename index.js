@@ -61,13 +61,13 @@ class DataObserver {
 
                     // update parent array if single item changed
                     if (parentKey) {
-                        console.log(parentKey)
+                        
                         parentData[ key ] = value;
                         self.notify(parentKey, parentKey, parentData, "update", index);
                     }
                     // re-define and update keys if entire nested object changed
                     if (isObject && !self.data.includes(value)) {
-                        console.log(currentObj )
+                       
                         self.defineProp(currentObj, index)
                         Object.keys(value).forEach(key => {
                             
