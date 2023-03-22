@@ -158,7 +158,7 @@ class DataObserver {
                                 return index;
                             });
                             
-                            updateIndices();
+                            //updateIndices();
                             break;
 
                         case "pop":
@@ -480,9 +480,9 @@ function stopIt() {
 
 /*********************************************************** TESTING REACTIVITY  ***/
 // testData[ 0 ].name = 'Test';
- testData[ 0 ].address = { street: 'test', city: 'city', state: 'state', planet: 'venus' }
- testData[ 0 ].address.street = 'STREET TEST';
-// testData[ 0 ].hobbies = ['testing'];
+//  testData[ 0 ].address = { street: 'test', city: 'city', state: 'state', planet: 'venus' }
+//  testData[ 0 ].address.street = 'STREET TEST';
+//  testData[ 0 ].hobbies = ['testing array'];// ok here
 // testData[ 0 ].hobbies[ 0 ] = 'testing';
 // testData[ 0 ].hobbies[ 3 ] = 'testing 3';
 
@@ -503,7 +503,7 @@ testData.push({
 // // testData[ 3 ].name = 'Test';
 //  testData[ 3 ].address = { street: 'test', city: 'city', state: 'state' }
 //  testData[ 3 ].address.street = 'STREET TEST';
-// testData[ 3 ].hobbies = ['testing array'];
+// testData[ 3 ].hobbies = ['testing array'];// ok here
 // testData[ 3 ].hobbies[ 1 ] = 'testing';
 // testData[ 3 ].hobbies[ 2 ] = 'testing 3';
 /******************************************************************** End Push  ***/
@@ -516,8 +516,6 @@ testData.push({
 // testData[ 0 ].hobbies[ 0 ] = 'testing';
 // testData[ 0 ].hobbies[ 3 ] = 'testing 3';
 /******************************************************************** End shift  ***/
-//TODO unshift messes with the assigned ARRAYS!!!
-// arrays receive values of prev items at index!!
  testData.unshift(
     {
         name: '4 unshift',
@@ -542,10 +540,10 @@ testData.push({
         emoji: undefined
     }
 );
-//  testData[ 0].name = 'Test';
+// testData[ 0].name = 'Test';
 //  testData[ 1 ].address = { street: 'test', city: 'city', state: 'state' }
 //  testData[ 1 ].address.street = 'STREET TEST';
-//   testData[ 4].hobbies = ['testing array'];
+//  testData[ 0].hobbies = ['testing array'];//TODO  NOT DELETING OTHER IN SINGLE ITEMS
 //  testData[ 4 ].hobbies[ 1 ] = 'testing';
 //  testData[ 4 ].hobbies[ 3 ] = 'testing 3';
 
