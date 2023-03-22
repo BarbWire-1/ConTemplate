@@ -331,6 +331,7 @@ class Contemplate {
         } else if (operation === "update") {
             // console.log(index)
             const card = this.container.children[ index ];
+            if(card)// throws if card got removed. WHY so? It shouldn't call an update
             this.write2Card(item, key, value, card)
 
         }
@@ -388,37 +389,36 @@ const templateTest = () => {
 };
 
 // TEST-DATASOURCE
-const testData = [
+const testData = [ {
+    name: '0 init',
+    address: {
+        street: '0 St',
+        city: '0 Town',
+        state: '0 State',
+    },
+    hobbies: [ '0 hobbies.0', '0 hobbies.1' ],
+    now: new Date(),
+    emoji: undefined
+    },
     {
-        name: 'John Doe',
+        name: '1 init',
         address: {
-            street: '123 Main St',
-            city: 'Anytown',
-            state: 'CA',
+            street: '1 St',
+            city: '1 Town',
+            state: '1 State',
         },
-        hobbies: [ 'reading', 'traveling' ],
+        hobbies: [ '1 hobbies.0', '1 hobbies.1' ],
         now: new Date(),
         emoji: undefined
     },
     {
-        name: 'Jane Doe',
+        name: '2 init',
         address: {
-            street: '456 Main St',
-            city: 'Anytown',
-            state: 'CA',
+            street: '2 St',
+            city: '2 Town',
+            state: '2 State',
         },
-        hobbies: [ 'running', 'painting' ],
-        now: new Date(),
-        emoji: undefined
-    },
-    {
-        name: 'BarbWire',
-        address: {
-            street: '007 Oneway',
-            city: 'Anothertown',
-            state: 'Spheres',
-        },
-        hobbies: [ 'coding', 'playing cello', `playing devil's advocat` ],
+        hobbies: [ '2 hobbies.0', '2 hobbies.1' ],
         now: new Date(),
         emoji: '👻'
     }
@@ -459,32 +459,51 @@ function tic() {
 function stopIt() {
     clearInterval(updateNow);
 }
-testData[ 0 ].name = 'Test';
-testData[ 0 ].address = { street: 'test', city: 'city', state: 'state' }
-testData[ 0 ].address.street = 'STREET TEST';
-testData[ 0 ].hobbies[ 0 ] = 'testing';
-testData[ 0 ].hobbies[ 3 ] = 'testing 3';
 
+/*********************************************************** TESTING REACTIVITY  ***/
+// testData[ 0 ].name = 'Test';
+// //testData[ 0 ].address = { street: 'test', city: 'city', state: 'state' }// ❌
+// testData[ 0 ].address.street = 'STREET TEST';
+// //testData[ 0 ].hobbies = ['testing'];// ❌
+// testData[ 0 ].hobbies[ 0 ] = 'testing';
+// testData[ 0 ].hobbies[ 3 ] = 'testing 3';
 
+/*********************************************************** TESTING ARRAY METHODS  ***/
+//testData.pop();
+/******************************************************************** End Pop  ***/
 testData.push({
-    name: 'Pushed Card',
+    name: '3 push',
     address: {
-        street: '007 Oneway',
-        city: 'Anothertown',
-        state: 'Spheres',
+        street: '3 St',
+        city: '3 Town',
+        state: '3 State',
     },
-    hobbies: [ 'pushing', 'disappearing' ],
+    hobbies: [ '3 hobbies.0', '3 hobbies.1' ],
     now: new Date(),
     emoji: undefined
 })
-testData[ 3 ].name = 'Test';
-//testData[ 3 ].address = { street: 'test', city: 'city', state: 'state' }
-testData[ 3 ].address.street = 'STREET TEST';
-testData[ 3 ].hobbies[ 0 ] = 'testing';
-testData[ 3 ].hobbies[ 3 ] = 'testing 3';
-//testData.shift()// TODO remove listeners for removed cards
-
-
-//testData.reverse();
-
+// testData[ 3 ].name = 'Test';
+// //testData[ 3 ].address = { street: 'test', city: 'city', state: 'state' }// ❌
+// testData[ 3 ].address.street = 'STREET TEST';
+// //testData[ 3 ].hobbies = ['testing'];// ❌
+// testData[ 3 ].hobbies[ 0 ] = 'testing';
+// testData[ 3 ].hobbies[ 3 ] = 'testing 3';
+/******************************************************************** End Push  ***/
+// testData.shift()
+// 
+// testData[ 0 ].name = 'Test';
+// //testData[ 0 ].address = { street: 'test', city: 'city', state: 'state' }// ❌
+// testData[ 0 ].address.street = 'STREET TEST';
+// //testData[ 0 ].hobbies = ['testing'];// ❌
+// testData[ 0 ].hobbies[ 0 ] = 'testing';
+// testData[ 0 ].hobbies[ 3 ] = 'testing 3';
+/******************************************************************** End shift  ***/
+testData.reverse();
+//  testData[ 2 ].name = 'Test';
+// //testData[ 0 ].address = { street: 'test', city: 'city', state: 'state' }// ❌
+//  testData[ 0 ].address.street = 'STREET TEST';
+// //testData[ 0 ].hobbies = ['testing'];// ❌
+//  testData[ 3 ].hobbies[ 0 ] = 'testing';
+//  testData[ 2 ].hobbies[ 3 ] = 'testing 3';
+/******************************************************************** End reverse  ***/
 
