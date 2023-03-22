@@ -114,21 +114,12 @@ class DataObserver {
     // TODO currently slice, splice wrong
     observeArray(array) {
         const self = this;
-        const methods = [ "push", "pop", "shift", "unshift", "splice", "reverse"];
+        const methods = [ "push", "pop", "shift", "unshift", "splice", "reverse" ];
 
         function addCard(obj, index) {
-            //console.log(obj)
-            Object.keys(self.proto).forEach(key => {
-            if (Array.isArray(obj[key]) && self.proto[key]) {
-                //console.log(key)
-                for (let i = 0; i < self.proto[ key ]?.length; i++) {
-                    obj[ key ][ i ] = obj[key][ i ] || self.proto[key][i];
-                }
 
-            }
-            })
-            self.defineProp(obj, index);
             self.notify(obj, null, null, "add", index);
+            updateIndices()
         }
 
         function removeCard(index) {
@@ -136,16 +127,17 @@ class DataObserver {
         }
         // TODO CHECK THIS!!!!!!!!!!
         function updateIndices() {
-            for (let i = 0; i < array.length; i++) {
-                //console.log(array.length)
-                //self.defineProp(array[ i ], i);
-                for (const key in array[ i ]) {
-                    // TODO This should NOT be necessary as being recursive BROKE IT???
-                    self.defineProp(array[i], i);
-                    self.notify(key, null, array[i][key], "update", i);
+            for (let i = 0; i < self.data.length; i++) {
+                self.defineProp(self.data[ i ], i);
+                for (const key in self.data[ i ]) {
+                    if (typeof key === 'object')
+                        self.defineProp(key, i, self.data[ i ]);
+                    self.notify(self.data[ i ], null, self.data[ i ][ key ], "update", i);
+
                 }
-               
+
             }
+
         }
 
         methods.forEach((method) => {
@@ -157,30 +149,30 @@ class DataObserver {
                     let newLength = array.length;
                     switch (method) {
                         case "push":
-                            newObj.forEach((obj, index) => {
-                                addCard(obj, newLength - newObj.length + index);
-
-                            });
+                            addCard(newObj[ 0 ], newLength);
                             break;
 
                         case "unshift":
+
                             newObj.forEach((obj, index) => {
+                                updateIndices();
                                 addCard(obj, index)
+                                return index;
                             });
-                            updateIndices();
+
+                            //updateIndices();
                             break;
 
                         case "pop":
                             removeCard(newLength);
-                            //self.data.pop()
                             break;
 
                         case "shift":
                             removeCard(0);
-                            //self.data.shift()
                             updateIndices();
                             break;
 
+                        // TODO NOT tested yet in new formation
                         case "splice":
                             const index = newObj[ 0 ];
                             const deleteCount = newObj[ 1 ];
@@ -189,31 +181,31 @@ class DataObserver {
                             if (itemsToAdd.length > 0) {
                                 for (let i = 0; i < itemsToAdd.length; i++) {
                                     addCard(itemsToAdd[ i ], index + i);
+
                                 }
                             }
 
                             if (deleteCount > 0) {
                                 for (let i = 0; i < deleteCount; i++) {
                                     removeCard(index + 1);
+
                                 }
                             }
-
                             updateIndices();
                             break;
+
                         case "reverse":
 
                             self.data.forEach((item, index) => {
                                 addCard(item, index);
                                 removeCard(self.data.length)
                             });
-                            updateIndices()
+
 
                             break;
 
-
-
-
                         default:
+
                             break;
                     }
 
@@ -225,6 +217,8 @@ class DataObserver {
             });
         });
     }
+
+   
 
     addObserver(observer) {
         this.observers.push(observer);
@@ -418,6 +412,17 @@ const templateTest = () => {
 // TEST-DATASOURCE
 const testData = [
     {
+        name: '0 Init',
+        address: {
+            street: '0 St',
+            city: '0 Town',
+            state: '0 State',
+        },
+        hobbies: [ '0 Hobby.0', '0 Hobby.1' ],
+        now: new Date(),
+        emoji: undefined
+    },
+    {
         name: '1 Init',
         address: {
             street: '1. St',
@@ -426,7 +431,7 @@ const testData = [
         },
         hobbies: [ '1 Hobby.0', '1 Hobby.1' ],
         now: new Date(),
-        emoji: undefined
+        emoji: '👻'
     },
     {
         name: '2 Init',
@@ -435,20 +440,9 @@ const testData = [
             city: '2. Town',
             state: '2. State',
         },
-        hobbies: [ '2 Hobby.0', '2 Hobby.1' ],
+        hobbies: [ '2 Hobby.0', '2 Hobby.1', '2 Hobby.2' ],
         now: new Date(),
         emoji: undefined
-    },
-    {
-        name: '3 Init',
-        address: {
-            street: '3. St',
-            city: '3. Town',
-            state: '3. State',
-        },
-        hobbies: [ '3 Hobby.0', '3 Hobby.1', '3 Hobby.2' ],
-        now: new Date(),
-        emoji: '👻'
     }
 ];
 
@@ -475,7 +469,7 @@ const testModifier = new Contemplate(dataObject, templateTest, 'container4', 'te
 
 
 // testData[ 0 ].name = 'Test';
-// // testData[ 0 ].address = { street: 'test' }// ❌ does NOT remove other keys having been there previously
+ testData[ 0 ].address = { street: 'test' }// ❌ does NOT remove other keys having been there previously
 // // testData[ 0 ].address.city = 'Test Town';// // ❌ does NOT allow to add new keys
 // testData[ 0 ].address.street = 'STREET TEST';
 // testData[ 0 ].hobbies = ['testing'];
@@ -491,13 +485,13 @@ const testModifier = new Contemplate(dataObject, templateTest, 'container4', 'te
 //*********************************************************** END REVERSE ❌*******/
 
 testData.push({
-    name: '4 push',
+    name: '3 push',
     address: {
-        street: '4. St',
-        city: '4. Town',
-        state: '4. State',
+        street: '3. St',
+        city: '3. Town',
+        state: '3. State',
     },
-    hobbies: [ '4 Hobby.0', '4 Hobby.1' ],
+    hobbies: [ '3 Hobby.0', '3 Hobby.1' ],
     now: new Date(),
     emoji: undefined
 },)
@@ -517,6 +511,16 @@ testData.push({
 //testData[ 2 ].hobbies[ 1 ] = 'testing 3';
 /************************************************************* END SHIFT ✅********** */
 testData.unshift({
+    name: '4 unshift',
+    address: {
+        street: '4 St',
+        city: '4 Town',
+        state: '4 State',
+    },
+    hobbies: [ '4 Hobby.0', '4 Hobby.1' ],
+    now: new Date(),
+    emoji: undefined
+}, {
     name: '5 unshift',
     address: {
         street: '5. St',
@@ -526,24 +530,10 @@ testData.unshift({
     hobbies: [ '5 Hobby.0', '5 Hobby.1' ],
     now: new Date(),
     emoji: undefined
-}, {
-    name: '6 unshift',
-    address: {
-        street: '6. St',
-        city: '6. Town',
-        state: '6. State',
-    },
-    hobbies: [ '6 Hobby.0', '6 Hobby.1' ],
-    now: new Date(),
-    emoji: undefined
 },)
-testData[ 0 ].name = 'TEST 0';
-testData[ 1 ].name = 'TEST 1'; 
-testData[ 2 ].name = 'TEST 2'; 
-testData[ 3 ].name = 'TEST 3'; 
-testData[ 4 ].name = 'TEST 4'; 
-testData[ 5 ].name = 'TEST 5'; 
-//testData.reverse();
+
+testData.reverse();
+testData[0].address = {city: 'town'}
 
 // testData.splice(1, 0, {
 //     name: 'BarbWire',
