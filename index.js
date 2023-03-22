@@ -47,7 +47,7 @@ class DataObserver {
             // Recursively define properties
             if (isObject) {
                 console.log(key)
-                self.defineProp(value, index, key);
+                self.defineProp(value, index, key, currentObj);
 
             }
 
@@ -70,8 +70,11 @@ class DataObserver {
                     if (isObject) {
                         
                         Object.keys(value).forEach(key => {
-                            
                             let subKey = dataKey + `.${key}`
+                            
+                            if(typeof currentObj[key] === 'object')
+                                self.defineProp(currentObj[ key ], index, value[ key ]);
+                            
                             self.notify(currentObj, subKey, value[ key ], "update", index);
                         })
                         
@@ -462,11 +465,11 @@ function stopIt() {
 
 /*********************************************************** TESTING REACTIVITY  ***/
 // testData[ 0 ].name = 'Test';
-// //testData[ 0 ].address = { street: 'test', city: 'city', state: 'state' }// ❌
-// testData[ 0 ].address.street = 'STREET TEST';
-// //testData[ 0 ].hobbies = ['testing'];// ❌
-// testData[ 0 ].hobbies[ 0 ] = 'testing';
-// testData[ 0 ].hobbies[ 3 ] = 'testing 3';
+testData[ 0 ].address = { street: 'test', city: 'city', state: 'state' }
+testData[ 0 ].address.street = 'STREET TEST';
+testData[ 0 ].hobbies = ['testing'];
+testData[ 0 ].hobbies[ 0 ] = 'testing';
+testData[ 0 ].hobbies[ 3 ] = 'testing 3';
 
 /*********************************************************** TESTING ARRAY METHODS  ***/
 //testData.pop();
@@ -500,7 +503,7 @@ testData.push({
 /******************************************************************** End shift  ***/
 testData.reverse();
 //  testData[ 2 ].name = 'Test';
-// //testData[ 0 ].address = { street: 'test', city: 'city', state: 'state' }// ❌
+// testData[ 0 ].address = { street: 'test', city: 'city', state: 'state' }// ❌
 //  testData[ 0 ].address.street = 'STREET TEST';
 // //testData[ 0 ].hobbies = ['testing'];// ❌
 //  testData[ 3 ].hobbies[ 0 ] = 'testing';
