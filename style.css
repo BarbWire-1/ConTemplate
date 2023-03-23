@@ -99,6 +99,10 @@ div:has(.template2){
   
 	
 }
+.template3:hover{
+    transform:scale(1.3);
+    z-index: 1000;
+}
 .template1 .thumbnail {
     align-self: center;
     width: 100px;
