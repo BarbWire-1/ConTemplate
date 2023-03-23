@@ -26,7 +26,7 @@ body{
     padding: 20px;
     background-color:#3131aa;
     width: 280px;
-	/* height: 250px; */
+	 height: 300px; 
     line-height: 1.6;
     border-radius: 25px;
     background: #3131aa;
@@ -39,7 +39,7 @@ body{
 }
 
 .now{
-   transform: translateY(10%);
+   transform: translateY(30px);
 }
 
 
@@ -109,7 +109,7 @@ div:has(.template2){
     align-self: center;
     width: 100px;
     height: 100px;
-   
+   margin-top: 15px;
     border-radius: 50%;
     box-shadow: 15px 16px 14px -2px rgba(0,0,0,0.76);
     -webkit-box-shadow: 5px 6px 6px -2px rgba(0,0,0,0.76);
@@ -176,7 +176,9 @@ button{
     outline: none;
     border-style: inset;
 }
-
+div:has.thumbnail{
+    margin-top: 10px;
+}
 .template1 .thumbnail:hover {
     
     align-self: center;
@@ -184,14 +186,14 @@ button{
  
     /* border-radius: 5px 5px ; */
     border: 2px solid rgba(150, 146, 146, 0.362);
-   
+ 
    
     
 }
 .template1 .addContent {
     overflow-wrap: break-word;
     position:relative;
-    margin-bottom: 0;
+    margin: 10px;
     bottom: 5px;
     
 }
