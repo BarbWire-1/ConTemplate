@@ -419,9 +419,8 @@ const templateTest = () => {
 
     return`
     <h2 style="text-align: center" data-key="name" data-modifier="uppercase"></h2>
-    <div style="display:flex; justify-content: center">
-    <img class="thumbnail w3-hover-opacity" data-key="img" src="loader2.gif">
-    </div>
+    
+    <div class="addContent">
     <p>
       Address obj :
       <span data-key="address" data-modifier="join"></span><br>
@@ -435,8 +434,11 @@ const templateTest = () => {
     <p style="text-align: center; margin-top: 10px">
       <span data-key="now" data-modifier="localeTime"></span>
     </p>
+    <div style="display:flex; justify-content: center">
+    <img class="thumbnail w3-hover-opacity" data-key="img" src="loader2.gif">
+    </div>
     <div style="text-align: center; font-size: 30px" data-key="emoji"></div>
-    <br>
+   </div>
   `;
 };
 

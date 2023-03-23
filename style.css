@@ -190,3 +190,8 @@ button{
    
     
 }
+.addContent {
+    position:relative;
+    margin-bottom: 0;
+    bottom: 5px;
+}
