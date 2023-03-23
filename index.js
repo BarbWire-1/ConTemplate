@@ -230,7 +230,7 @@ class DataHandler {
         this.data = new DataObserver(dataSource, this.proto);
 
         this.observers = [];
-        this.data.observeArray(this.data);
+        //this.data.observeArray(this.data);
 
     }
 
@@ -539,14 +539,7 @@ testData.push({
 //  testData[ 4 ].hobbies[ 3 ] = 'testing 3';
 
 /******************************************************************** End unshift  ***/
-// testData.reverse();
-// testData[ 5 ].name = 'Test';
-// testData[ 0 ].address = { street: 'test', city: 'city', state: 'state' }
-// testData[ 0 ].address.street = 'STREET TEST';
-// testData[ 1 ].hobbies = [ 'testing array' ];
-// testData[ 1 ].hobbies[ 1 ] = 'testing';
-// testData[ 4 ].hobbies[ 3 ] = 'testing 3';
-/******************************************************************** End reverse  ***/
+
 testData.splice(4,1,
     {
         name: '6 spliced',
@@ -577,6 +570,16 @@ testData.splice(4,1,
 // testData[ 2 ].hobbies = [ 'testing array' ];
 // testData[ 4 ].hobbies[ 1 ] = 'testing';
 // testData[ 5 ].hobbies[ 3 ] = 'testing 3';
+/******************************************************************** End splice  ***/
+
+testData.reverse();
+// testData[ 5 ].name = 'Test';
+// testData[ 0 ].address = { street: 'test', city: 'city', state: 'state' }
+// testData[ 0 ].address.street = 'STREET TEST';
+// testData[ 1 ].hobbies = [ 'testing array' ];
+// testData[ 1 ].hobbies[ 1 ] = 'testing';
+// testData[ 4 ].hobbies[ 3 ] = 'testing 3';
+/******************************************************************** End reverse  ***/
 console.timeEnd()
 
 function multiplier(factor) {
