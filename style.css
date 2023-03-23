@@ -191,7 +191,7 @@ div:has.thumbnail{
     
 }
 .template1 .addContent {
-    overflow-wrap: break-word;
+    overflow:hidden;
     position:relative;
     margin: 10px;
     bottom: 5px;
