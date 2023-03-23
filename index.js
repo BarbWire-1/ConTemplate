@@ -392,7 +392,7 @@ const modifiers = {
 
 const templateTest = () => {
 
-    return `
+    return`
     <h2 style="text-align: center" data-key="name" data-modifier="uppercase"></h2>
     <img class="thumbnail" data-key="img" src="loader1.gif">
     <p>
@@ -411,6 +411,19 @@ const templateTest = () => {
     <div style="text-align: center; font-size: 30px" data-key="emoji"></div>
     <br>
   `;
+};
+
+// testData.address only
+const template2 = () => {
+    return `
+   
+       
+        <p>Address: <span data-key="street"></span></p>
+        <p>City: <span data-key="city"></span></p>
+        <p>State: <span data-key="state"></span></p>
+       
+    `;
+
 };
 
 // TEST-DATASOURCE
@@ -479,6 +492,12 @@ const filter = {
 const dataObject = new DataHandler(testData, filter);
 // model watching subkey of obj
 const testModifier = new Contemplate(dataObject, templateTest, 'container4', 'template1', modifiers);
+const adresses = new Contemplate(dataObject, template2, 'container5', 'template3', modifiers);
+
+
+
+
+
 
 // to check updating of only changed on load
 // THIS OF COUSE ALWAYS TICS THE ACTUAL 2
