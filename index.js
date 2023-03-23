@@ -225,6 +225,7 @@ class DataObserver {
 
     addObserver(observer) {
         this.observers.push(observer);
+        console.log(this.observers)
     }
 
     removeObserver(observer) {
@@ -236,6 +237,7 @@ class DataObserver {
 
     notify(...args) {
         this.observers.forEach((observer) =>
+           
             observer.update(...args)
         );
     }
@@ -249,7 +251,7 @@ class DataHandler {
         this.data = new DataObserver(dataSource, this.proto);
 
         this.observers = [];
-        //this.data.observeArray(this.data);
+        this.data.observeArray(this.data);
 
     }
 
@@ -334,23 +336,46 @@ class Contemplate {
                     }
                 });
             };
-            // Experimental
-            const tagKeys = tag.dataset.key.split(' ');
-                tagKeys.forEach((tagKey) => {
-                if (tagKey === key) {
-                    tag.setAttribute(tagKey, value);
-                
-            
-                    // TODO wrong Logic here, need to specify keys
-                    if (tag.tagName.toLowerCase() === "img") {
-                        if(key === 'alt')tag.setAttribute('alt', value)
-                        if(key === 'img')tag.setAttribute('src', value)// this need to be
-                    } else {
-                        tag.textContent = value;
-                    }
-                }
+//             // Experimental
+//             const tagKeys = tag.dataset.key.split(' ');
+//                 tagKeys.forEach((tagKey) => {
+//                 if (tagKey === key) {
+//                     tag.setAttribute(tagKey, value);
+//                 
+//             
+//                     // TODO wrong Logic here, need to specify keys
+//                     if (tag.tagName.toLowerCase() === "img") {
+//                         if(key === 'alt')tag.setAttribute('alt', value)
+//                         if(key === 'img')tag.setAttribute('src', value)// this need to be
+//                     } else {
+//                         tag.textContent = value;
+//                     }
+//                 }
+// 
+//             })
+            const tags2Update = card.querySelectorAll(`[data-key="${key}"]`);
 
-            })
+
+            tags2Update.forEach((tag) => {
+                const modifiers = tag.dataset.modifier?.split(" ") ?? [];
+
+                if (modifiers.length) {
+                    modifiers.forEach((modifier) => {
+                        const modifierFn = this.modifiers[ modifier ];
+                        if (modifierFn) {
+                            value = modifierFn(value);
+                        }
+                    });
+                };
+
+                if (tag.tagName.toLowerCase() === "img") {
+                    tag.setAttribute('src', value)
+                } else {
+                    tag.textContent = value;
+                };
+
+            });
+        
         })
     }
 
@@ -418,9 +443,9 @@ const template2 = () => {
     return `
    
        
-        <p>Address: <span data-key="street"></span></p>
-        <p>City: <span data-key="city"></span></p>
-        <p>State: <span data-key="state"></span></p>
+        <p>Address: <span data-key="address.street"></span></p>
+        <p>City: <span data-key="address.city"></span></p>
+        <p>State: <span data-key="address.state"></span></p>
        
     `;
 
@@ -492,7 +517,7 @@ const filter = {
 const dataObject = new DataHandler(testData, filter);
 // model watching subkey of obj
 const testModifier = new Contemplate(dataObject, templateTest, 'container4', 'template1', modifiers);
-const adresses = new Contemplate(dataObject, template2, 'container5', 'template3', modifiers);
+const adresses = new Contemplate(dataObject, template2, 'container5', 'template3');
 
 
 
