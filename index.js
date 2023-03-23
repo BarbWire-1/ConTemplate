@@ -182,7 +182,7 @@ class DataObserver {
                             
                             if (deleteCount > 0) {
                                 for (let i = 0; i < deleteCount; i++) {
-                                    removeCard(index + 1);
+                                    removeCard(index);
 
                                 }
 
