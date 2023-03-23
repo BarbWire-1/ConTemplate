@@ -10,6 +10,7 @@
 }
 html {
     min-height: 100%;
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif
    
 }
 body{
@@ -99,6 +100,15 @@ div:has(.template2){
     
    
 }
+.title{
+    height: 80px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: hsl(242, 23%, 48%);
+    font-size: 30px;
+    
+}
 #container1 {
     margin: 30px;
     display:flex;
@@ -109,4 +119,12 @@ button{
     margin: 5px;
     width: 100px;
     height: 30px;
+    border: none;
+    border-radius:15px;
+    background-color:#4b6386;
+    color: white;
+    box-shadow: 15px 16px 14px -2px rgba(0,0,0,0.76);
+    -webkit-box-shadow: 5px 6px 6px -2px rgba(0,0,0,0.76);
+    -moz-box-shadow: 10px 16px 14px -2px rgba(0,0,0,0.76);
+    letter-spacing: 1px;
 }
