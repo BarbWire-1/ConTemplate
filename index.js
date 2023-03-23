@@ -4,7 +4,7 @@
      with MIT license
  */
 console.clear()
-
+//TODO splice deletes the wrong card!!!!!
 // supports and reflects the array-methods "push", "pop", "shift", "unshift", "splice", "reverse" on the dataSource
 console.time()
 class DataObserver {
