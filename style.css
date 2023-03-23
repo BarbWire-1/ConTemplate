@@ -177,7 +177,8 @@ button{
 .template1 .thumbnail:hover {
     
     align-self: center;
-    transform:  scale(2,2);
+    transform:  scale(1.8);
+ 
     /* border-radius: 5px 5px ; */
     border: 2px solid rgba(150, 146, 146, 0.362);
    
