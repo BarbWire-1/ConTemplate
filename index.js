@@ -434,11 +434,12 @@ const templateTest = () => {
     <p style="text-align: center; margin-top: 10px">
       <span data-key="now" data-modifier="localeTime"></span>
     </p>
+      </div>
     <div style="display:flex; justify-content: center">
     <img class="thumbnail w3-hover-opacity" data-key="img" src="loader2.gif">
     </div>
     <div style="text-align: center; font-size: 30px" data-key="emoji"></div>
-   </div>
+ 
   `;
 };
 
