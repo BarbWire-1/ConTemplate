@@ -101,24 +101,25 @@ div:has(.template2){
    
 }
 .title{
-    height: 80px;
+    height: 40px;
     display: flex;
     justify-content: center;
     align-items: center;
     color: hsl(242, 23%, 48%);
     font-size: 30px;
+    margin:20px;
     
 }
 
 #container1 {
-    margin: 30px;
+  margin-top: 10px;
     display:flex;
     justify-content: center;
-    margin-top: 0;
+ 
   
 }
 #container2 {
-    margin: 30px;
+    margin: 10px;
     display:flex;
     flex-direction: column;
     align-items: center;
@@ -147,8 +148,9 @@ button{
     letter-spacing: 1px;
 }
 .text{
-    transform: translateY(-50px) ;
+    transform: translateY(-20px) ;
     font-size: 20px;
+    
 }
 .input{
     background-color:rgb(221, 231, 231);
