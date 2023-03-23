@@ -35,6 +35,7 @@ class DataObserver {
             let value = currentObj[ key ];
             const dataKey = parentKey ? `${parentKey}.${key}` : key;// path for data-keys
             const isObject = typeof value === "object" && value !== null;
+            const isImage = value instanceof Image;
             
             // define array.length++ in proto
             if (Array.isArray(value)) {
@@ -43,11 +44,29 @@ class DataObserver {
                     currentObj[ key ][ i ] = value[ i ] || this.proto[ key ][ i ];
                 } 
                
-            }
+            };
             // Recursively define properties
             if (isObject) {
                 self.defineProp(value, index, key);
-            }
+            };
+            
+            if (isImage) {
+                Object.defineProperty(value, "src", {
+                    enumerable: true,
+                    get() {
+                        return this._src;
+                    },
+                    set(newValue) {
+                        this._src = newValue;
+                        self.notify(currentObj, dataKey + ".src", newValue, "update", index);
+
+                        if (parentKey) {
+                            parentData[ key ] = currentObj[ key ];
+                            self.notify(parentKey, parentKey, parentData, "update", index);
+                        }
+                    }
+                });
+            };
 
             Object.defineProperty(currentObj, key, {
 
@@ -66,7 +85,7 @@ class DataObserver {
                         self.notify(parentKey, parentKey, parentData, "update", index);
                     }
                     // re-define and update keys if entire nested object changed
-                    if (isObject && !self.data.includes(value)) {
+                    if (isObject) {
                        
                         self.defineProp(currentObj, index)
                         Object.keys(value).forEach(key => {
@@ -314,9 +333,13 @@ class Contemplate {
                         value = modifierFn(value);
                     }
                 });
-            }
+            };
 
-            tag.textContent = value;
+            if (tag.tagName.toLowerCase() === "img"){
+                tag.setAttribute('src', value)
+            } else {
+                tag.textContent = value;
+            };
 
         });
     }
@@ -364,6 +387,7 @@ const templateTest = () => {
       <span data-key="name" data-modifier="uppercase"></span>
       <span data-key="name" data-modifier="lowercase reverse"></span>
     </h2>
+    <img class="thumbnail" data-key="img" src="loader1.gif">
     <p>
       Address obj :
       <span data-key="address" data-modifier="join"></span><br>
@@ -403,7 +427,8 @@ const testData = [ {
     },
     hobbies: [ '0 hobbies.0', '0 hobbies.1' ],
     now: new Date(),
-    emoji: undefined
+    emoji: undefined,
+    img: 'https://picsum.photos/id/11/50'
     },
     {
         name: '1 init',
@@ -414,7 +439,8 @@ const testData = [ {
         },
         hobbies: [ '1 hobbies.0', '1 hobbies.1' ],
         now: new Date(),
-        emoji: undefined
+        emoji: undefined,
+        img: 'https://picsum.photos/id/22/50'
     },
     {
         name: '2 init',
@@ -425,7 +451,8 @@ const testData = [ {
         },
         hobbies: [ '2 hobbies.0', '2 hobbies.1' ],
         now: new Date(),
-        emoji: '👻'
+        emoji: '👻',
+        img: 'https://picsum.photos/id/33/50'
     }
 ];
 
@@ -487,7 +514,8 @@ testData.push({
     },
     hobbies: [ '3 hobbies.0', '3 hobbies.1' ],
     now: new Date(),
-    emoji: undefined
+    emoji: undefined,
+    img: 'https://picsum.photos/id/54/50'
 })
 // testData[ 3 ].name = 'Test';
 // testData[ 3 ].address = { street: 'test', city: 'city', state: 'state' }
@@ -517,7 +545,8 @@ testData.push({
         },
         hobbies: [ '4 hobbies.0', '4 hobbies.1' ],
         now: new Date(),
-        emoji: undefined
+         emoji: undefined,
+         img: 'https://picsum.photos/id/55/50'
     },
     {
         name: '5 unshift',
@@ -528,7 +557,8 @@ testData.push({
         },
         hobbies: [ '5 hobbies.0', '5 hobbies.1' ],
         now: new Date(),
-        emoji: undefined
+        emoji: undefined,
+        img: 'https://picsum.photos/id/65/50'
     }
 );
 // testData[ 0].name = 'Test';
@@ -550,7 +580,8 @@ testData.splice(4,1,
         },
         hobbies: [ '6 hobbies.0', '6 hobbies.1' ],
         now: new Date(),
-        emoji: undefined
+        emoji: undefined,
+        img: 'https://picsum.photos/id/70/50'
     },
     {
         name: '7 spliced',
@@ -561,7 +592,8 @@ testData.splice(4,1,
         },
         hobbies: [ '7 hobbies.0', '7 hobbies.1' ],
         now: new Date(),
-        emoji: undefined
+        emoji: undefined,
+        img: 'https://picsum.photos/id/88/50'
     }
 );
 //testData[ 2 ].name = 'Test';//TODO splice delete doesn't work correct
@@ -572,7 +604,7 @@ testData.splice(4,1,
 // testData[ 5 ].hobbies[ 3 ] = 'testing 3';
 /******************************************************************** End splice  ***/
 
-testData.reverse();
+//testData.reverse();
 // testData[ 5 ].name = 'Test';
 // testData[ 0 ].address = { street: 'test', city: 'city', state: 'state' }
 // testData[ 0 ].address.street = 'STREET TEST';
