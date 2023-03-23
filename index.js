@@ -419,7 +419,9 @@ const templateTest = () => {
 
     return`
     <h2 style="text-align: center" data-key="name" data-modifier="uppercase"></h2>
-    <img class="thumbnail" data-key="img" src="loader2.gif">
+    <div style="display:flex; justify-content: center">
+    <img class="thumbnail w3-hover-opacity" data-key="img" src="loader2.gif">
+    </div>
     <p>
       Address obj :
       <span data-key="address" data-modifier="join"></span><br>

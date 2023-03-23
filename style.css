@@ -100,14 +100,16 @@ div:has(.template2){
 	
 }
 .template1 .thumbnail {
+    align-self: center;
     width: 100px;
     height: 100px;
-    transform: translateX(90px);
+   
     border-radius: 50%;
     box-shadow: 15px 16px 14px -2px rgba(0,0,0,0.76);
     -webkit-box-shadow: 5px 6px 6px -2px rgba(0,0,0,0.76);
     -moz-box-shadow: 10px 16px 14px -2px rgba(0,0,0,0.76);
     padding-bottom: 0px;
+    
     
    
 }
@@ -170,4 +172,15 @@ button{
 .input:focus {
     outline: none;
     border-style: inset;
+}
+
+.template1 .thumbnail:hover {
+    
+    align-self: center;
+    transform:  scale(2,2);
+    /* border-radius: 5px 5px ; */
+    border: 2px solid rgba(150, 146, 146, 0.362);
+   
+   
+    
 }
