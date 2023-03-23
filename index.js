@@ -427,7 +427,7 @@ const templateTest = () => {
     </p>
     <p>
       Hobbies:
-      <span data-key="hobbies"data-modifier="join"></span><br>
+      <span data-key="hobbies"data-modifier="join lowercase"></span><br>
       <span data-key="hobbies.0" data-modifier="uppercase" ></span><br>
       </p>
     <p style="text-align: center; margin-top: 10px">
