@@ -369,7 +369,7 @@ class Contemplate {
                 };
 
                 if (tag.tagName.toLowerCase() === "img") {
-                    tag.setAttribute('src', value)
+                    tag.setAttribute('src', value )
                 } else {
                     tag.textContent = value;
                 };
@@ -419,7 +419,7 @@ const templateTest = () => {
 
     return`
     <h2 style="text-align: center" data-key="name" data-modifier="uppercase"></h2>
-    <img class="thumbnail" data-key="img" src="loader1.gif">
+    <img class="thumbnail" data-key="img" src="loader2.gif">
     <p>
       Address obj :
       <span data-key="address" data-modifier="join"></span><br>
@@ -462,7 +462,7 @@ const testData = [ {
     hobbies: [ '0 hobbies.0', '0 hobbies.1' ],
     now: new Date(),
     emoji: undefined,
-    img: `https://picsum.photos/id/${Math.floor(100*Math.random())?? 10}/100`,
+    img: `https://picsum.photos/id/${Math.floor(100*Math.random())?? 12}/100`,
     alt: 'image to 0'
     },
     {
@@ -475,7 +475,7 @@ const testData = [ {
         hobbies: [ '1 hobbies.0', '1 hobbies.1' ],
         now: new Date(),
         emoji: undefined,
-        img: `https://picsum.photos/id/${Math.floor(100 * Math.random()) ?? 11}/100`, 
+        img: `https://picsum.photos/id/${Math.floor(100 * Math.random()) ?? 13}/100`, 
         alt: 'image to 1'
     },
     {
@@ -488,7 +488,7 @@ const testData = [ {
         hobbies: [ '2 hobbies.0', '2 hobbies.1' ],
         now: new Date(),
         emoji: '👻',
-        img: `https://picsum.photos/id/${Math.floor(100 * Math.random()) ?? 12}/100`,
+        img: `https://picsum.photos/id/${Math.floor(100 * Math.random()) ?? 14}/100`,
         alt: 'image to 2'
     }
 ];
@@ -558,7 +558,7 @@ testData.push({
     hobbies: [ '3 hobbies.0', '3 hobbies.1' ],
     now: new Date(),
     emoji: undefined,
-    img: `https://picsum.photos/id/${Math.floor(100 * Math.random()) ?? 13}/100`,
+    img: `https://picsum.photos/id/${Math.floor(100 * Math.random()) ?? 13}/15`,
     alt: 'image to 3'
 })
 // testData[ 3 ].name = 'Test';
@@ -590,7 +590,7 @@ testData.push({
         hobbies: [ '4 hobbies.0', '4 hobbies.1' ],
         now: new Date(),
          emoji: undefined,
-         img: `https://picsum.photos/id/${Math.floor(100 * Math.random()) ?? 14}/100`,
+         img: `https://picsum.photos/id/${Math.floor(100 * Math.random()) ?? 16}/100`,
          alt: 'image to 4'
     },
     {
@@ -603,7 +603,7 @@ testData.push({
         hobbies: [ '5 hobbies.0', '5 hobbies.1' ],
         now: new Date(),
         emoji: undefined,
-        img: `https://picsum.photos/id/${Math.floor(100 * Math.random()) ?? 16}/100`, 
+        img: `https://picsum.photos/id/${Math.floor(100 * Math.random()) ?? 17}/100`, 
         alt: 'image to 5'
     }
 );
@@ -627,7 +627,7 @@ testData.splice(4,1,
         hobbies: [ '6 hobbies.0', '6 hobbies.1' ],
         now: new Date(),
         emoji: undefined,
-        img: `https://picsum.photos/id/${Math.floor(100 * Math.random()) ?? 19}/50`,
+        img: `https://picsum.photos/id/${Math.floor(100 * Math.random()) ?? 18}/50`,
         alt: 'image to 6'
     },
     {
@@ -640,7 +640,7 @@ testData.splice(4,1,
         hobbies: [ '7 hobbies.0', '7 hobbies.1' ],
         now: new Date(),
         emoji: undefined,
-        img: `https://picsum.photos/id/${Math.floor(100 * Math.random()) ?? 28}/50`,
+        img: `https://picsum.photos/id/${Math.floor(100 * Math.random()) ?? 19}/50`,
         alt: 'image to 7'
     }
 );
