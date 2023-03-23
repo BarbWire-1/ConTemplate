@@ -109,10 +109,12 @@ div:has(.template2){
     font-size: 30px;
     
 }
+
 #container1 {
     margin: 30px;
     display:flex;
     justify-content: center;
+    margin-top: 0;
   
 }
 #container2 {
@@ -143,4 +145,16 @@ button{
     -webkit-box-shadow: 5px 6px 6px -2px rgba(0,0,0,0.76);
     -moz-box-shadow: 10px 16px 14px -2px rgba(0,0,0,0.76);
     letter-spacing: 1px;
+}
+.text{
+    transform: translateY(-50px) ;
+    font-size: 20px;
+}
+.input{
+    background-color:rgb(221, 231, 231);
+   border-radius: 5px;
+}
+.input:focus {
+    outline: none;
+    border-style: inset;
 }

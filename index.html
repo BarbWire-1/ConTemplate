@@ -8,9 +8,9 @@
     <title>ConTemplate - A Template-engine for local dataSources, easy to handle by normal dot-notation on the dataSource itself</title>
 </head>
 <body>
-   
-
-    <div class="title">Test Me</div>
+  <h1 class="title">ConTemplate - A Template-Engine for local data</h1>
+    <p class="title text">Easy use by normal dot.notation and non-destructive array-methods</p>
+    <h3 class="title">Test Me</h3>
 
     <div id="container1">
         <button onclick="testData.pop()">pop()</button>
@@ -44,7 +44,7 @@
         })">unshift()</button>
     </div>
     <div id="container2">
-        <h2 class="title">Change values for item 0</h2>
+        <h3 class="title">Change values for item 0</h3>
         <input class="input" type="text" value="name" onchange="testData[0].name= value">
     <input class="input" type="text" value="address" oninput="testData[0].address = value">
     <input class="input" type="text" value="hobbies.1" onchange="testData[0].hobbies[1] = value">
