@@ -225,7 +225,7 @@ class DataObserver {
 
     addObserver(observer) {
         this.observers.push(observer);
-        console.log(this.observers)
+        
     }
 
     removeObserver(observer) {
@@ -528,14 +528,14 @@ const adresses = new Contemplate(dataObject, template2, 'container5', 'template3
 // THIS OF COUSE ALWAYS TICS THE ACTUAL 2
 // HMMMMM
 const updateNow = setInterval(tic, 1000);
-const stop = setTimeout(stopIt, 10000)
+// const stop = setTimeout(stopIt, 10000)
 function tic() {
     testData[ 2 ].now = new Date().toLocaleTimeString();
 }
 
-function stopIt() {
-    clearInterval(updateNow);
-}
+// function stopIt() {
+//     clearInterval(updateNow);
+// }
 
 /*********************************************************** TESTING REACTIVITY  ***/
 // testData[ 0 ].name = 'Test';
@@ -661,11 +661,5 @@ testData.splice(4,1,
 // testData[ 4 ].hobbies[ 3 ] = 'testing 3';
 /******************************************************************** End reverse  ***/
 console.timeEnd()
-
-function multiplier(factor) {
-    return number => number * factor;
-}
-usd2eur = multiplier(1.08)
-usd2eur(400); // 432
 
 

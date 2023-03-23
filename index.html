@@ -42,6 +42,34 @@
             img: `https://picsum.photos/id/${Math.floor(100 * Math.random()) ?? 13}/100`,
             alt: 'image to 3'
         })">unshift()</button>
+        <button onclick="testData.splice(4,1,
+    {
+        name: 'I got spliced in',
+        address: {
+            street: 'St',
+            city: 'Town',
+            state: 'State',
+        },
+        hobbies: [ 'hobbies.0', 'hobbies.1', 'hobbies.2' ],
+        now: new Date(),
+        emoji: undefined,
+        img: `https://picsum.photos/id/${Math.floor(100 * Math.random()) ?? 19}/50`,
+        alt: 'image to spliced'
+    },
+    {
+        name: 'I got spliced in',
+        address: {
+            street: 'St',
+            city: 'Town',
+            state: 'State',
+        },
+        hobbies: [ 'hobbies.0', 'hobbies.1', 'hobbies.2' ],
+        now: new Date(),
+        emoji: undefined,
+        img: `https://picsum.photos/id/${Math.floor(100 * Math.random()) ?? 19}/50`,
+        alt: 'image to spliced'
+    },
+);">splice(4,1,...)</button>
     </div>
     <div id="container2">
         <h3 class="title">Change values for item 0</h3>
