@@ -320,7 +320,7 @@ class Contemplate {
 
     write2Card(_, key, value, card) {
 
-        const tags2Update = card.querySelectorAll(`[data-key="${key}"]`);
+        const tags2Update = card.querySelectorAll(`[data-key*="${key}"]`);
 
 
         tags2Update.forEach((tag) => {
@@ -334,14 +334,24 @@ class Contemplate {
                     }
                 });
             };
+            // Experimental
+            const tagKeys = tag.dataset.key.split(' ');
+                tagKeys.forEach((tagKey) => {
+                if (tagKey === key) {
+                    tag.setAttribute(tagKey, value);
+                
+            
+                    // TODO wrong Logic here, need to specify keys
+                    if (tag.tagName.toLowerCase() === "img") {
+                        if(key === 'alt')tag.setAttribute('alt', value)
+                        if(key === 'img')tag.setAttribute('src', value)// this need to be
+                    } else {
+                        tag.textContent = value;
+                    }
+                }
 
-            if (tag.tagName.toLowerCase() === "img"){
-                tag.setAttribute('src', value)
-            } else {
-                tag.textContent = value;
-            };
-
-        });
+            })
+        })
     }
 
     //TODO check the notify for needed params after changes made here
@@ -383,31 +393,17 @@ const modifiers = {
 const templateTest = () => {
 
     return `
-    <h2 style="text-align: center">
-      <span data-key="name" data-modifier="uppercase"></span>
-      <span data-key="name" data-modifier="lowercase reverse"></span>
-    </h2>
+    <h2 style="text-align: center" data-key="name" data-modifier="uppercase"></h2>
     <img class="thumbnail" data-key="img" src="loader1.gif">
     <p>
       Address obj :
       <span data-key="address" data-modifier="join"></span><br>
-      
-      <!-- on nested NOT applied in update method-->
-      Address keys :
-      <span data-key="address.street" data-modifier="uppercase"></span>,
-      <span data-key="address.city"></span>,
-      <span data-key="address.state"></span>,
-      <span data-key="address.planet"></span>
+     
     </p>
     <p>
       Hobbies:
       <span data-key="hobbies"data-modifier="join"></span><br>
-     
       <span data-key="hobbies.0" data-modifier="uppercase" ></span><br>
-        <span data-key="hobbies.1" data-modifier="lowercase" ></span>
-         <span data-key="hobbies.2" data-modifier="lowercase" ></span>
-         <span data-key="hobbies.3" data-modifier="lowercase" ></span>
-         <span data-key="hobbies.4" data-modifier="lowercase" ></span>
       </p>
     <p style="text-align: center; margin-top: 10px">
       <span data-key="now" data-modifier="localeTime"></span>
@@ -428,7 +424,8 @@ const testData = [ {
     hobbies: [ '0 hobbies.0', '0 hobbies.1' ],
     now: new Date(),
     emoji: undefined,
-    img: 'https://picsum.photos/id/11/50'
+    img: `https://picsum.photos/id/${Math.floor(100*Math.random())?? 10}/100`,
+    alt: 'image to 0'
     },
     {
         name: '1 init',
@@ -440,7 +437,8 @@ const testData = [ {
         hobbies: [ '1 hobbies.0', '1 hobbies.1' ],
         now: new Date(),
         emoji: undefined,
-        img: 'https://picsum.photos/id/22/50'
+        img: `https://picsum.photos/id/${Math.floor(100 * Math.random()) ?? 11}/100`, 
+        alt: 'image to 1'
     },
     {
         name: '2 init',
@@ -452,7 +450,8 @@ const testData = [ {
         hobbies: [ '2 hobbies.0', '2 hobbies.1' ],
         now: new Date(),
         emoji: '👻',
-        img: 'https://picsum.photos/id/33/50'
+        img: `https://picsum.photos/id/${Math.floor(100 * Math.random()) ?? 12}/100`,
+        alt: 'image to 2'
     }
 ];
 
@@ -515,7 +514,8 @@ testData.push({
     hobbies: [ '3 hobbies.0', '3 hobbies.1' ],
     now: new Date(),
     emoji: undefined,
-    img: 'https://picsum.photos/id/54/50'
+    img: `https://picsum.photos/id/${Math.floor(100 * Math.random()) ?? 13}/100`,
+    alt: 'image to 3'
 })
 // testData[ 3 ].name = 'Test';
 // testData[ 3 ].address = { street: 'test', city: 'city', state: 'state' }
@@ -546,7 +546,8 @@ testData.push({
         hobbies: [ '4 hobbies.0', '4 hobbies.1' ],
         now: new Date(),
          emoji: undefined,
-         img: 'https://picsum.photos/id/55/50'
+         img: `https://picsum.photos/id/${Math.floor(100 * Math.random()) ?? 14}/100`,
+         alt: 'image to 4'
     },
     {
         name: '5 unshift',
@@ -558,7 +559,8 @@ testData.push({
         hobbies: [ '5 hobbies.0', '5 hobbies.1' ],
         now: new Date(),
         emoji: undefined,
-        img: 'https://picsum.photos/id/65/50'
+        img: `https://picsum.photos/id/${Math.floor(100 * Math.random()) ?? 16}/100`, 
+        alt: 'image to 5'
     }
 );
 // testData[ 0].name = 'Test';
@@ -581,7 +583,8 @@ testData.splice(4,1,
         hobbies: [ '6 hobbies.0', '6 hobbies.1' ],
         now: new Date(),
         emoji: undefined,
-        img: 'https://picsum.photos/id/70/50'
+        img: `https://picsum.photos/id/${Math.floor(100 * Math.random()) ?? 19}/50`,
+        alt: 'image to 6'
     },
     {
         name: '7 spliced',
@@ -593,7 +596,8 @@ testData.splice(4,1,
         hobbies: [ '7 hobbies.0', '7 hobbies.1' ],
         now: new Date(),
         emoji: undefined,
-        img: 'https://picsum.photos/id/88/50'
+        img: `https://picsum.photos/id/${Math.floor(100 * Math.random()) ?? 28}/50`,
+        alt: 'image to 7'
     }
 );
 //testData[ 2 ].name = 'Test';//TODO splice delete doesn't work correct
@@ -619,3 +623,5 @@ function multiplier(factor) {
 }
 usd2eur = multiplier(1.08)
 usd2eur(400); // 432
+
+
