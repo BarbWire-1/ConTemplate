@@ -29,7 +29,8 @@ class DataObserver {
         let self = this;
         //clone to keep values of a parentObj
         // for sync if single item changed
-        const parentData = { ...currentObj }
+        const parentData = { ...currentObj };
+        const definedKeys = [];
 
         Object.keys(currentObj).forEach(key => {
             let value = currentObj[ key ];
@@ -42,12 +43,14 @@ class DataObserver {
                 
                 for (let i = 0; i < this.proto[ key ]?.length; i++) {
                     currentObj[ key ][ i ] = value[ i ] || this.proto[ key ][ i ];
+                    
                 } 
                
             };
             // Recursively define properties
             if (isObject) {
                 self.defineProp(value, index, key);
+               
             };
             
             if (isImage) {
@@ -67,11 +70,13 @@ class DataObserver {
                     }
                 });
             };
-
+            definedKeys.push(key)
+            
             Object.defineProperty(currentObj, key, {
 
                 enumerable: true,
                 get() {
+                    if(isObject)console.log(value)
                     return value;
                 },
                 set(newValue) {
@@ -82,6 +87,7 @@ class DataObserver {
                     if (parentKey) {
                         
                         parentData[ key ] = value;
+                       
                         self.notify(parentKey, parentKey, parentData, "update", index);
                     }
                     // re-define and update keys if entire nested object changed
@@ -92,6 +98,7 @@ class DataObserver {
                             
                             let subKey = dataKey + `.${key}`
                             self.notify(currentObj, subKey, value[ key ], "update", index);
+                            
                         })
                         
                     }
@@ -101,7 +108,7 @@ class DataObserver {
             });
 
         });
-
+        console.log({ definedKeys })
     }
 
 
@@ -269,16 +276,29 @@ class DataHandler {
 
 
 class Contemplate {
-    constructor (dataHandler, template, containerID, className, modifiers = [], show = false) {
+    constructor (dataHandler, template, containerID, className, modifiers = {}, show = false) {
         this.data = dataHandler.data;
 
         this.container = document.getElementById(containerID);
         this.containerID = containerID;
         this.className = className
         this.template = template;
-        this.modifiers = modifiers;
         this.show = show;
         this.data.addObserver(this);
+        
+        
+        let mods = {
+            // v is the raw value
+            uppercase: (v) => v.toUpperCase(),
+            lowercase: (v) => v.toLowerCase(),
+            reverse: (v) => v.split("").reverse().join(""),
+            localeTime: () => new Date().toLocaleTimeString(),
+            // prevent splitting strings into chars
+            all: (v) => (typeof v !== 'string') ? Object.values(v).filter(Boolean).join(', ') : v,
+
+        };
+        this.modifiers = { ...mods, ...modifiers};
+        console.log(this.modifiers)
         this.init();
     }
 
@@ -410,7 +430,7 @@ const modifiers = {
     reverse: (v) => v.split("").reverse().join(""),
     localeTime: () => new Date().toLocaleTimeString(),
     // prevent splitting strings into chars
-    join: (v) => (typeof v !== 'string') ? Object.values(v).filter(Boolean).join(', ') : v,
+    all: (v) => (typeof v !== 'string') ? Object.values(v).filter(Boolean).join(', ') : v,
 
 };
 
@@ -423,13 +443,14 @@ const templateTest = () => {
     <div class="addContent">
     <p>
       Address obj :
-      <span data-key="address" data-modifier="join"></span><br>
+      <span data-key="address" data-modifier="all"></span><br>
      
     </p>
     <p>
       Hobbies:
-      <span data-key="hobbies"data-modifier="join lowercase"></span><br>
+      <span data-key="hobbies"data-modifier="all lowercase"></span><br>
       <span data-key="hobbies.0" data-modifier="uppercase" ></span><br>
+      <span data-key="test" data-modifier="uppercase" ></span><br>
       </p>
     <p style="text-align: center; margin-top: 10px">
       <span data-key="now" data-modifier="localeTime"></span>
@@ -521,7 +542,7 @@ const filter = {
 // model watching all obj
 const dataObject = new DataHandler(testData, filter);
 // model watching subkey of obj
-const testModifier = new Contemplate(dataObject, templateTest, 'container4', 'template1', modifiers);
+const testModifier = new Contemplate(dataObject, templateTest, 'container4', 'template1');
 const adresses = new Contemplate(dataObject, template2, 'container5', 'template3');
 
 
@@ -665,6 +686,9 @@ testData.splice(4,1,
 // testData[ 1 ].hobbies[ 1 ] = 'testing';
 // testData[ 4 ].hobbies[ 3 ] = 'testing 3';
 /******************************************************************** End reverse  ***/
+
+
+testData.forEach(item => item.test = 'test')
 console.timeEnd()
 
 
