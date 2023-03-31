@@ -30,7 +30,7 @@ class DataObserver {
         //clone to keep values of a parentObj
         // for sync if single item changed
         const parentData = { ...currentObj };
-        const definedKeys = [];
+       
 
         Object.keys(currentObj).forEach(key => {
             let value = currentObj[ key ];
@@ -50,36 +50,38 @@ class DataObserver {
             // Recursively define properties
             if (isObject) {
                 self.defineProp(value, index, key);
+                
                
             };
             
-            if (isImage) {
-                Object.defineProperty(value, "src", {
-                    enumerable: true,
-                    get() {
-                        return this._src;
-                    },
-                    set(newValue) {
-                        this._src = newValue;
-                        self.notify(currentObj, dataKey + ".src", newValue, "update", index);
-
-                        if (parentKey) {
-                            parentData[ key ] = currentObj[ key ];
-                            self.notify(parentKey, parentKey, parentData, "update", index);
-                        }
-                    }
-                });
-            };
-            definedKeys.push(key)
+//             if (isImage) {
+//                 Object.defineProperty(value, "src", {
+//                     enumerable: true,
+//                     get() {
+//                         return this._src;
+//                     },
+//                     set(newValue) {
+//                         this._src = newValue;
+//                         self.notify(currentObj, dataKey + ".src", newValue, "update", index);
+// 
+//                         if (parentKey) {
+//                             parentData[ key ] = currentObj[ key ];
+//                             self.notify(parentKey, parentKey, parentData, "update", index);
+//                         }
+//                     }
+//                 });
+//             };
+           
             
             Object.defineProperty(currentObj, key, {
-
+                
                 enumerable: true,
                 get() {
-                    if(isObject)console.log(value)
+                    console.log(value)
                     return value;
                 },
                 set(newValue) {
+                    
                     value = newValue;
                     self.notify(currentObj, dataKey, value, "update", index);
 
@@ -87,8 +89,8 @@ class DataObserver {
                     if (parentKey) {
                         
                         parentData[ key ] = value;
-                       
                         self.notify(parentKey, parentKey, parentData, "update", index);
+                        
                     }
                     // re-define and update keys if entire nested object changed
                     if (isObject) {
@@ -98,17 +100,18 @@ class DataObserver {
                             
                             let subKey = dataKey + `.${key}`
                             self.notify(currentObj, subKey, value[ key ], "update", index);
+                           
                             
                         })
                         
                     }
-
+                    
 
                 },
             });
-
+           
         });
-        console.log({ definedKeys })
+       
     }
 
 
@@ -342,7 +345,7 @@ class Contemplate {
 
     write2Card(_, key, value, card) {
 
-        const tags2Update = card.querySelectorAll(`[data-key*="${key}"]`);
+        const tags2Update = card.querySelectorAll(`[data-key="${key}"]`);
 
 
         tags2Update.forEach((tag) => {
@@ -356,24 +359,8 @@ class Contemplate {
                     }
                 });
             };
-//             // Experimental
-//             const tagKeys = tag.dataset.key.split(' ');
-//                 tagKeys.forEach((tagKey) => {
-//                 if (tagKey === key) {
-//                     tag.setAttribute(tagKey, value);
-//                 
-//             
-//                     // TODO wrong Logic here, need to specify keys
-//                     if (tag.tagName.toLowerCase() === "img") {
-//                         if(key === 'alt')tag.setAttribute('alt', value)
-//                         if(key === 'img')tag.setAttribute('src', value)// this need to be
-//                     } else {
-//                         tag.textContent = value;
-//                     }
-//                 }
-// 
-//             })
-            const tags2Update = card.querySelectorAll(`[data-key="${key}"]`);
+
+          //  const tags2Update = card.querySelectorAll(`[data-key="${key}"]`);
 
 
             tags2Update.forEach((tag) => {
@@ -689,6 +676,7 @@ testData.splice(4,1,
 
 
 testData.forEach(item => item.test = 'test')
+testData[0].test = 'another Test'
 console.timeEnd()
 
 
